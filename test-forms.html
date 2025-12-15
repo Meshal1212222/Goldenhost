@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>اختبار النماذج</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Cairo', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 2rem;
+            direction: rtl;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+
+        h1 {
+            text-align: center;
+            color: #4B3A8C;
+            margin-bottom: 2rem;
+            font-size: 2.5rem;
+        }
+
+        .buttons-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .test-button {
+            padding: 2rem;
+            border: none;
+            border-radius: 15px;
+            color: white;
+            font-size: 1.2rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.3s;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .test-button:hover {
+            transform: translateY(-5px);
+        }
+
+        .btn-report {
+            background: linear-gradient(135deg, #FF0000, #CC0000);
+        }
+
+        .btn-refund {
+            background: linear-gradient(135deg, #FFA500, #FF8C00);
+        }
+
+        .btn-conversation {
+            background: linear-gradient(135deg, #4B3A8C, #6B4FB5);
+        }
+
+        .btn-sales {
+            background: linear-gradient(135deg, #28A745, #20C997);
+        }
+
+        .status {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin-top: 2rem;
+        }
+
+        .status h3 {
+            color: #4B3A8C;
+            margin-bottom: 1rem;
+        }
+
+        .status-item {
+            padding: 0.5rem;
+            margin: 0.5rem 0;
+            background: white;
+            border-radius: 5px;
+        }
+
+        .form-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+        }
+
+        .form-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #333;
+        }
+
+        .form-input,
+        .form-select,
+        .form-textarea {
+            width: 100%;
+            padding: 0.8rem;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-family: 'Cairo', sans-serif;
+            font-size: 1rem;
+        }
+
+        .form-textarea {
+            resize: vertical;
+        }
+
+        .form-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .btn-submit {
+            flex: 1;
+            padding: 1rem;
+            background: linear-gradient(135deg, #28A745, #20C997);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+
+        .btn-cancel {
+            flex: 1;
+            padding: 1rem;
+            background: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+
+        .close-btn {
+            float: left;
+            background: none;
+            border: none;
+            font-size: 2rem;
+            cursor: pointer;
+            color: #666;
+        }
+
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 اختبار نماذج النظام</h1>
+
+        <div class="buttons-grid">
+            <button class="test-button btn-report" onclick="testReport()">
+                🚨<br>رفع بلاغ
+            </button>
+            <button class="test-button btn-refund" onclick="testRefund()">
+                💰<br>طلب استرداد
+            </button>
+            <button class="test-button btn-conversation" onclick="testConversation()">
+                💬<br>متابعة محادثة
+            </button>
+            <button class="test-button btn-sales" onclick="testSales()">
+                📈<br>تسجيل مبيعات
+            </button>
+        </div>
+
+        <div id="successMessage" class="success-message"></div>
+
+        <div class="status">
+            <h3>📊 الحالة الحالية:</h3>
+            <div class="status-item">
+                🚨 عدد البلاغات: <strong id="reportsCount">0</strong>
+            </div>
+            <div class="status-item">
+                💰 عدد الاستردادات: <strong id="refundsCount">0</strong>
+            </div>
+            <div class="status-item">
+                💬 عدد المحادثات: <strong id="conversationsCount">0</strong>
+            </div>
+            <div class="status-item">
+                📈 عدد المبيعات: <strong id="salesCount">0</strong>
+            </div>
+        </div>
+    </div>
+
+    <!-- Report Modal -->
+    <div id="reportModal" class="form-modal">
+        <div class="form-content">
+            <button class="close-btn" onclick="closeModal('reportModal')">✕</button>
+            <h2 style="color: #FF0000; margin-bottom: 1.5rem;">🚨 رفع بلاغ</h2>
+            <form id="reportForm" onsubmit="submitReport(event)">
+                <div class="form-group">
+                    <label class="form-label">اسمك <span style="color: red;">*</span></label>
+                    <input type="text" class="form-input" id="employeeName" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">نوع البلاغ <span style="color: red;">*</span></label>
+                    <select class="form-select" id="reportCategory" required>
+                        <option value="">اختر نوع البلاغ</option>
+                        <option value="عميل صعب">🔴 عميل صعب</option>
+                        <option value="استفسار">❓ استفسار</option>
+                        <option value="مشكلة تقنية">⚙️ مشكلة تقنية</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">الموضوع <span style="color: red;">*</span></label>
+                    <input type="text" class="form-input" id="reportSubject" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">التفاصيل <span style="color: red;">*</span></label>
+                    <textarea class="form-textarea" id="reportMessage" rows="4" required></textarea>
+                </div>
+                <div class="form-buttons">
+                    <button type="submit" class="btn-submit">📤 إرسال</button>
+                    <button type="button" class="btn-cancel" onclick="closeModal('reportModal')">إلغاء</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Refund Modal -->
+    <div id="refundModal" class="form-modal">
+        <div class="form-content">
+            <button class="close-btn" onclick="closeModal('refundModal')">✕</button>
+            <h2 style="color: #FFA500; margin-bottom: 1.5rem;">💰 طلب استرداد</h2>
+            <form id="refundForm" onsubmit="submitRefund(event)">
+                <div class="form-group">
+                    <label class="form-label">اسم الموظف <span style="color: red;">*</span></label>
+                    <input type="text" class="form-input" id="refundEmployeeName" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">رقم الحجز <span style="color: red;">*</span></label>
+                    <input type="text" class="form-input" id="bookingNumber" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">اسم العميل <span style="color: red;">*</span></label>
+                    <input type="text" class="form-input" id="customerName" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">المبلغ <span style="color: red;">*</span></label>
+                    <input type="number" class="form-input" id="refundAmount" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">السبب <span style="color: red;">*</span></label>
+                    <select class="form-select" id="refundReason" required>
+                        <option value="">اختر السبب</option>
+                        <option value="عقار غير متاح">عقار غير متاح</option>
+                        <option value="مشكلة نظافة">مشكلة نظافة</option>
+                        <option value="إلغاء">إلغاء</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">التفاصيل <span style="color: red;">*</span></label>
+                    <textarea class="form-textarea" id="refundDetails" rows="3" required></textarea>
+                </div>
+                <div class="form-buttons">
+                    <button type="submit" class="btn-submit">📤 إرسال</button>
+                    <button type="button" class="btn-cancel" onclick="closeModal('refundModal')">إلغاء</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Conversation Modal -->
+    <div id="conversationModal" class="form-modal">
+        <div class="form-content">
+            <button class="close-btn" onclick="closeModal('conversationModal')">✕</button>
+            <h2 style="color: #4B3A8C; margin-bottom: 1.5rem;">💬 متابعة محادثة</h2>
+            <form id="conversationForm" onsubmit="submitConversation(event)">
+                <div class="form-group">
+                    <label class="form-label">اسم الموظف <span style="color: red;">*</span></label>
+                    <input type="text" class="form-input" id="convEmployeeName" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">رقم العميل <span style="color: red;">*</span></label>
+                    <input type="text" class="form-input" id="customerPhone" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">الموضوع <span style="color: red;">*</span></label>
+                    <input type="text" class="form-input" id="conversationSubject" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">الملخص <span style="color: red;">*</span></label>
+                    <textarea class="form-textarea" id="conversationSummary" rows="3" required></textarea>
+                </div>
+                <div class="form-buttons">
+                    <button type="submit" class="btn-submit">📤 إرسال</button>
+                    <button type="button" class="btn-cancel" onclick="closeModal('conversationModal')">إلغاء</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Sales Modal -->
+    <div id="salesModal" class="form-modal">
+        <div class="form-content">
+            <button class="close-btn" onclick="closeModal('salesModal')">✕</button>
+            <h2 style="color: #28A745; margin-bottom: 1.5rem;">📈 تسجيل مبيعات</h2>
+            <form id="salesForm" onsubmit="submitSales(event)">
+                <div class="form-group">
+                    <label class="form-label">اسم الموظف <span style="color: red;">*</span></label>
+                    <input type="text" class="form-input" id="salesEmployeeName" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">رقم العميل <span style="color: red;">*</span></label>
+                    <input type="text" class="form-input" id="salesCustomerNumber" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">الإجراء <span style="color: red;">*</span></label>
+                    <select class="form-select" id="salesAction" required>
+                        <option value="">اختر الإجراء</option>
+                        <option value="تم الاتصال">تم الاتصال</option>
+                        <option value="لم يرد">لم يرد</option>
+                        <option value="تم الحجز">تم الحجز</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">رقم الحجز</label>
+                    <input type="text" class="form-input" id="salesBookingNumber">
+                </div>
+                <div class="form-buttons">
+                    <button type="submit" class="btn-submit">📤 إرسال</button>
+                    <button type="button" class="btn-cancel" onclick="closeModal('salesModal')">إلغاء</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Update counts on load
+        function updateCounts() {
+            document.getElementById('reportsCount').textContent =
+                JSON.parse(localStorage.getItem('customerReports') || '[]').length;
+            document.getElementById('refundsCount').textContent =
+                JSON.parse(localStorage.getItem('customerRefunds') || '[]').length;
+            document.getElementById('conversationsCount').textContent =
+                JSON.parse(localStorage.getItem('customerConversations') || '[]').length;
+            document.getElementById('salesCount').textContent =
+                JSON.parse(localStorage.getItem('customerSales') || '[]').length;
+        }
+
+        function showSuccess(message) {
+            const el = document.getElementById('successMessage');
+            el.textContent = message;
+            el.style.display = 'block';
+            setTimeout(() => {
+                el.style.display = 'none';
+            }, 3000);
+        }
+
+        function testReport() {
+            document.getElementById('reportModal').style.display = 'flex';
+        }
+
+        function testRefund() {
+            document.getElementById('refundModal').style.display = 'flex';
+        }
+
+        function testConversation() {
+            document.getElementById('conversationModal').style.display = 'flex';
+        }
+
+        function testSales() {
+            document.getElementById('salesModal').style.display = 'flex';
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+
+        function submitReport(event) {
+            event.preventDefault();
+
+            const report = {
+                id: 'report_' + Date.now(),
+                employeeName: document.getElementById('employeeName').value,
+                category: document.getElementById('reportCategory').value,
+                subject: document.getElementById('reportSubject').value,
+                message: document.getElementById('reportMessage').value,
+                status: 'pending',
+                submitTime: new Date().toLocaleString('ar-SA')
+            };
+
+            const reports = JSON.parse(localStorage.getItem('customerReports') || '[]');
+            reports.unshift(report);
+            localStorage.setItem('customerReports', JSON.stringify(reports));
+
+            closeModal('reportModal');
+            document.getElementById('reportForm').reset();
+            showSuccess('✅ تم رفع البلاغ بنجاح!');
+            updateCounts();
+        }
+
+        function submitRefund(event) {
+            event.preventDefault();
+
+            const refund = {
+                id: 'refund_' + Date.now(),
+                employeeName: document.getElementById('refundEmployeeName').value,
+                bookingNumber: document.getElementById('bookingNumber').value,
+                customerName: document.getElementById('customerName').value,
+                amount: document.getElementById('refundAmount').value,
+                reason: document.getElementById('refundReason').value,
+                details: document.getElementById('refundDetails').value,
+                status: 'pending',
+                submitTime: new Date().toLocaleString('ar-SA')
+            };
+
+            const refunds = JSON.parse(localStorage.getItem('customerRefunds') || '[]');
+            refunds.unshift(refund);
+            localStorage.setItem('customerRefunds', JSON.stringify(refunds));
+
+            closeModal('refundModal');
+            document.getElementById('refundForm').reset();
+            showSuccess('✅ تم رفع طلب الاسترداد بنجاح!');
+            updateCounts();
+        }
+
+        function submitConversation(event) {
+            event.preventDefault();
+
+            const conversation = {
+                id: 'conv_' + Date.now(),
+                employeeName: document.getElementById('convEmployeeName').value,
+                customerPhone: document.getElementById('customerPhone').value,
+                type: 'استفسار',
+                subject: document.getElementById('conversationSubject').value,
+                summary: document.getElementById('conversationSummary').value,
+                requiredAction: 'لا يوجد',
+                status: 'completed',
+                recordTime: new Date().toLocaleString('ar-SA')
+            };
+
+            const conversations = JSON.parse(localStorage.getItem('customerConversations') || '[]');
+            conversations.unshift(conversation);
+            localStorage.setItem('customerConversations', JSON.stringify(conversations));
+
+            closeModal('conversationModal');
+            document.getElementById('conversationForm').reset();
+            showSuccess('✅ تم حفظ المحادثة بنجاح!');
+            updateCounts();
+        }
+
+        function submitSales(event) {
+            event.preventDefault();
+
+            const sale = {
+                id: 'sale_' + Date.now(),
+                employeeName: document.getElementById('salesEmployeeName').value,
+                customerNumber: document.getElementById('salesCustomerNumber').value,
+                bookingNumber: document.getElementById('salesBookingNumber').value,
+                action: document.getElementById('salesAction').value,
+                date: new Date().toLocaleDateString('ar-SA'),
+                callConfirmed: 'نعم',
+                whatsappSent: 'نعم',
+                recordTime: new Date().toLocaleString('ar-SA')
+            };
+
+            const sales = JSON.parse(localStorage.getItem('customerSales') || '[]');
+            sales.unshift(sale);
+            localStorage.setItem('customerSales', JSON.stringify(sales));
+
+            closeModal('salesModal');
+            document.getElementById('salesForm').reset();
+            showSuccess('✅ تم تسجيل عملية المبيعات بنجاح!');
+            updateCounts();
+        }
+
+        // Initialize
+        updateCounts();
+    </script>
+</body>
+</html>

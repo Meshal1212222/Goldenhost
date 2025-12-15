@@ -1,0 +1,1184 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>محادثات العملاء | Golden Host</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --whatsapp-green: #25D366;
+            --whatsapp-dark: #128C7E;
+            --app-blue: #667eea;
+            --app-purple: #764ba2;
+            --bg-light: #f0f2f5;
+            --chat-bg: #e5ddd5;
+            --message-sent: #dcf8c6;
+            --message-received: #ffffff;
+            --border-color: #d1d7db;
+        }
+
+        body {
+            font-family: 'Cairo', sans-serif;
+            background: var(--bg-light);
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+            max-width: 100%;
+        }
+
+        /* Conversations List (Left Sidebar) */
+        .conversations-panel {
+            width: 350px;
+            background: white;
+            border-left: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .panel-header {
+            padding: 1.5rem;
+            background: linear-gradient(135deg, var(--app-blue), var(--app-purple));
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .panel-header h2 {
+            font-size: 1.3rem;
+            font-weight: 700;
+        }
+
+        .channel-tabs {
+            display: flex;
+            gap: 0.5rem;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .channel-tab {
+            flex: 1;
+            padding: 0.7rem;
+            border: none;
+            border-radius: 8px;
+            font-family: 'Cairo', sans-serif;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.9rem;
+        }
+
+        .channel-tab.whatsapp {
+            background: #e8f5e9;
+            color: var(--whatsapp-dark);
+        }
+
+        .channel-tab.whatsapp.active {
+            background: var(--whatsapp-green);
+            color: white;
+            box-shadow: 0 2px 8px rgba(37, 211, 102, 0.3);
+        }
+
+        .channel-tab.app {
+            background: #e8eaf6;
+            color: var(--app-purple);
+        }
+
+        .channel-tab.app.active {
+            background: linear-gradient(135deg, var(--app-blue), var(--app-purple));
+            color: white;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+        }
+
+        .search-box {
+            padding: 1rem;
+            background: white;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 0.8rem;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            font-family: 'Cairo', sans-serif;
+            font-size: 0.95rem;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: var(--app-blue);
+        }
+
+        .conversations-list {
+            flex: 1;
+            overflow-y: auto;
+            background: white;
+        }
+
+        .conversation-item {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-color);
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            gap: 1rem;
+            align-items: flex-start;
+        }
+
+        .conversation-item:hover {
+            background: #f5f5f5;
+        }
+
+        .conversation-item.active {
+            background: #e8eaf6;
+            border-right: 4px solid var(--app-blue);
+        }
+
+        .conversation-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--app-blue), var(--app-purple));
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+
+        .conversation-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .conversation-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.3rem;
+        }
+
+        .conversation-name {
+            font-weight: 700;
+            color: #333;
+            font-size: 1rem;
+        }
+
+        .conversation-time {
+            font-size: 0.75rem;
+            color: #666;
+        }
+
+        .conversation-preview {
+            font-size: 0.85rem;
+            color: #666;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .conversation-meta {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.3rem;
+        }
+
+        .conversation-badge {
+            padding: 0.2rem 0.5rem;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+
+        .badge-unread {
+            background: var(--whatsapp-green);
+            color: white;
+        }
+
+        .badge-priority {
+            background: #FF5252;
+            color: white;
+        }
+
+        .badge-whatsapp {
+            background: #e8f5e9;
+            color: var(--whatsapp-dark);
+        }
+
+        .badge-app {
+            background: #e8eaf6;
+            color: var(--app-purple);
+        }
+
+        /* Chat Area (Center) */
+        .chat-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: var(--chat-bg);
+        }
+
+        .chat-header {
+            padding: 1rem 1.5rem;
+            background: white;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chat-customer-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .chat-customer-avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--app-blue), var(--app-purple));
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+
+        .chat-customer-details h3 {
+            font-size: 1.1rem;
+            color: #333;
+            margin-bottom: 0.2rem;
+        }
+
+        .chat-customer-status {
+            font-size: 0.85rem;
+            color: #666;
+        }
+
+        .chat-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .chat-action-btn {
+            padding: 0.6rem 1rem;
+            border: none;
+            border-radius: 8px;
+            font-family: 'Cairo', sans-serif;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.85rem;
+        }
+
+        .btn-close-chat {
+            background: #f44336;
+            color: white;
+        }
+
+        .btn-assign {
+            background: #2196F3;
+            color: white;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 2rem;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect fill="%23f0f2f5" width="100" height="100"/><path d="M0 50 L50 0 L100 50 L50 100 Z" fill="%23e5ddd5" opacity="0.1"/></svg>');
+        }
+
+        .message {
+            display: flex;
+            margin-bottom: 1rem;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message.sent {
+            justify-content: flex-start;
+        }
+
+        .message.received {
+            justify-content: flex-end;
+        }
+
+        .message-bubble {
+            max-width: 60%;
+            padding: 0.8rem 1rem;
+            border-radius: 12px;
+            position: relative;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+
+        .message.sent .message-bubble {
+            background: var(--message-received);
+            border-bottom-right-radius: 4px;
+        }
+
+        .message.received .message-bubble {
+            background: var(--message-sent);
+            border-bottom-left-radius: 4px;
+        }
+
+        .message-sender {
+            font-weight: 700;
+            color: var(--app-purple);
+            font-size: 0.85rem;
+            margin-bottom: 0.3rem;
+        }
+
+        .message-text {
+            color: #333;
+            line-height: 1.5;
+            font-size: 0.95rem;
+        }
+
+        .message-time {
+            font-size: 0.7rem;
+            color: #999;
+            margin-top: 0.3rem;
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .message-status {
+            display: inline-block;
+            margin-right: 0.2rem;
+        }
+
+        .quick-replies {
+            padding: 1rem;
+            background: white;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            gap: 0.5rem;
+            overflow-x: auto;
+        }
+
+        .quick-reply-btn {
+            padding: 0.5rem 1rem;
+            background: #f0f2f5;
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            font-family: 'Cairo', sans-serif;
+            font-size: 0.85rem;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.3s;
+        }
+
+        .quick-reply-btn:hover {
+            background: var(--app-blue);
+            color: white;
+            border-color: var(--app-blue);
+        }
+
+        .chat-input-area {
+            padding: 1rem 1.5rem;
+            background: white;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 0.8rem 1rem;
+            border: 2px solid var(--border-color);
+            border-radius: 25px;
+            font-family: 'Cairo', sans-serif;
+            font-size: 0.95rem;
+            resize: none;
+            max-height: 100px;
+        }
+
+        .chat-input:focus {
+            outline: none;
+            border-color: var(--app-blue);
+        }
+
+        .send-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: none;
+            background: linear-gradient(135deg, var(--app-blue), var(--app-purple));
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .send-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .whatsapp-send {
+            background: linear-gradient(135deg, var(--whatsapp-green), var(--whatsapp-dark));
+        }
+
+        /* Customer Info Panel (Right Sidebar) */
+        .customer-panel {
+            width: 320px;
+            background: white;
+            border-right: 1px solid var(--border-color);
+            overflow-y: auto;
+        }
+
+        .customer-panel-header {
+            padding: 1.5rem;
+            background: linear-gradient(135deg, var(--app-blue), var(--app-purple));
+            color: white;
+            text-align: center;
+        }
+
+        .customer-panel-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: white;
+            color: var(--app-purple);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            font-size: 2rem;
+            margin: 0 auto 1rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .customer-panel-name {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 0.3rem;
+        }
+
+        .customer-panel-phone {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .customer-info-section {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .info-section-title {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #666;
+            text-transform: uppercase;
+            margin-bottom: 1rem;
+        }
+
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.8rem;
+            font-size: 0.9rem;
+        }
+
+        .info-label {
+            color: #666;
+        }
+
+        .info-value {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .notes-area {
+            width: 100%;
+            padding: 0.8rem;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            font-family: 'Cairo', sans-serif;
+            font-size: 0.9rem;
+            min-height: 80px;
+            resize: vertical;
+        }
+
+        .save-notes-btn {
+            width: 100%;
+            padding: 0.8rem;
+            background: linear-gradient(135deg, var(--app-blue), var(--app-purple));
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-family: 'Cairo', sans-serif;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 0.5rem;
+            transition: all 0.3s;
+        }
+
+        .save-notes-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .customer-history {
+            list-style: none;
+        }
+
+        .history-item {
+            padding: 0.8rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+            font-size: 0.85rem;
+        }
+
+        .history-date {
+            color: #666;
+            font-size: 0.75rem;
+            margin-top: 0.3rem;
+        }
+
+        .empty-chat {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #666;
+        }
+
+        .empty-chat-icon {
+            font-size: 5rem;
+            margin-bottom: 1rem;
+            opacity: 0.3;
+        }
+
+        .empty-chat-text {
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        @media (max-width: 1200px) {
+            .customer-panel {
+                display: none;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .conversations-panel {
+                width: 100%;
+                position: absolute;
+                z-index: 100;
+            }
+
+            .conversations-panel.hidden {
+                display: none;
+            }
+
+            .chat-area {
+                width: 100%;
+            }
+        }
+
+        /* Scrollbar Styling */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Left Panel: Conversations List -->
+        <div class="conversations-panel">
+            <div class="panel-header">
+                <h2>💬 المحادثات</h2>
+                <button onclick="window.location.href='dashboard.html'" style="background: white; color: var(--app-purple); border: none; padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer; font-family: 'Cairo', sans-serif; font-weight: 600;">← العودة</button>
+            </div>
+
+            <div class="channel-tabs">
+                <button class="channel-tab whatsapp active" onclick="switchChannel('whatsapp')">
+                    📱 WhatsApp
+                </button>
+                <button class="channel-tab app" onclick="switchChannel('app')">
+                    📲 التطبيق
+                </button>
+            </div>
+
+            <div class="search-box">
+                <input type="text" id="searchConversations" placeholder="🔍 البحث في المحادثات..." onkeyup="searchConversations()">
+            </div>
+
+            <div class="conversations-list" id="conversationsList">
+                <!-- Conversations will be loaded here -->
+            </div>
+        </div>
+
+        <!-- Center: Chat Area -->
+        <div class="chat-area" id="chatArea">
+            <div class="empty-chat">
+                <div class="empty-chat-icon">💬</div>
+                <div class="empty-chat-text">اختر محادثة لبدء الرد على العميل</div>
+            </div>
+        </div>
+
+        <!-- Right Panel: Customer Info -->
+        <div class="customer-panel" id="customerPanel" style="display: none;">
+            <!-- Customer info will be loaded here -->
+        </div>
+    </div>
+
+    <script>
+        let currentChannel = 'whatsapp';
+        let currentConversation = null;
+        let conversations = [];
+
+        // Sample conversation data
+        const sampleConversations = {
+            whatsapp: [
+                {
+                    id: 'wa_001',
+                    customerName: 'أحمد محمد',
+                    customerPhone: '0537123456',
+                    lastMessage: 'مرحباً، أريد الاستفسار عن حجز عقار في الرياض',
+                    time: '10:30 ص',
+                    unread: 2,
+                    priority: false,
+                    status: 'open',
+                    channel: 'whatsapp',
+                    bookingNumber: '98125',
+                    lastCall: '10/11/2025 - 09:45 ص',
+                    callDuration: '5 دقائق',
+                    messages: [
+                        { sender: 'customer', text: 'مرحباً، أريد الاستفسار عن حجز عقار في الرياض', time: '10:28 ص', status: 'read' },
+                        { sender: 'employee', text: 'أهلاً وسهلاً! يسعدني مساعدتك. ما نوع العقار الذي تبحث عنه؟', time: '10:29 ص', status: 'read' },
+                        { sender: 'customer', text: 'أبحث عن شقة مفروشة، 3 غرف نوم', time: '10:30 ص', status: 'delivered' }
+                    ],
+                    notes: 'عميل مهتم بحجز طويل المدى',
+                    history: [
+                        { action: 'حجز سابق رقم #97850', date: '15/10/2025' },
+                        { action: 'تقييم ممتاز (5 نجوم)', date: '20/10/2025' }
+                    ]
+                },
+                {
+                    id: 'wa_002',
+                    customerName: 'فاطمة السالم',
+                    customerPhone: '0538765432',
+                    lastMessage: 'متى يتم تأكيد الحجز؟',
+                    time: '09:15 ص',
+                    unread: 0,
+                    priority: true,
+                    status: 'open',
+                    channel: 'whatsapp',
+                    bookingNumber: '98126',
+                    lastCall: '09/11/2025 - 02:30 م',
+                    callDuration: '8 دقائق',
+                    messages: [
+                        { sender: 'customer', text: 'السلام عليكم، قدمت طلب حجز أمس', time: '09:10 ص', status: 'read' },
+                        { sender: 'employee', text: 'وعليكم السلام، نعم استلمنا طلبك. رقم الحجز #98126', time: '09:12 ص', status: 'read' },
+                        { sender: 'customer', text: 'متى يتم تأكيد الحجز؟', time: '09:15 ص', status: 'read' }
+                    ],
+                    notes: '',
+                    history: [
+                        { action: 'طلب حجز جديد #98126', date: 'اليوم' }
+                    ]
+                },
+                {
+                    id: 'wa_003',
+                    customerName: 'خالد العتيبي',
+                    customerPhone: '0539876543',
+                    lastMessage: 'شكراً على الخدمة الممتازة',
+                    time: 'أمس',
+                    unread: 0,
+                    priority: false,
+                    status: 'closed',
+                    channel: 'whatsapp',
+                    bookingNumber: '98100',
+                    lastCall: '08/11/2025 - 11:20 ص',
+                    callDuration: '3 دقائق',
+                    messages: [
+                        { sender: 'customer', text: 'تم استلام العقار بنجاح', time: '02:00 م', status: 'read' },
+                        { sender: 'employee', text: 'ممتاز! نتمنى لك إقامة سعيدة', time: '02:05 م', status: 'read' },
+                        { sender: 'customer', text: 'شكراً على الخدمة الممتازة', time: '02:10 م', status: 'read' }
+                    ],
+                    notes: 'عميل راضي - محادثة مغلقة',
+                    history: [
+                        { action: 'حجز مكتمل #98100', date: 'أمس' },
+                        { action: 'دفع مكتمل', date: 'أمس' }
+                    ]
+                }
+            ],
+            app: [
+                {
+                    id: 'app_001',
+                    customerName: 'نورة الدوسري',
+                    customerPhone: '0532123456',
+                    lastMessage: 'هل يمكن تغيير موعد الحجز؟',
+                    time: '11:45 ص',
+                    unread: 1,
+                    priority: false,
+                    status: 'open',
+                    channel: 'app',
+                    bookingNumber: '98127',
+                    lastCall: '10/11/2025 - 10:15 ص',
+                    callDuration: '6 دقائق',
+                    messages: [
+                        { sender: 'customer', text: 'مرحباً، لدي حجز رقم #98127', time: '11:40 ص', status: 'read' },
+                        { sender: 'employee', text: 'أهلاً نورة، كيف يمكنني مساعدتك؟', time: '11:42 ص', status: 'read' },
+                        { sender: 'customer', text: 'هل يمكن تغيير موعد الحجز؟', time: '11:45 ص', status: 'delivered' }
+                    ],
+                    notes: '',
+                    history: [
+                        { action: 'حجز نشط #98127', date: 'اليوم' }
+                    ]
+                },
+                {
+                    id: 'app_002',
+                    customerName: 'عبدالله القحطاني',
+                    customerPhone: '0533456789',
+                    lastMessage: 'تم استلام المبلغ، شكراً',
+                    time: 'أمس',
+                    unread: 0,
+                    priority: false,
+                    status: 'closed',
+                    channel: 'app',
+                    bookingNumber: '98115',
+                    lastCall: '09/11/2025 - 01:45 م',
+                    callDuration: '4 دقائق',
+                    messages: [
+                        { sender: 'customer', text: 'أريد استرداد مبلغ الحجز', time: '03:00 م', status: 'read' },
+                        { sender: 'employee', text: 'تم معالجة طلب الاسترداد', time: '03:15 م', status: 'read' },
+                        { sender: 'customer', text: 'تم استلام المبلغ، شكراً', time: '04:30 م', status: 'read' }
+                    ],
+                    notes: 'طلب استرداد مكتمل',
+                    history: [
+                        { action: 'طلب استرداد #98115', date: 'أمس' },
+                        { action: 'تمت الموافقة والدفع', date: 'أمس' }
+                    ]
+                }
+            ]
+        };
+
+        // Load/Save conversations from localStorage
+        function saveConversations() {
+            try {
+                localStorage.setItem('customerConversations_whatsapp', JSON.stringify(sampleConversations.whatsapp));
+                localStorage.setItem('customerConversations_app', JSON.stringify(sampleConversations.app));
+            } catch (error) {
+                console.error('Error saving conversations:', error);
+            }
+        }
+
+        function loadConversations() {
+            try {
+                const whatsappData = localStorage.getItem('customerConversations_whatsapp');
+                const appData = localStorage.getItem('customerConversations_app');
+
+                if (whatsappData) {
+                    sampleConversations.whatsapp = JSON.parse(whatsappData);
+                }
+                if (appData) {
+                    sampleConversations.app = JSON.parse(appData);
+                }
+            } catch (error) {
+                console.error('Error loading conversations:', error);
+            }
+        }
+
+        // Quick replies templates
+        const quickReplies = {
+            whatsapp: [
+                'شكراً لتواصلك معنا 🙏',
+                'سنقوم بمراجعة طلبك فوراً',
+                'هل لديك أي استفسار آخر؟',
+                'تم تأكيد الحجز بنجاح ✅',
+                'يرجى إرسال رقم الحجز',
+                'سيتم التواصل معك قريباً'
+            ],
+            app: [
+                'شكراً لاستخدام تطبيقنا 📱',
+                'تم استلام طلبك',
+                'كيف يمكنني مساعدتك؟',
+                'سيتم المعالجة خلال 24 ساعة',
+                'هل تحتاج مساعدة إضافية؟',
+                'تمت العملية بنجاح ✓'
+            ]
+        };
+
+        function init() {
+            loadConversations();
+            conversations = sampleConversations[currentChannel];
+            renderConversations();
+        }
+
+        function switchChannel(channel) {
+            currentChannel = channel;
+            currentConversation = null;
+
+            // Update tab styles
+            document.querySelectorAll('.channel-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelector(`.channel-tab.${channel}`).classList.add('active');
+
+            // Load conversations for this channel
+            conversations = sampleConversations[channel];
+            renderConversations();
+
+            // Reset chat area
+            document.getElementById('chatArea').innerHTML = `
+                <div class="empty-chat">
+                    <div class="empty-chat-icon">💬</div>
+                    <div class="empty-chat-text">اختر محادثة لبدء الرد على العميل</div>
+                </div>
+            `;
+            document.getElementById('customerPanel').style.display = 'none';
+        }
+
+        function renderConversations() {
+            const list = document.getElementById('conversationsList');
+            list.innerHTML = '';
+
+            conversations.forEach(conv => {
+                const unreadBadge = conv.unread > 0 ? `<span class="conversation-badge badge-unread">${conv.unread}</span>` : '';
+                const priorityBadge = conv.priority ? `<span class="conversation-badge badge-priority">عاجل</span>` : '';
+                const channelBadge = `<span class="conversation-badge badge-${conv.channel}">${conv.channel === 'whatsapp' ? 'WhatsApp' : 'التطبيق'}</span>`;
+
+                const item = document.createElement('div');
+                item.className = 'conversation-item';
+                item.innerHTML = `
+                    <div class="conversation-avatar">${conv.customerName.charAt(0)}</div>
+                    <div class="conversation-info">
+                        <div class="conversation-header">
+                            <span class="conversation-name">${conv.customerName}</span>
+                            <span class="conversation-time">${conv.time}</span>
+                        </div>
+                        <div class="conversation-preview">${conv.lastMessage}</div>
+                        <div class="conversation-meta">
+                            ${channelBadge}
+                            ${priorityBadge}
+                            ${unreadBadge}
+                        </div>
+                    </div>
+                `;
+                item.onclick = () => openConversation(conv);
+                list.appendChild(item);
+            });
+        }
+
+        function openConversation(conv) {
+            currentConversation = conv;
+
+            // Update active state
+            document.querySelectorAll('.conversation-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            event.currentTarget.classList.add('active');
+
+            // Mark as read
+            conv.unread = 0;
+            renderConversations();
+
+            // Render chat
+            renderChat(conv);
+            renderCustomerPanel(conv);
+        }
+
+        function renderChat(conv) {
+            const sendBtnClass = currentChannel === 'whatsapp' ? 'whatsapp-send' : '';
+
+            const chatArea = document.getElementById('chatArea');
+            chatArea.innerHTML = `
+                <div class="chat-header">
+                    <div class="chat-customer-info">
+                        <div class="chat-customer-avatar">${conv.customerName.charAt(0)}</div>
+                        <div class="chat-customer-details">
+                            <h3>${conv.customerName}</h3>
+                            <div class="chat-customer-status">${conv.customerPhone} • ${conv.channel === 'whatsapp' ? 'WhatsApp' : 'التطبيق'}</div>
+                        </div>
+                    </div>
+                    <div class="chat-actions">
+                        <button class="chat-action-btn btn-assign" onclick="assignToEmployee()">📋 تعيين لموظف</button>
+                        <button class="chat-action-btn btn-close-chat" onclick="closeChat()">✓ إغلاق المحادثة</button>
+                    </div>
+                </div>
+
+                <div class="chat-messages" id="chatMessages">
+                    ${renderMessages(conv.messages)}
+                </div>
+
+                <div class="quick-replies">
+                    ${renderQuickReplies()}
+                </div>
+
+                <div class="chat-input-area">
+                    <textarea class="chat-input" id="messageInput" placeholder="اكتب رسالتك هنا..." rows="1" onkeypress="handleEnter(event)"></textarea>
+                    <button class="send-btn ${sendBtnClass}" onclick="sendMessage()">📤</button>
+                </div>
+            `;
+
+            // Scroll to bottom
+            setTimeout(() => {
+                const messagesDiv = document.getElementById('chatMessages');
+                messagesDiv.scrollTop = messagesDiv.scrollHeight;
+            }, 100);
+        }
+
+        function renderMessages(messages) {
+            return messages.map(msg => {
+                const messageType = msg.sender === 'customer' ? 'sent' : 'received';
+                const senderName = msg.sender === 'customer' ? currentConversation.customerName : 'أنت';
+                const statusIcon = msg.status === 'read' ? '✓✓' : msg.status === 'delivered' ? '✓' : '🕐';
+
+                return `
+                    <div class="message ${messageType}">
+                        <div class="message-bubble">
+                            <div class="message-sender">${senderName}</div>
+                            <div class="message-text">${msg.text}</div>
+                            <div class="message-time">
+                                ${msg.time}
+                                ${messageType === 'received' ? `<span class="message-status">${statusIcon}</span>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderQuickReplies() {
+            const replies = quickReplies[currentChannel];
+            return replies.map(reply =>
+                `<button class="quick-reply-btn" onclick="insertQuickReply('${reply}')">${reply}</button>`
+            ).join('');
+        }
+
+        function renderCustomerPanel(conv) {
+            const panel = document.getElementById('customerPanel');
+            panel.style.display = 'block';
+            panel.innerHTML = `
+                <div class="customer-panel-header">
+                    <div class="customer-panel-avatar">${conv.customerName.charAt(0)}</div>
+                    <div class="customer-panel-name">${conv.customerName}</div>
+                    <div class="customer-panel-phone">${conv.customerPhone}</div>
+                </div>
+
+                <div class="customer-info-section">
+                    <div class="info-section-title">معلومات الحجز</div>
+                    <div class="info-item">
+                        <span class="info-label">رقم الحجز:</span>
+                        <span class="info-value">#${conv.bookingNumber}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">الحالة:</span>
+                        <span class="info-value" style="color: ${conv.status === 'open' ? '#4CAF50' : '#999'}">${conv.status === 'open' ? 'مفتوحة' : 'مغلقة'}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">القناة:</span>
+                        <span class="info-value">${conv.channel === 'whatsapp' ? '📱 WhatsApp' : '📲 التطبيق'}</span>
+                    </div>
+                </div>
+
+                <div class="customer-info-section">
+                    <div class="info-section-title">📞 معلومات الاتصال</div>
+                    <div class="info-item">
+                        <span class="info-label">آخر اتصال:</span>
+                        <span class="info-value" style="color: #4CAF50; font-weight: 700;">${conv.lastCall || 'لا يوجد'}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">مدة الاتصال:</span>
+                        <span class="info-value">${conv.callDuration || '-'}</span>
+                    </div>
+                    <div style="margin-top: 0.8rem; padding: 0.6rem; background: #e8f5e9; border-radius: 8px; font-size: 0.85rem; color: #2E7D32; text-align: center;">
+                        💡 يمكن ربط API الكول سنتر لتحديث هذه البيانات تلقائياً
+                    </div>
+                </div>
+
+                <div class="customer-info-section">
+                    <div class="info-section-title">ملاحظات داخلية</div>
+                    <textarea class="notes-area" id="customerNotes" placeholder="أضف ملاحظات عن هذا العميل...">${conv.notes}</textarea>
+                    <button class="save-notes-btn" onclick="saveNotes()">💾 حفظ الملاحظات</button>
+                </div>
+
+                <div class="customer-info-section">
+                    <div class="info-section-title">السجل السابق</div>
+                    <ul class="customer-history">
+                        ${conv.history.map(h => `
+                            <li class="history-item">
+                                ${h.action}
+                                <div class="history-date">${h.date}</div>
+                            </li>
+                        `).join('')}
+                    </ul>
+                </div>
+            `;
+        }
+
+        function insertQuickReply(text) {
+            document.getElementById('messageInput').value = text;
+            document.getElementById('messageInput').focus();
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const text = input.value.trim();
+
+            if (!text || !currentConversation) return;
+
+            const newMessage = {
+                sender: 'employee',
+                text: text,
+                time: new Date().toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' }),
+                status: 'delivered'
+            };
+
+            currentConversation.messages.push(newMessage);
+            currentConversation.lastMessage = text;
+            currentConversation.time = new Date().toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' });
+
+            // Save to localStorage
+            saveConversations();
+
+            // Update UI
+            renderChat(currentConversation);
+            renderConversations();
+
+            input.value = '';
+
+            // Show notification
+            showNotification('✅ تم إرسال الرسالة بنجاح');
+        }
+
+        function handleEnter(event) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                sendMessage();
+            }
+        }
+
+        function saveNotes() {
+            const notes = document.getElementById('customerNotes').value;
+            if (currentConversation) {
+                currentConversation.notes = notes;
+                saveConversations();
+                showNotification('✅ تم حفظ الملاحظات');
+            }
+        }
+
+        function assignToEmployee() {
+            const employee = prompt('أدخل اسم الموظف المراد تعيين المحادثة له:');
+            if (employee && employee.trim()) {
+                if (currentConversation) {
+                    currentConversation.assignedTo = employee;
+                    currentConversation.history.unshift({
+                        action: `تم تحويل المحادثة للموظف: ${employee}`,
+                        date: new Date().toLocaleDateString('ar-SA')
+                    });
+                    saveConversations();
+                    renderCustomerPanel(currentConversation);
+                }
+                showNotification(`✅ تم تعيين المحادثة للموظف: ${employee}`);
+            }
+        }
+
+        function closeChat() {
+            if (!currentConversation) return;
+
+            if (confirm('هل أنت متأكد من إغلاق هذه المحادثة؟')) {
+                currentConversation.status = 'closed';
+                currentConversation.history.unshift({
+                    action: 'تم إغلاق المحادثة',
+                    date: new Date().toLocaleDateString('ar-SA')
+                });
+                saveConversations();
+                showNotification('✅ تم إغلاق المحادثة');
+                renderCustomerPanel(currentConversation);
+                renderConversations();
+            }
+        }
+
+        function searchConversations() {
+            const searchTerm = document.getElementById('searchConversations').value.toLowerCase();
+            const filtered = sampleConversations[currentChannel].filter(conv =>
+                conv.customerName.toLowerCase().includes(searchTerm) ||
+                conv.customerPhone.includes(searchTerm) ||
+                conv.lastMessage.toLowerCase().includes(searchTerm)
+            );
+
+            conversations = filtered;
+            renderConversations();
+        }
+
+        function showNotification(message) {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: linear-gradient(135deg, #4CAF50, #45B649);
+                color: white;
+                padding: 1rem 2rem;
+                border-radius: 8px;
+                box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+                z-index: 10000;
+                font-family: Cairo, sans-serif;
+                font-weight: 600;
+                animation: slideDown 0.3s ease;
+            `;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                notification.style.animation = 'slideUp 0.3s ease';
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>

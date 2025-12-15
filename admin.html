@@ -1,0 +1,1015 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة التحكم - Digital Care Library | Golden Host</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-analytics-compat.js"></script>
+    <script src="firebase-config.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-purple: #4B3A8C;
+            --deep-purple: #362666;
+            --primary-pink: #E91E8C;
+            --hot-pink: #FF1493;
+            --gold: #FFD700;
+            --dark-bg: #1A1A2E;
+            --success: #4CAF50;
+            --warning: #FFC107;
+            --danger: #FF0000;
+        }
+
+        body {
+            font-family: 'Cairo', sans-serif;
+            background: #f5f7fa;
+            color: #333;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: 280px;
+            height: 100vh;
+            background: linear-gradient(180deg, var(--primary-purple), var(--deep-purple));
+            color: white;
+            padding: 2rem 1rem;
+            z-index: 1000;
+            overflow-y: auto;
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid rgba(255,255,255,0.2);
+        }
+
+        .logo-icon {
+            width: 60px;
+            height: 60px;
+            background: var(--primary-pink);
+            border-radius: 15px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .logo-text {
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+
+        .user-info {
+            background: rgba(255,255,255,0.1);
+            padding: 1rem;
+            border-radius: 10px;
+            margin-bottom: 2rem;
+        }
+
+        .user-name {
+            font-weight: 700;
+            font-size: 1.1rem;
+            margin-bottom: 0.3rem;
+        }
+
+        .user-role {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        .nav-menu {
+            list-style: none;
+        }
+
+        .nav-item {
+            margin-bottom: 0.5rem;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            color: white;
+            text-decoration: none;
+            border-radius: 10px;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            background: rgba(255,255,255,0.2);
+        }
+
+        .logout-btn {
+            margin-top: 2rem;
+            width: 100%;
+            padding: 1rem;
+            background: var(--danger);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: 'Cairo', sans-serif;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-right: 280px;
+            padding: 2rem;
+            min-height: 100vh;
+        }
+
+        .header {
+            background: white;
+            padding: 1.5rem 2rem;
+            border-radius: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .page-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--primary-purple);
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .btn {
+            padding: 0.8rem 1.5rem;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: 'Cairo', sans-serif;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-pink), var(--hot-pink));
+            color: white;
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-warning {
+            background: var(--warning);
+            color: #333;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 2px solid #eee;
+        }
+
+        .tab-btn {
+            padding: 0.8rem 1.5rem;
+            background: none;
+            border: none;
+            font-family: 'Cairo', sans-serif;
+            font-weight: 600;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .tab-btn.active {
+            color: var(--primary-pink);
+            border-bottom-color: var(--primary-pink);
+        }
+
+        .tab-btn:hover {
+            color: var(--primary-purple);
+        }
+
+        /* Badges */
+        .badge-warning {
+            background: var(--warning);
+            color: #333;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+
+        .status-badge {
+            padding: 0.4rem 1rem;
+            border-radius: 15px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .status-pending {
+            background: #FFF3CD;
+            color: #856404;
+        }
+
+        .status-in_progress {
+            background: #CCE5FF;
+            color: #004085;
+        }
+
+        .status-resolved {
+            background: #D4EDDA;
+            color: #155724;
+        }
+
+        /* Report Card */
+        .report-card {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+            border-right: 4px solid var(--primary-pink);
+        }
+
+        .report-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .report-meta {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 0.5rem;
+        }
+
+        .report-content {
+            background: white;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+
+        .report-actions {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .report-response {
+            background: #e8f5e9;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-top: 1rem;
+            border-right: 3px solid #4CAF50;
+        }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .stat-icon.purple { background: linear-gradient(135deg, var(--primary-purple), var(--deep-purple)); }
+        .stat-icon.pink { background: linear-gradient(135deg, var(--primary-pink), var(--hot-pink)); }
+        .stat-icon.gold { background: linear-gradient(135deg, #FFD700, #FFA500); }
+        .stat-icon.green { background: linear-gradient(135deg, #4CAF50, #45a049); }
+
+        .stat-info h3 {
+            font-size: 2rem;
+            color: var(--primary-purple);
+            margin-bottom: 0.3rem;
+        }
+
+        .stat-info p {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        /* Content Sections */
+        .content-section {
+            display: none;
+        }
+
+        .content-section.active {
+            display: block;
+        }
+
+        .card {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+
+        .card-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--primary-purple);
+            margin-bottom: 1.5rem;
+        }
+
+        /* Table */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .data-table th {
+            background: var(--primary-purple);
+            color: white;
+            padding: 1rem;
+            text-align: right;
+            font-weight: 600;
+        }
+
+        .data-table td {
+            padding: 1rem;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .data-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .action-btn {
+            padding: 0.4rem 0.8rem;
+            border: none;
+            border-radius: 5px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            margin-left: 0.3rem;
+            font-family: 'Cairo', sans-serif;
+        }
+
+        .btn-edit {
+            background: var(--warning);
+            color: #333;
+        }
+
+        .btn-delete {
+            background: var(--danger);
+            color: white;
+        }
+
+        /* Form */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--primary-purple);
+        }
+
+        .form-input, .form-select, .form-textarea {
+            width: 100%;
+            padding: 0.8rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-family: 'Cairo', sans-serif;
+            transition: border-color 0.3s;
+        }
+
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
+            outline: none;
+            border-color: var(--primary-pink);
+        }
+
+        .form-textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 800px;
+            max-height: 85vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-purple);
+        }
+
+        .modal-close {
+            background: var(--danger);
+            color: white;
+            border: none;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.2rem;
+        }
+
+        /* Activity Log */
+        .activity-item {
+            padding: 1rem;
+            border-right: 3px solid var(--primary-pink);
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+
+        .activity-user {
+            font-weight: 700;
+            color: var(--primary-purple);
+        }
+
+        .activity-time {
+            font-size: 0.85rem;
+            color: #666;
+        }
+
+        @media (max-width: 1024px) {
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+            }
+
+            .main-content {
+                margin-right: 0;
+            }
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="logo">
+            <div class="logo-icon">GH</div>
+            <div class="logo-text">لوحة التحكم</div>
+        </div>
+
+        <div class="user-info">
+            <div class="user-name" id="userName"></div>
+            <div class="user-role" id="userRole"></div>
+        </div>
+
+        <ul class="nav-menu">
+            <li class="nav-item">
+                <a class="nav-link active" onclick="showSection('dashboard')">
+                    📊 لوحة المعلومات
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" onclick="showSection('responses')">
+                    📝 إدارة الردود
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" onclick="showSection('procedures')">
+                    ⚙️ إدارة الإجراءات
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" onclick="showSection('reports')">
+                    🚨 البلاغات
+                </a>
+            </li>
+            <!-- قسم الاستردادات ملغي - الإلغاء يتم من النظام -->
+            <!--
+            <li class="nav-item">
+                <a class="nav-link" onclick="showSection('refunds')">
+                    💰 الاستردادات
+                </a>
+            </li>
+            -->
+            <li class="nav-item">
+                <a class="nav-link" onclick="showSection('conversations')">
+                    💬 متابعة المحادثات
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="customer-chat.html" style="background: linear-gradient(135deg, #25D366, #128C7E); color: white;">
+                    📱 محادثات العملاء (WhatsApp & التطبيق)
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" onclick="showSection('sales')">
+                    📈 نظام المبيعات
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" onclick="showSection('team')">
+                    👥 إدارة الفريق
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" onclick="showSection('stats')">
+                    📈 التقارير والإحصائيات
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="employee-analytics.html" style="background: linear-gradient(135deg, #FFD700, #FFA500); color: #333;">
+                    📊 التحليلات الشهرية للموظفين
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" onclick="showSection('activity')">
+                    📋 سجل النشاطات
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" onclick="showSection('settings')">
+                    ⚙️ الإعدادات
+                </a>
+            </li>
+        </ul>
+
+        <button class="logout-btn" onclick="logout()">
+            تسجيل الخروج
+        </button>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Dashboard Section -->
+        <section id="dashboard" class="content-section active">
+            <div class="header">
+                <h1 class="page-title">لوحة المعلومات</h1>
+                <div class="header-actions">
+                    <button class="btn btn-primary" onclick="exportAllData()">
+                        📥 تصدير البيانات
+                    </button>
+                    <button class="btn btn-success" onclick="showSection('responses')">
+                        ➕ إضافة رد جديد
+                    </button>
+                </div>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon purple">📝</div>
+                    <div class="stat-info">
+                        <h3 id="totalResponses">0</h3>
+                        <p>إجمالي الردود</p>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon pink">⚙️</div>
+                    <div class="stat-info">
+                        <h3 id="totalProcedures">0</h3>
+                        <p>الإجراءات المسجلة</p>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon gold">👥</div>
+                    <div class="stat-info">
+                        <h3 id="totalTeam">5</h3>
+                        <p>أعضاء الفريق</p>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon green">📊</div>
+                    <div class="stat-info">
+                        <h3 id="totalCategories">12</h3>
+                        <p>التصنيفات</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2 class="card-title">آخر النشاطات</h2>
+                <div id="recentActivity"></div>
+            </div>
+        </section>
+
+        <!-- Responses Management Section -->
+        <section id="responses" class="content-section">
+            <div class="header">
+                <h1 class="page-title">إدارة الردود المعتمدة</h1>
+                <div class="header-actions">
+                    <button class="btn btn-primary" onclick="showAddResponseModal()">
+                        ➕ إضافة رد جديد
+                    </button>
+                    <button class="btn btn-success" onclick="exportResponses()">
+                        📥 تصدير الردود
+                    </button>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="form-group">
+                    <input type="text" class="form-input" id="searchResponses" placeholder="بحث في الردود..." oninput="filterResponses()">
+                </div>
+                <div style="overflow-x: auto;">
+                    <table class="data-table" id="responsesTable">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>العنوان</th>
+                                <th>التصنيف</th>
+                                <th>الأولوية</th>
+                                <th>الإجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- Procedures Management Section -->
+        <section id="procedures" class="content-section">
+            <div class="header">
+                <h1 class="page-title">إدارة الإجراءات والسياسات</h1>
+                <div class="header-actions">
+                    <button class="btn btn-primary" onclick="showAddProcedureModal()">
+                        ➕ إضافة إجراء جديد
+                    </button>
+                </div>
+            </div>
+
+            <div class="card">
+                <div id="proceduresManagement"></div>
+            </div>
+        </section>
+
+        <!-- Reports Management Section -->
+        <section id="reports" class="content-section">
+            <div class="header">
+                <h1 class="page-title">🚨 إدارة البلاغات</h1>
+                <div class="header-actions">
+                    <span id="pendingReportsCount" class="badge-warning"></span>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="tabs">
+                    <button class="tab-btn active" onclick="filterReportsByStatus('all')">الكل</button>
+                    <button class="tab-btn" onclick="filterReportsByStatus('pending')">جديد</button>
+                    <button class="tab-btn" onclick="filterReportsByStatus('in_progress')">قيد المعالجة</button>
+                    <button class="tab-btn" onclick="filterReportsByStatus('resolved')">تم الحل</button>
+                </div>
+                <div id="reportsManagement"></div>
+            </div>
+        </section>
+
+        <!-- Refunds Management Section -->
+        <section id="refunds" class="content-section">
+            <div class="header">
+                <h1 class="page-title">💰 إدارة الاستردادات</h1>
+                <div class="header-actions">
+                    <button class="btn btn-success" onclick="exportRefunds()">
+                        📥 تصدير البيانات
+                    </button>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="tabs">
+                    <button class="tab-btn active" onclick="filterRefunds('all')">الكل</button>
+                    <button class="tab-btn" onclick="filterRefunds('completed')">مكتمل</button>
+                    <button class="tab-btn" onclick="filterRefunds('pending')">قيد الانتظار</button>
+                </div>
+                <div id="refundsManagement"></div>
+            </div>
+        </section>
+
+        <!-- Conversations Tracking Section -->
+        <section id="conversations" class="content-section">
+            <div class="header">
+                <h1 class="page-title">💬 متابعة محادثات العملاء</h1>
+                <div class="header-actions">
+                    <button class="btn btn-success" onclick="exportConversations()">
+                        📥 تصدير البيانات
+                    </button>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="tabs">
+                    <button class="tab-btn active" onclick="filterConversations('all')">الكل</button>
+                    <button class="tab-btn" onclick="filterConversations('warning')">إنذارات</button>
+                    <button class="tab-btn" onclick="filterConversations('resolved')">تم الحل</button>
+                </div>
+                <div id="conversationsManagement"></div>
+            </div>
+        </section>
+
+        <!-- Sales Management Section -->
+        <section id="sales" class="content-section">
+            <div class="header">
+                <h1 class="page-title">📈 نظام المبيعات وإدارة العملاء (CRM)</h1>
+                <div class="header-actions">
+                    <button class="btn btn-success" onclick="exportSales()">
+                        📥 تصدير البيانات
+                    </button>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="tabs">
+                    <button class="tab-btn active" onclick="filterSales('all')">الكل</button>
+                    <button class="tab-btn" onclick="filterSales('confirmed')">تم التأكيد</button>
+                    <button class="tab-btn" onclick="filterSales('pending')">قيد الانتظار</button>
+                </div>
+                <div id="salesManagement"></div>
+            </div>
+        </section>
+
+        <!-- Team Management Section -->
+        <section id="team" class="content-section">
+            <div class="header">
+                <h1 class="page-title">إدارة الفريق والأدوار</h1>
+                <div class="header-actions">
+                    <button class="btn btn-primary" onclick="showAddTeamModal()">
+                        ➕ إضافة عضو جديد
+                    </button>
+                </div>
+            </div>
+
+            <div class="card">
+                <div id="teamManagement"></div>
+            </div>
+        </section>
+
+        <!-- Statistics Section -->
+        <section id="stats" class="content-section">
+            <div class="header">
+                <h1 class="page-title">📊 التحليلات والإحصائيات الشاملة</h1>
+                <div class="header-actions">
+                    <button class="btn btn-primary" onclick="refreshAnalytics()">
+                        🔄 تحديث البيانات
+                    </button>
+                </div>
+            </div>
+
+            <!-- إحصائيات عامة -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+                <div style="background: linear-gradient(135deg, #FF0000, #CC0000); color: white; padding: 1.5rem; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
+                    <div style="font-size: 2.5rem; font-weight: 700;" id="totalReports">0</div>
+                    <div style="font-size: 1rem; opacity: 0.9;">🚨 إجمالي البلاغات</div>
+                </div>
+                <div style="background: linear-gradient(135deg, #FFA500, #FF8C00); color: white; padding: 1.5rem; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
+                    <div style="font-size: 2.5rem; font-weight: 700;" id="totalRefunds">0</div>
+                    <div style="font-size: 1rem; opacity: 0.9;">💰 إجمالي الاستردادات</div>
+                </div>
+                <div style="background: linear-gradient(135deg, #4B3A8C, #6B4FB5); color: white; padding: 1.5rem; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
+                    <div style="font-size: 2.5rem; font-weight: 700;" id="totalConversations">0</div>
+                    <div style="font-size: 1rem; opacity: 0.9;">💬 إجمالي المحادثات</div>
+                </div>
+                <div style="background: linear-gradient(135deg, #28A745, #20C997); color: white; padding: 1.5rem; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
+                    <div style="font-size: 2.5rem; font-weight: 700;" id="totalSales">0</div>
+                    <div style="font-size: 1rem; opacity: 0.9;">📈 إجمالي المبيعات</div>
+                </div>
+            </div>
+
+            <!-- رسوم بيانية -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(500px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+                <div class="card">
+                    <h2 class="card-title">📊 أداء الموظفين - البلاغات</h2>
+                    <canvas id="reportsChart" style="max-height: 300px;"></canvas>
+                </div>
+                <div class="card">
+                    <h2 class="card-title">📈 عمليات المبيعات</h2>
+                    <canvas id="salesChart" style="max-height: 300px;"></canvas>
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(500px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+                <div class="card">
+                    <h2 class="card-title">💰 حالات الاستردادات</h2>
+                    <canvas id="refundsChart" style="max-height: 300px;"></canvas>
+                </div>
+                <div class="card">
+                    <h2 class="card-title">💬 أنواع المحادثات</h2>
+                    <canvas id="conversationsChart" style="max-height: 300px;"></canvas>
+                </div>
+            </div>
+
+            <!-- تحليل تفصيلي للموظفين -->
+            <div class="card">
+                <h2 class="card-title">👥 تحليل أداء الموظفين الشامل</h2>
+                <div id="employeePerformance"></div>
+            </div>
+
+            <!-- أفضل الموظفين -->
+            <div class="card">
+                <h2 class="card-title">🏆 أفضل الموظفين</h2>
+                <div id="topEmployees"></div>
+            </div>
+        </section>
+
+        <!-- Activity Log Section -->
+        <section id="activity" class="content-section">
+            <div class="header">
+                <h1 class="page-title">سجل النشاطات</h1>
+                <div class="header-actions">
+                    <button class="btn btn-warning" onclick="clearActivityLog()">
+                        🗑️ مسح السجل
+                    </button>
+                </div>
+            </div>
+
+            <div class="card">
+                <div id="activityLog"></div>
+            </div>
+        </section>
+
+        <!-- Settings Section -->
+        <section id="settings" class="content-section">
+            <div class="header">
+                <h1 class="page-title">الإعدادات</h1>
+            </div>
+
+            <div class="card">
+                <h2 class="card-title">إعدادات الحساب</h2>
+                <form onsubmit="changePassword(event)">
+                    <div class="form-group">
+                        <label class="form-label">كلمة المرور الحالية</label>
+                        <input type="password" class="form-input" id="currentPassword" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">كلمة المرور الجديدة</label>
+                        <input type="password" class="form-input" id="newPassword" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">تأكيد كلمة المرور</label>
+                        <input type="password" class="form-input" id="confirmPassword" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">تغيير كلمة المرور</button>
+                </form>
+            </div>
+
+            <div class="card">
+                <h2 class="card-title">إدارة البيانات</h2>
+                <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                    <button class="btn btn-success" onclick="exportAllData()">📥 تصدير جميع البيانات</button>
+                    <button class="btn btn-primary" onclick="document.getElementById('importFile').click()">📤 استيراد بيانات</button>
+                    <button class="btn btn-warning" onclick="backupData()">💾 نسخ احتياطي</button>
+                    <button class="btn btn-danger" onclick="resetAllData()">🔄 إعادة تعيين البيانات</button>
+                </div>
+                <input type="file" id="importFile" accept=".json" style="display: none;" onchange="importData(event)">
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Response Modal -->
+    <div id="responseModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="responseModalTitle">إضافة رد جديد</h2>
+                <button class="modal-close" onclick="closeResponseModal()">×</button>
+            </div>
+            <form id="responseForm" onsubmit="saveResponse(event)">
+                <input type="hidden" id="responseId">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">العنوان</label>
+                        <input type="text" class="form-input" id="responseTitle" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">التصنيف</label>
+                        <select class="form-select" id="responseCategory" required>
+                            <option value="identity">التوثيق</option>
+                            <option value="financial">المالية</option>
+                            <option value="technical">التقنية</option>
+                            <option value="property">العقارات</option>
+                            <option value="booking">الحجوزات</option>
+                            <option value="ministry">الوزارة</option>
+                            <option value="violation">المخالفات</option>
+                            <option value="support">الدعم</option>
+                            <option value="quality">الجودة</option>
+                            <option value="sales">المبيعات</option>
+                            <option value="reports">التقارير</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">المشكلة</label>
+                    <textarea class="form-textarea" id="responseProblem" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">الرد المعتمد</label>
+                    <textarea class="form-textarea" id="responseText" required></textarea>
+                </div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">الأولوية</label>
+                        <select class="form-select" id="responsePriority">
+                            <option value="low">منخفضة</option>
+                            <option value="medium">متوسطة</option>
+                            <option value="high">عالية</option>
+                            <option value="critical">حرجة</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">الوسوم (افصل بفاصلة)</label>
+                        <input type="text" class="form-input" id="responseTags" placeholder="وسم1، وسم2، وسم3">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">ملاحظة (اختياري)</label>
+                    <textarea class="form-textarea" id="responseNote"></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">حفظ</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="admin-data.js"></script>
+    <script src="reports-data.js"></script>
+    <script src="refunds-data.js"></script>
+    <script src="conversations-data.js"></script>
+    <script src="complete-sales-data.js"></script>
+    <script src="admin-script.js"></script>
+</body>
+</html>

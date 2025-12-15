@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تسجيل الدخول - لوحة التحكم | Golden Host</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-purple: #4B3A8C;
+            --deep-purple: #362666;
+            --primary-pink: #E91E8C;
+            --hot-pink: #FF1493;
+            --gold: #FFD700;
+            --dark-bg: #1A1A2E;
+            --darker-bg: #0F0E1B;
+        }
+
+        body {
+            font-family: 'Cairo', sans-serif;
+            background: linear-gradient(135deg, var(--darker-bg) 0%, var(--dark-bg) 50%, var(--primary-purple) 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Animated Background */
+        body::before, body::after {
+            content: '';
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(100px);
+            opacity: 0.3;
+            animation: float 20s ease-in-out infinite;
+            pointer-events: none;
+        }
+
+        body::before {
+            width: 400px;
+            height: 400px;
+            background: var(--primary-pink);
+            top: -200px;
+            right: -200px;
+        }
+
+        body::after {
+            width: 300px;
+            height: 300px;
+            background: var(--primary-purple);
+            bottom: -150px;
+            left: -150px;
+            animation-delay: 10s;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(30px, -30px) scale(1.1); }
+            66% { transform: translate(-20px, 20px) scale(0.9); }
+        }
+
+        .login-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+            padding: 3rem;
+            width: 90%;
+            max-width: 450px;
+            position: relative;
+            z-index: 10;
+            animation: slideUp 0.5s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .logo-section {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .logo-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, var(--primary-pink), var(--primary-purple));
+            border-radius: 20px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 2rem;
+            color: white;
+            box-shadow: 0 10px 30px rgba(233, 30, 140, 0.4);
+            margin-bottom: 1rem;
+        }
+
+        .logo-text {
+            font-size: 1.8rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary-purple), var(--primary-pink));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 1rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--primary-purple);
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-family: 'Cairo', sans-serif;
+            transition: all 0.3s;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary-pink);
+            box-shadow: 0 0 0 3px rgba(233, 30, 140, 0.1);
+        }
+
+        .password-toggle {
+            position: relative;
+        }
+
+        .toggle-btn {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.2rem;
+            color: #999;
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 1rem;
+            background: linear-gradient(135deg, var(--primary-pink), var(--hot-pink));
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 5px 20px rgba(233, 30, 140, 0.4);
+            font-family: 'Cairo', sans-serif;
+        }
+
+        .login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 7px 30px rgba(233, 30, 140, 0.6);
+        }
+
+        .login-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .error-message {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a6f);
+            color: white;
+            padding: 1rem;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+            display: none;
+            animation: shake 0.5s;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        .back-link {
+            text-align: center;
+            margin-top: 1.5rem;
+        }
+
+        .back-link a {
+            color: var(--primary-purple);
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .back-link a:hover {
+            color: var(--primary-pink);
+        }
+
+        .default-creds {
+            background: linear-gradient(135deg, #fff3cd, #fff8dc);
+            border: 2px solid var(--gold);
+            border-radius: 10px;
+            padding: 1rem;
+            margin-top: 1.5rem;
+            font-size: 0.9rem;
+        }
+
+        .default-creds strong {
+            color: var(--primary-purple);
+        }
+
+        @media (max-width: 768px) {
+            .login-container {
+                padding: 2rem;
+            }
+
+            .logo-text {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="logo-section">
+            <div class="logo-icon">GH</div>
+            <div class="logo-text">لوحة التحكم</div>
+            <div class="subtitle">Digital Care Library - Admin Panel</div>
+        </div>
+
+        <div class="error-message" id="errorMessage"></div>
+
+        <form id="loginForm" onsubmit="handleLogin(event)">
+            <div class="form-group">
+                <label class="form-label">اسم المستخدم</label>
+                <input
+                    type="text"
+                    class="form-input"
+                    id="username"
+                    placeholder="أدخل اسم المستخدم"
+                    required
+                    autocomplete="username"
+                >
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">كلمة المرور</label>
+                <div class="password-toggle">
+                    <input
+                        type="password"
+                        class="form-input"
+                        id="password"
+                        placeholder="أدخل كلمة المرور"
+                        required
+                        autocomplete="current-password"
+                    >
+                    <button type="button" class="toggle-btn" onclick="togglePassword()">
+                        👁️
+                    </button>
+                </div>
+            </div>
+
+            <button type="submit" class="login-btn" id="loginBtn">
+                تسجيل الدخول
+            </button>
+        </form>
+
+        <div class="default-creds">
+            <strong>🔐 بيانات الدخول الافتراضية:</strong><br>
+            المستخدم: <code>admin</code><br>
+            كلمة المرور: <code>GoldenHost2025</code><br>
+            <small style="color: #856404;">⚠️ يُرجى تغيير كلمة المرور بعد أول تسجيل دخول</small>
+        </div>
+
+        <div class="back-link">
+            <a href="index.html">← العودة للصفحة الرئيسية</a>
+        </div>
+    </div>
+
+    <script>
+        // Default admin credentials
+        const DEFAULT_USERS = {
+            'admin': {
+                password: 'GoldenHost2025',
+                role: 'admin',
+                name: 'المدير العام'
+            },
+            'abdulaziz': {
+                password: 'Abdulaziz@123',
+                role: 'supervisor',
+                name: 'عبدالعزيز'
+            },
+            'yazeed': {
+                password: 'Yazeed@123',
+                role: 'reports',
+                name: 'يزيد'
+            },
+            'hanouf': {
+                password: 'Hanouf@123',
+                role: 'quality',
+                name: 'هنوف'
+            }
+        };
+
+        function togglePassword() {
+            const passwordInput = document.getElementById('password');
+            const type = passwordInput.type === 'password' ? 'text' : 'password';
+            passwordInput.type = type;
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = message;
+            errorDiv.classList.add('show');
+            setTimeout(() => {
+                errorDiv.classList.remove('show');
+            }, 3000);
+        }
+
+        function handleLogin(event) {
+            event.preventDefault();
+
+            const username = document.getElementById('username').value.toLowerCase().trim();
+            const password = document.getElementById('password').value;
+            const loginBtn = document.getElementById('loginBtn');
+
+            // Disable button
+            loginBtn.disabled = true;
+            loginBtn.textContent = 'جاري التحقق...';
+
+            // Simulate loading
+            setTimeout(() => {
+                // Check custom users first
+                const customUsers = JSON.parse(localStorage.getItem('adminUsers') || '{}');
+                const user = customUsers[username] || DEFAULT_USERS[username];
+
+                if (!user) {
+                    showError('اسم المستخدم غير صحيح');
+                    loginBtn.disabled = false;
+                    loginBtn.textContent = 'تسجيل الدخول';
+                    return;
+                }
+
+                if (user.password !== password) {
+                    showError('كلمة المرور غير صحيحة');
+                    loginBtn.disabled = false;
+                    loginBtn.textContent = 'تسجيل الدخول';
+                    return;
+                }
+
+                // Success - save session
+                const session = {
+                    username: username,
+                    name: user.name,
+                    role: user.role,
+                    loginTime: new Date().toISOString()
+                };
+
+                localStorage.setItem('adminSession', JSON.stringify(session));
+
+                // Log activity
+                const activityLog = JSON.parse(localStorage.getItem('activityLog') || '[]');
+                activityLog.push({
+                    user: user.name,
+                    action: 'تسجيل دخول',
+                    timestamp: new Date().toISOString()
+                });
+                localStorage.setItem('activityLog', JSON.stringify(activityLog));
+
+                // Redirect to admin panel
+                loginBtn.textContent = 'تم بنجاح! جاري التحويل...';
+                setTimeout(() => {
+                    window.location.href = 'admin.html';
+                }, 500);
+            }, 1000);
+        }
+
+        // Check if already logged in
+        window.addEventListener('DOMContentLoaded', () => {
+            const session = localStorage.getItem('adminSession');
+            if (session) {
+                const data = JSON.parse(session);
+                // Check if session is less than 24 hours old
+                const loginTime = new Date(data.loginTime);
+                const now = new Date();
+                const hoursDiff = (now - loginTime) / (1000 * 60 * 60);
+
+                if (hoursDiff < 24) {
+                    window.location.href = 'admin.html';
+                } else {
+                    localStorage.removeItem('adminSession');
+                }
+            }
+        });
+    </script>
+</body>
+</html>

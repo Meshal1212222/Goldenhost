@@ -1,0 +1,1086 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مكتبة التصميم الرقمية | Digital Care Library</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-purple: #4B3A8C;
+            --deep-purple: #362666;
+            --primary-pink: #E91E8C;
+            --hot-pink: #FF1493;
+            --gold: #FFD700;
+            --success: #4CAF50;
+            --danger: #FF0000;
+            --dark-bg: #1A1A2E;
+        }
+
+        body {
+            font-family: 'Cairo', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* Header */
+        .header {
+            background: white;
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .logo-icon {
+            width: 70px;
+            height: 70px;
+            background: linear-gradient(135deg, var(--primary-pink), var(--hot-pink));
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            color: white;
+        }
+
+        .logo-text {
+            font-size: 2rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--primary-purple), var(--primary-pink));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 1.1rem;
+            margin-top: 0.5rem;
+        }
+
+        /* Action Buttons */
+        .actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 1.5rem;
+        }
+
+        .btn {
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            font-family: 'Cairo', sans-serif;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 25px rgba(0,0,0,0.2);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-purple), var(--deep-purple));
+            color: white;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, var(--primary-pink), var(--hot-pink));
+            color: white;
+        }
+
+        .btn-delete {
+            background: linear-gradient(135deg, #FF416C, #FF4B2B);
+            color: white;
+            padding: 0.6rem 1rem;
+            font-size: 0.9rem;
+        }
+
+        .btn-download {
+            background: linear-gradient(135deg, var(--success), #45a049);
+            color: white;
+            padding: 0.6rem 1rem;
+            font-size: 0.9rem;
+        }
+
+        /* Cards */
+        .card {
+            background: white;
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+            margin-bottom: 2rem;
+        }
+
+        .card-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary-purple), var(--primary-pink));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Grid */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .grid-item {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border: 3px solid transparent;
+            border-radius: 15px;
+            padding: 1.5rem;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .grid-item:hover {
+            border-color: var(--primary-pink);
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(233, 30, 140, 0.3);
+        }
+
+        .item-icon {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, var(--primary-pink), var(--hot-pink));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            color: white;
+            margin-bottom: 1rem;
+        }
+
+        .item-name {
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: var(--primary-purple);
+            margin-bottom: 0.5rem;
+            word-wrap: break-word;
+        }
+
+        .item-meta {
+            font-size: 0.85rem;
+            color: #666;
+            margin-bottom: 1rem;
+        }
+
+        .item-actions {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .item-actions button {
+            flex: 1;
+            min-width: 100px;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: #666;
+        }
+
+        .empty-icon {
+            font-size: 5rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        .empty-text {
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .empty-subtext {
+            font-size: 0.95rem;
+            opacity: 0.7;
+        }
+
+        /* Notes */
+        .notes-area {
+            width: 100%;
+            min-height: 150px;
+            padding: 1rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-family: 'Cairo', sans-serif;
+            font-size: 1rem;
+            resize: vertical;
+            transition: border-color 0.3s;
+        }
+
+        .notes-area:focus {
+            outline: none;
+            border-color: var(--primary-pink);
+        }
+
+        /* Image Preview */
+        .image-preview {
+            width: 100%;
+            height: 200px;
+            background: white;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid #e0e0e0;
+        }
+
+        .image-preview img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+
+        /* Stats */
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, var(--primary-purple), var(--deep-purple));
+            color: white;
+            padding: 1.5rem;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 900;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            body {
+                padding: 1rem;
+            }
+
+            .header {
+                padding: 1.5rem;
+            }
+
+            .logo-text {
+                font-size: 1.5rem;
+            }
+
+            .grid {
+                grid-template-columns: 1fr;
+            }
+
+            .actions {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+            }
+        }
+
+        /* Animation */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .card {
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        /* Modal for file data */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            max-width: 800px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary-purple), var(--primary-pink));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .modal-close {
+            background: linear-gradient(135deg, #FF416C, #FF4B2B);
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            font-size: 1.2rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+
+        .modal-close:hover {
+            transform: rotate(90deg);
+        }
+
+        .data-info {
+            background: linear-gradient(135deg, #FFF7ED, #FFEDD5);
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+            border-right: 4px solid var(--gold);
+        }
+
+        .data-info h3 {
+            color: var(--primary-purple);
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .data-info p {
+            color: #666;
+            line-height: 1.8;
+            margin-bottom: 0.5rem;
+        }
+
+        .data-textarea {
+            width: 100%;
+            height: 300px;
+            padding: 1rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            resize: vertical;
+            direction: ltr;
+            text-align: left;
+            background: #f8f9fa;
+        }
+
+        .data-textarea:focus {
+            outline: none;
+            border-color: var(--primary-pink);
+        }
+
+        .copy-btn-container {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .copy-btn-container button {
+            flex: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="logo">
+                <div class="logo-icon">🎨</div>
+                <div class="logo-text">مكتبة التصميم الرقمية</div>
+            </div>
+            <p class="subtitle">Design System & Brand Identity Dashboard</p>
+
+            <div class="actions">
+                <button class="btn btn-primary" onclick="document.getElementById('wireframeUpload').click()">
+                    📤 رفع Wireframe (PDF)
+                </button>
+                <button class="btn btn-success" onclick="document.getElementById('brandIdentityUpload').click()">
+                    🎨 رفع الهوية البصرية
+                </button>
+                <button class="btn" style="background: linear-gradient(135deg, #10B981, #059669); color: white;" onclick="exportAllData()">
+                    💾 تصدير البيانات (للمطور)
+                </button>
+                <button class="btn" style="background: linear-gradient(135deg, #667eea, #764ba2); color: white;" onclick="clearAllData()">
+                    🗑️ مسح جميع الملفات
+                </button>
+            </div>
+
+            <input type="file" id="wireframeUpload" accept=".pdf" style="display: none;" onchange="uploadWireframe(event)">
+            <input type="file" id="brandIdentityUpload" accept="image/*" style="display: none;" multiple onchange="uploadBrandIdentity(event)">
+        </div>
+
+        <!-- Stats -->
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-number" id="wireframeCount">0</div>
+                <div class="stat-label">📄 Wireframes</div>
+            </div>
+            <div class="stat-card" style="background: linear-gradient(135deg, var(--primary-pink), var(--hot-pink));">
+                <div class="stat-number" id="brandImageCount">0</div>
+                <div class="stat-label">🎨 Brand Images</div>
+            </div>
+            <div class="stat-card" style="background: linear-gradient(135deg, var(--gold), #FFA500);">
+                <div class="stat-number" id="totalSize">0 MB</div>
+                <div class="stat-label">💾 Total Size</div>
+            </div>
+        </div>
+
+        <!-- Wireframes Section -->
+        <div class="card">
+            <h2 class="card-title">📄 Wireframes</h2>
+            <div class="grid" id="wireframesContainer">
+                <!-- Wireframes will be displayed here -->
+            </div>
+        </div>
+
+        <!-- Brand Identity Section -->
+        <div class="card">
+            <h2 class="card-title">🎨 الهوية البصرية</h2>
+            <div class="grid" id="brandIdentityContainer">
+                <!-- Brand identity images will be displayed here -->
+            </div>
+        </div>
+
+        <!-- Design Notes Section -->
+        <div class="card">
+            <h2 class="card-title">📝 ملاحظات التصميم</h2>
+            <textarea id="designNotes" class="notes-area" placeholder="أضف ملاحظاتك حول التصميم والهوية البصرية هنا..."></textarea>
+            <button class="btn btn-success" onclick="saveDesignNotes()" style="margin-top: 1rem; width: 100%;">
+                💾 حفظ الملاحظات
+            </button>
+        </div>
+    </div>
+
+    <!-- Modal for showing file data -->
+    <div id="fileDataModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">📋 بيانات الملف</div>
+                <button class="modal-close" onclick="closeModal()">×</button>
+            </div>
+            <div class="data-info">
+                <h3>📌 تعليمات للمطور</h3>
+                <p><strong>اسم الملف:</strong> <span id="modalFileName"></span></p>
+                <p><strong>نوع الملف:</strong> <span id="modalFileType"></span></p>
+                <p><strong>الحجم:</strong> <span id="modalFileSize"></span></p>
+                <p style="margin-top: 1rem;">
+                    <strong>الخطوات:</strong><br>
+                    1️⃣ اضغط على زر "نسخ البيانات" أدناه<br>
+                    2️⃣ البيانات ستُنسخ تلقائياً<br>
+                    3️⃣ الصق البيانات في رسالة للمطور
+                </p>
+            </div>
+            <textarea id="fileDataTextarea" class="data-textarea" readonly></textarea>
+            <div class="copy-btn-container">
+                <button class="btn btn-success" onclick="copyFileData()">
+                    📋 نسخ البيانات
+                </button>
+                <button class="btn btn-primary" onclick="closeModal()">
+                    ❌ إغلاق
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize design library data structure
+        function initDesignLibrary() {
+            if (!localStorage.getItem('digitalCareLibrary')) {
+                const designData = {
+                    wireframes: [],
+                    brandIdentity: [],
+                    notes: ''
+                };
+                localStorage.setItem('digitalCareLibrary', JSON.stringify(designData));
+            }
+        }
+
+        // Get design library data
+        function getDesignLibraryData() {
+            initDesignLibrary();
+            return JSON.parse(localStorage.getItem('digitalCareLibrary'));
+        }
+
+        // Save design library data
+        function saveDesignLibraryData(data) {
+            localStorage.setItem('digitalCareLibrary', JSON.stringify(data));
+            updateStats();
+        }
+
+        // Upload Wireframe (PDF)
+        function uploadWireframe(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            console.log('PDF File selected:', file.name, 'Size:', file.size, 'Type:', file.type);
+
+            if (file.type !== 'application/pdf') {
+                alert('⚠️ يرجى رفع ملف PDF فقط\nنوع الملف: ' + file.type);
+                return;
+            }
+
+            if (file.size > 10 * 1024 * 1024) {
+                const sizeInMB = (file.size / (1024 * 1024)).toFixed(2);
+                alert('⚠️ حجم الملف كبير جداً: ' + sizeInMB + ' MB\nالحد الأقصى: 10 MB');
+                return;
+            }
+
+            const reader = new FileReader();
+
+            reader.onerror = function(error) {
+                console.error('Error reading file:', error);
+                alert('❌ حدث خطأ في قراءة الملف. حاول مرة أخرى.');
+            };
+
+            reader.onload = function(e) {
+                try {
+                    const designData = getDesignLibraryData();
+                    const wireframe = {
+                        id: Date.now(),
+                        name: file.name,
+                        uploadDate: new Date().toISOString(),
+                        data: e.target.result,
+                        size: file.size,
+                        type: 'pdf'
+                    };
+
+                    designData.wireframes.push(wireframe);
+
+                    try {
+                        saveDesignLibraryData(designData);
+                        displayWireframes();
+                        alert('✅ تم رفع Wireframe بنجاح!');
+                        console.log('PDF uploaded successfully:', file.name);
+                    } catch (storageError) {
+                        console.error('LocalStorage error:', storageError);
+                        alert('❌ خطأ في الحفظ!\n\nالسبب المحتمل: localStorage ممتلئ.\n\nالحل: احذف بعض الملفات القديمة أو استخدم ملف PDF أصغر حجماً.');
+                        designData.wireframes.pop();
+                        displayWireframes();
+                    }
+                } catch (error) {
+                    console.error('Error processing file:', error);
+                    alert('❌ حدث خطأ في معالجة الملف: ' + error.message);
+                }
+            };
+
+            reader.readAsDataURL(file);
+            event.target.value = '';
+        }
+
+        // Upload Brand Identity Images (supports multiple)
+        function uploadBrandIdentity(event) {
+            const files = event.target.files;
+            if (!files || files.length === 0) return;
+
+            let uploadedCount = 0;
+
+            Array.from(files).forEach(file => {
+                if (!file.type.startsWith('image/')) {
+                    alert(`⚠️ ${file.name} ليس ملف صورة`);
+                    return;
+                }
+
+                if (file.size > 5 * 1024 * 1024) {
+                    alert(`⚠️ ${file.name} كبير جداً. الحد الأقصى 5MB`);
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const designData = getDesignLibraryData();
+                    const brandImage = {
+                        id: Date.now() + Math.random(),
+                        name: file.name,
+                        uploadDate: new Date().toISOString(),
+                        data: e.target.result,
+                        size: file.size,
+                        type: 'image'
+                    };
+
+                    designData.brandIdentity.push(brandImage);
+                    saveDesignLibraryData(designData);
+                    displayBrandIdentity();
+                    uploadedCount++;
+
+                    if (uploadedCount === files.length) {
+                        alert(`✅ تم رفع ${uploadedCount} صورة بنجاح!`);
+                    }
+                };
+
+                reader.readAsDataURL(file);
+            });
+
+            event.target.value = '';
+        }
+
+        // Display Wireframes
+        function displayWireframes() {
+            const container = document.getElementById('wireframesContainer');
+            const designData = getDesignLibraryData();
+
+            if (designData.wireframes.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state" style="grid-column: 1/-1;">
+                        <div class="empty-icon">📄</div>
+                        <div class="empty-text">لم يتم رفع أي Wireframe بعد</div>
+                        <div class="empty-subtext">اضغط على "رفع Wireframe" لإضافة ملفات PDF للتصميم</div>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = designData.wireframes.map(wireframe => {
+                const date = new Date(wireframe.uploadDate);
+                const sizeInMB = (wireframe.size / (1024 * 1024)).toFixed(2);
+
+                return `
+                    <div class="grid-item">
+                        <div class="item-icon">📄</div>
+                        <div class="item-name">${wireframe.name}</div>
+                        <div class="item-meta">
+                            📅 ${date.toLocaleDateString('ar-SA')}<br>
+                            💾 ${sizeInMB} MB
+                        </div>
+                        <div class="item-actions">
+                            <button onclick="viewWireframe(${wireframe.id})" class="btn btn-primary">
+                                👁️ معاينة
+                            </button>
+                            <button onclick="showFileData(${wireframe.id}, 'wireframe')" class="btn" style="background: linear-gradient(135deg, #F59E0B, #D97706); color: white;">
+                                📋 نسخ البيانات
+                            </button>
+                            <button onclick="downloadFile(${wireframe.id}, 'wireframe')" class="btn btn-download">
+                                ⬇️ تحميل
+                            </button>
+                            <button onclick="deleteWireframe(${wireframe.id})" class="btn btn-delete">
+                                🗑️ حذف
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Display Brand Identity Images
+        function displayBrandIdentity() {
+            const container = document.getElementById('brandIdentityContainer');
+            const designData = getDesignLibraryData();
+
+            if (designData.brandIdentity.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state" style="grid-column: 1/-1;">
+                        <div class="empty-icon">🎨</div>
+                        <div class="empty-text">لم يتم رفع أي صورة للهوية البصرية بعد</div>
+                        <div class="empty-subtext">اضغط على "رفع الهوية البصرية" لإضافة الشعارات والألوان والخطوط</div>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = designData.brandIdentity.map(image => {
+                const date = new Date(image.uploadDate);
+                const sizeInMB = (image.size / (1024 * 1024)).toFixed(2);
+
+                return `
+                    <div class="grid-item">
+                        <div class="image-preview">
+                            <img src="${image.data}" alt="${image.name}">
+                        </div>
+                        <div class="item-name">${image.name}</div>
+                        <div class="item-meta">
+                            📅 ${date.toLocaleDateString('ar-SA')}<br>
+                            💾 ${sizeInMB} MB
+                        </div>
+                        <div class="item-actions">
+                            <button onclick="viewImage(${image.id})" class="btn btn-primary">
+                                👁️ عرض
+                            </button>
+                            <button onclick="showFileData(${image.id}, 'brand')" class="btn" style="background: linear-gradient(135deg, #F59E0B, #D97706); color: white;">
+                                📋 نسخ البيانات
+                            </button>
+                            <button onclick="downloadFile(${image.id}, 'brand')" class="btn btn-download">
+                                ⬇️ تحميل
+                            </button>
+                            <button onclick="deleteBrandImage(${image.id})" class="btn btn-delete">
+                                🗑️ حذف
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // View Wireframe (PDF)
+        function viewWireframe(id) {
+            const designData = getDesignLibraryData();
+            const wireframe = designData.wireframes.find(w => w.id === id);
+            if (!wireframe) return;
+
+            const pdfWindow = window.open('', '_blank');
+            pdfWindow.document.write(`
+                <!DOCTYPE html>
+                <html dir="rtl" lang="ar">
+                <head>
+                    <meta charset="UTF-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <title>${wireframe.name}</title>
+                    <style>
+                        * { margin: 0; padding: 0; box-sizing: border-box; }
+                        body {
+                            font-family: 'Cairo', sans-serif;
+                            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                        }
+                        .header {
+                            background: linear-gradient(135deg, #4B3A8C, #E91E8C);
+                            color: white;
+                            padding: 1.5rem;
+                            text-align: center;
+                            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+                        }
+                        .container { padding: 2rem; }
+                        iframe {
+                            width: 100%;
+                            height: calc(100vh - 100px);
+                            border: none;
+                            border-radius: 15px;
+                            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+                            background: white;
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="header">
+                        <h1>📄 ${wireframe.name}</h1>
+                        <p style="margin-top: 0.5rem; opacity: 0.9;">Wireframe Design</p>
+                    </div>
+                    <div class="container">
+                        <iframe src="${wireframe.data}"></iframe>
+                    </div>
+                </body>
+                </html>
+            `);
+        }
+
+        // View Brand Image
+        function viewImage(id) {
+            const designData = getDesignLibraryData();
+            const image = designData.brandIdentity.find(img => img.id === id);
+            if (!image) return;
+
+            const imgWindow = window.open('', '_blank');
+            imgWindow.document.write(`
+                <!DOCTYPE html>
+                <html dir="rtl" lang="ar">
+                <head>
+                    <meta charset="UTF-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <title>${image.name}</title>
+                    <style>
+                        * { margin: 0; padding: 0; box-sizing: border-box; }
+                        body {
+                            font-family: 'Cairo', sans-serif;
+                            background: #1a1a1a;
+                            display: flex;
+                            flex-direction: column;
+                            min-height: 100vh;
+                        }
+                        .header {
+                            background: linear-gradient(135deg, #4B3A8C, #E91E8C);
+                            color: white;
+                            padding: 1rem;
+                            text-align: center;
+                            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+                        }
+                        .container {
+                            flex: 1;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            padding: 2rem;
+                        }
+                        img {
+                            max-width: 100%;
+                            max-height: calc(100vh - 150px);
+                            object-fit: contain;
+                            border-radius: 15px;
+                            box-shadow: 0 10px 50px rgba(255,255,255,0.1);
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="header">
+                        <h1>🎨 ${image.name}</h1>
+                        <p style="margin-top: 0.5rem; opacity: 0.9;">الهوية البصرية</p>
+                    </div>
+                    <div class="container">
+                        <img src="${image.data}" alt="${image.name}">
+                    </div>
+                </body>
+                </html>
+            `);
+        }
+
+        // Download File
+        function downloadFile(id, type) {
+            const designData = getDesignLibraryData();
+            const file = type === 'wireframe'
+                ? designData.wireframes.find(w => w.id === id)
+                : designData.brandIdentity.find(img => img.id === id);
+
+            if (!file) return;
+
+            const link = document.createElement('a');
+            link.href = file.data;
+            link.download = file.name;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // Delete Wireframe
+        function deleteWireframe(id) {
+            if (!confirm('❌ هل أنت متأكد من حذف هذا Wireframe؟')) return;
+
+            const designData = getDesignLibraryData();
+            designData.wireframes = designData.wireframes.filter(w => w.id !== id);
+            saveDesignLibraryData(designData);
+            displayWireframes();
+            alert('✅ تم الحذف بنجاح');
+        }
+
+        // Delete Brand Image
+        function deleteBrandImage(id) {
+            if (!confirm('❌ هل أنت متأكد من حذف هذه الصورة؟')) return;
+
+            const designData = getDesignLibraryData();
+            designData.brandIdentity = designData.brandIdentity.filter(img => img.id !== id);
+            saveDesignLibraryData(designData);
+            displayBrandIdentity();
+            alert('✅ تم الحذف بنجاح');
+        }
+
+        // Clear All Data
+        function clearAllData() {
+            if (!confirm('⚠️ هل أنت متأكد من حذف جميع الملفات؟ لا يمكن التراجع عن هذا الإجراء!')) return;
+
+            localStorage.removeItem('digitalCareLibrary');
+            initDesignLibrary();
+            displayWireframes();
+            displayBrandIdentity();
+            loadDesignNotes();
+            alert('✅ تم مسح جميع الملفات');
+        }
+
+        // Save Design Notes
+        function saveDesignNotes() {
+            const notes = document.getElementById('designNotes')?.value || '';
+            const designData = getDesignLibraryData();
+            designData.notes = notes;
+            saveDesignLibraryData(designData);
+            alert('✅ تم حفظ الملاحظات بنجاح!');
+        }
+
+        // Load Design Notes
+        function loadDesignNotes() {
+            const designData = getDesignLibraryData();
+            const notesArea = document.getElementById('designNotes');
+            if (notesArea) {
+                notesArea.value = designData.notes || '';
+            }
+        }
+
+        // Export All Data
+        function exportAllData() {
+            const designData = getDesignLibraryData();
+
+            if (designData.wireframes.length === 0 && designData.brandIdentity.length === 0) {
+                alert('⚠️ لا توجد ملفات للتصدير!');
+                return;
+            }
+
+            // Create export data
+            const exportData = {
+                exportDate: new Date().toISOString(),
+                wireframes: designData.wireframes,
+                brandIdentity: designData.brandIdentity,
+                notes: designData.notes
+            };
+
+            // Convert to JSON
+            const jsonString = JSON.stringify(exportData, null, 2);
+
+            // Create download link
+            const blob = new Blob([jsonString], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `design-library-export-${Date.now()}.json`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+
+            alert('✅ تم تصدير البيانات بنجاح!\n\nارفع الملف JSON للمطور لتنفيذ التصميم.');
+        }
+
+        // Update Stats
+        function updateStats() {
+            const designData = getDesignLibraryData();
+
+            document.getElementById('wireframeCount').textContent = designData.wireframes.length;
+            document.getElementById('brandImageCount').textContent = designData.brandIdentity.length;
+
+            let totalSize = 0;
+            designData.wireframes.forEach(w => totalSize += w.size);
+            designData.brandIdentity.forEach(b => totalSize += b.size);
+
+            const totalSizeInMB = (totalSize / (1024 * 1024)).toFixed(2);
+            document.getElementById('totalSize').textContent = totalSizeInMB + ' MB';
+        }
+
+        // Show File Data in Modal
+        function showFileData(id, type) {
+            const designData = getDesignLibraryData();
+            const file = type === 'wireframe'
+                ? designData.wireframes.find(w => w.id === id)
+                : designData.brandIdentity.find(img => img.id === id);
+
+            if (!file) {
+                alert('❌ لم يتم العثور على الملف!');
+                return;
+            }
+
+            // Populate modal
+            document.getElementById('modalFileName').textContent = file.name;
+            document.getElementById('modalFileType').textContent = file.type === 'pdf' ? 'PDF Document' : 'Image';
+            document.getElementById('modalFileSize').textContent = (file.size / (1024 * 1024)).toFixed(2) + ' MB';
+            document.getElementById('fileDataTextarea').value = file.data;
+
+            // Show modal
+            document.getElementById('fileDataModal').classList.add('active');
+        }
+
+        // Copy File Data to Clipboard
+        function copyFileData() {
+            const textarea = document.getElementById('fileDataTextarea');
+            textarea.select();
+            textarea.setSelectionRange(0, textarea.value.length);
+
+            try {
+                document.execCommand('copy');
+                alert('✅ تم نسخ البيانات!\n\nالآن الصق البيانات في رسالة للمطور.');
+            } catch (err) {
+                // Fallback for older browsers
+                navigator.clipboard.writeText(textarea.value).then(() => {
+                    alert('✅ تم نسخ البيانات!\n\nالآن الصق البيانات في رسالة للمطور.');
+                }).catch(() => {
+                    alert('⚠️ حدث خطأ في النسخ. حاول تحديد النص ونسخه يدوياً (Ctrl+C)');
+                });
+            }
+        }
+
+        // Close Modal
+        function closeModal() {
+            document.getElementById('fileDataModal').classList.remove('active');
+            document.getElementById('fileDataTextarea').value = '';
+        }
+
+        // Close modal when clicking outside
+        document.addEventListener('click', (e) => {
+            const modal = document.getElementById('fileDataModal');
+            if (e.target === modal) {
+                closeModal();
+            }
+        });
+
+        // Initialize on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            initDesignLibrary();
+            displayWireframes();
+            displayBrandIdentity();
+            loadDesignNotes();
+            updateStats();
+        });
+    </script>
+</body>
+</html>

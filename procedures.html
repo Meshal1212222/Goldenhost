@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>الإجراءات والسياسات - Digital Care Library | Golden Host</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-purple: #4B3A8C;
+            --deep-purple: #362666;
+            --primary-pink: #E91E8C;
+            --hot-pink: #FF1493;
+            --gold: #FFD700;
+            --dark-bg: #1A1A2E;
+            --darker-bg: #0F0E1B;
+            --text-light: #FFFFFF;
+            --text-dark: #2D2D2D;
+            --gray-light: #F8F9FA;
+            --gray-medium: #6C757D;
+            --success: #4CAF50;
+            --warning: #FFC107;
+            --danger: #FF0000;
+            --info: #2196F3;
+        }
+
+        body {
+            font-family: 'Cairo', sans-serif;
+            background: linear-gradient(135deg, var(--darker-bg) 0%, var(--dark-bg) 50%, var(--primary-purple) 100%);
+            min-height: 100vh;
+            color: var(--text-dark);
+            position: relative;
+            padding-bottom: 3rem;
+        }
+
+        /* Animated Background */
+        body::before, body::after {
+            content: '';
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(100px);
+            opacity: 0.3;
+            animation: float 20s ease-in-out infinite;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        body::before {
+            width: 400px;
+            height: 400px;
+            background: var(--primary-pink);
+            top: -200px;
+            right: -200px;
+        }
+
+        body::after {
+            width: 300px;
+            height: 300px;
+            background: var(--primary-purple);
+            bottom: -150px;
+            left: -150px;
+            animation-delay: 10s;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(30px, -30px) scale(1.1); }
+            66% { transform: translate(-20px, 20px) scale(0.9); }
+        }
+
+        /* Header Styles */
+        .header {
+            background: rgba(15, 14, 27, 0.98);
+            backdrop-filter: blur(20px);
+            border-bottom: 3px solid var(--primary-pink);
+            padding: 1.5rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 4px 30px rgba(0,0,0,0.5);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            position: relative;
+            z-index: 10;
+        }
+
+        .logo-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 2rem;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logo-icon {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, var(--primary-pink), var(--primary-purple));
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.4rem;
+            color: white;
+            box-shadow: 0 0 30px rgba(233, 30, 140, 0.4);
+        }
+
+        .logo-text {
+            font-size: 1.8rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, white, var(--gold));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .back-btn {
+            display: inline-block;
+            padding: 0.8rem 2rem;
+            background: linear-gradient(135deg, var(--primary-purple), var(--deep-purple));
+            color: white;
+            text-decoration: none;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: 600;
+            box-shadow: 0 3px 15px rgba(75, 58, 140, 0.4);
+            transition: all 0.3s;
+        }
+
+        .back-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 25px rgba(75, 58, 140, 0.6);
+        }
+
+        .page-title {
+            text-align: center;
+            margin: 3rem 0;
+            color: white;
+            font-size: 2.5rem;
+            font-weight: 700;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .procedures-container {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 3rem;
+        }
+
+        .procedure-item {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 12px;
+            margin-bottom: 1rem;
+            overflow: hidden;
+            transition: all 0.3s;
+        }
+
+        .procedure-item:hover {
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        }
+
+        .procedure-header {
+            background: linear-gradient(135deg, var(--gray-light), white);
+            padding: 1.25rem;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: all 0.3s;
+        }
+
+        .procedure-header:hover {
+            background: linear-gradient(135deg, #FFB6C1, white);
+        }
+
+        .procedure-header.active {
+            background: linear-gradient(135deg, var(--primary-purple), var(--deep-purple));
+            color: white;
+        }
+
+        .procedure-content {
+            padding: 0;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease;
+        }
+
+        .procedure-content.show {
+            padding: 1.5rem;
+            max-height: 2000px;
+        }
+
+        .procedure-step {
+            padding: 0.75rem 0;
+            padding-right: 2rem;
+            position: relative;
+            border-bottom: 1px solid #f0f0f0;
+            line-height: 1.8;
+        }
+
+        .procedure-step:last-child {
+            border-bottom: none;
+        }
+
+        .procedure-step::before {
+            content: '✓';
+            position: absolute;
+            right: 0;
+            top: 0.75rem;
+            width: 20px;
+            height: 20px;
+            background: linear-gradient(135deg, var(--primary-pink), var(--hot-pink));
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .expand-all-btn {
+            display: block;
+            margin: 0 auto 2rem;
+            padding: 0.8rem 2rem;
+            background: linear-gradient(135deg, var(--primary-pink), var(--hot-pink));
+            color: white;
+            border: none;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 3px 15px rgba(233, 30, 140, 0.4);
+            transition: all 0.3s;
+        }
+
+        .expand-all-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 25px rgba(233, 30, 140, 0.6);
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 5px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, var(--primary-pink), var(--primary-purple));
+            border-radius: 5px;
+        }
+
+        @media (max-width: 768px) {
+            .logo-section {
+                flex-direction: column;
+            }
+
+            .page-title {
+                font-size: 1.8rem;
+            }
+
+            .procedures-container {
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="logo-section">
+                <div class="logo">
+                    <div class="logo-icon">GH</div>
+                    <div class="logo-text">الإجراءات والسياسات</div>
+                </div>
+
+                <a href="index.html" class="back-btn">
+                    ← العودة للصفحة الرئيسية
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <h1 class="page-title">⚙️ الإجراءات والسياسات والسكربتات</h1>
+
+        <button class="expand-all-btn" onclick="toggleAll()">
+            فتح/إغلاق جميع الإجراءات
+        </button>
+
+        <div class="procedures-container" id="proceduresList"></div>
+    </div>
+
+    <script>
+        let allExpanded = false;
+
+        const procedures = [
+            {
+                title: '🔴 إجراءات تسجيل الأداء - 3 مرات يومياً',
+                steps: [
+                    'التسجيل الأول: 10:00 AM - تقرير الأداء الصباحي',
+                    'التسجيل الثاني: 5:00 PM - تقرير الأداء المسائي',
+                    'التسجيل الثالث: 12:00 AM - تقرير منتصف الليل',
+                    '⚠️ هام: كل تقرير يرصد بيانات اليوم السابق',
+                    'عبدالعزيز يرصد تقارير اليوم السابق لجميع الأقسام',
+                    'يزيد مسؤول عن جمع البيانات وإعداد التقارير',
+                    'عبدالعزيز يراجع ويعتمد جميع التقارير',
+                    'رفع التقارير للمدير المباشر للاعتماد',
+                    'بعد الاعتماد، عبدالعزيز يرسلها للموارد البشرية'
+                ]
+            },
+            {
+                title: '📊 إجراءات مراقبة جودة المكالمات - هنوف',
+                steps: [
+                    'الاستماع اليومي لعينة عشوائية من المكالمات',
+                    'تقييم الالتزام بشروط الأداء المحددة',
+                    'رصد المخالفات وتوثيقها',
+                    'تقييم نبرة الصوت والاحترافية',
+                    'التأكد من استخدام النصوص المعتمدة',
+                    'قياس سرعة الاستجابة',
+                    'إعداد تقرير الجودة اليومي',
+                    'رفع التقرير لعبدالعزيز للمراجعة'
+                ]
+            },
+            {
+                title: '📋 التقارير اليومية المطلوبة',
+                steps: [
+                    'تقرير الأداء اليومي - يزيد',
+                    'تقرير المكالمات اليومي - عبدالعزيز',
+                    'تقرير اليوم السابق لكل التقارير - عبدالعزيز',
+                    'تقرير الاسترداد والكاش باك - عبدالعزيز',
+                    'تقرير البلاغات والمخالفات - عبدالعزيز',
+                    'تقرير النسبة المئوية (3 مرات يومياً)',
+                    'تقرير جودة المحادثات - هنوف',
+                    'تقرير جودة المكالمات - هنوف',
+                    'أي إجراء يكتب مباشرة في التقارير'
+                ]
+            },
+            {
+                title: '💬 إجراءات دعم العملاء - إبراهيم ومصطفى',
+                steps: [
+                    '⛔ استخدام الردود المعتمدة حرفياً فقط',
+                    '⛔ عدم الخروج عن النصوص المحددة نهائياً',
+                    'التصعيد للمشرف عند الحاجة',
+                    'توثيق جميع المحادثات',
+                    'الرد خلال دقيقتين كحد أقصى',
+                    'استخدام نبرة احترافية وودودة',
+                    'عدم إعطاء وعود خارج الصلاحيات'
+                ]
+            },
+            {
+                title: '💰 الإجراءات المالية',
+                steps: [
+                    'التحقق من: الداشبورد > المعاملات المالية > حوالات استرداد',
+                    'يُمنع منعاً باتاً إرسال سكرين شوت للعميل',
+                    'الرد خلال 48 ساعة للاستردادات',
+                    'التأكد من رقم حساب المضيف قبل التحويل',
+                    'البدء بعبارة "شريكنا الغالي" عند الرد على المضيفين',
+                    'توثيق جميع المعاملات في النظام',
+                    'العمولة: 13% + 25 ريال للليلة الواحدة'
+                ]
+            },
+            {
+                title: '🏠 إجراءات العقارات',
+                steps: [
+                    'المراجعة الفورية للعقارات الجديدة',
+                    'الصور: واضحة، بدون حواف سوداء، بدون نصوص',
+                    'اسم العقار: يجب أن يكون أربع كلمات',
+                    'المراجعة خلال 48 ساعة عمل',
+                    'هنوف: فحص يومي للعقارات الأعلى في كل مدينة',
+                    'إعادة الترتيب حسب المظهر والسعر',
+                    'إجراء حجوزات تجريبية للتأكد من الجودة'
+                ]
+            },
+            {
+                title: '🆔 إجراءات توثيق الهوية',
+                steps: [
+                    'المراجعة الفورية للهويات المرفوعة',
+                    'التأكد من مطابقة الاسم بشكل كامل',
+                    'التحقق من وضوح الصورة',
+                    'إعادة الطلب مع توضيح السبب عند الرفض',
+                    'المتابعة مع العميل خلال 24 ساعة',
+                    'التصعيد للمشرف في حالات خاصة'
+                ]
+            },
+            {
+                title: '📞 إجراءات الحجوزات',
+                steps: [
+                    'الاتصال بالضيف مباشرة عند استلام حجز جديد',
+                    'التأكد من عدم وجود إشكاليات',
+                    'توثيق الاتصال في قروب تأكيد الحجوزات',
+                    'متابعة حالة الحجز يومياً',
+                    'التنسيق مع المضيف عند الحاجة',
+                    'حل أي مشاكل قبل موعد الوصول'
+                ]
+            },
+            {
+                title: '⚠️ التعاميم الإدارية',
+                steps: [
+                    'متابعة المكالمات المفقودة - عبدالعزيز',
+                    'عبدالعزيز يعد تقرير المكالمات اليومي',
+                    'عبدالعزيز يتخذ الإجراءات ويرفعها للمدير المباشر',
+                    'بعد اعتماد المدير، عبدالعزيز يرسل للموارد البشرية',
+                    'رفع تقرير فوري للموارد البشرية عند المخالفات',
+                    'المشرف مسؤول عن إبلاغ HR عن الغياب',
+                    'كتابة "أنا متواجد" في بداية كل مناوبة',
+                    'الالتزام بأوقات الدوام المحددة',
+                    'عدم مغادرة المكان دون إذن'
+                ]
+            },
+            {
+                title: '🚨 إجراءات الطوارئ',
+                steps: [
+                    'التصعيد الفوري للمشرف المباشر',
+                    'توثيق الحالة بشكل كامل',
+                    'عدم اتخاذ قرارات فردية',
+                    'إبلاغ العميل بأن الحالة تحت المعالجة',
+                    'المتابعة حتى حل المشكلة',
+                    'كتابة تقرير مفصل عن الحادثة'
+                ]
+            },
+            {
+                title: '📝 السكربتات المعتمدة',
+                steps: [
+                    'سكربت التسجيل: "أنا متواجد" - في بداية المناوبة',
+                    'سكربت المبيعات: [النص المعتمد] مع الاتصال الفوري',
+                    'سكربت الوزارة: النموذج الرسمي من الأستاذ مشعل',
+                    'سكربت الإحصائيات: X مستخدمين، X غير محجوز، X محجوز، X تم التواصل',
+                    'سكربت النسبة: إرسال في 10 صباحاً، 5 مساءً، 12 منتصف الليل'
+                ]
+            },
+            {
+                title: '🎯 أهداف الأداء',
+                steps: [
+                    'معدل التحويل المستهدف: 63%',
+                    'زمن الرد على المحادثات: دقيقتين كحد أقصى',
+                    'زمن الرد على المكالمات المفقودة: فوري',
+                    'مراجعة العقارات: خلال 48 ساعة',
+                    'الاستردادات: خلال 48 ساعة',
+                    'التقارير: في الأوقات المحددة بدقة'
+                ]
+            }
+        ];
+
+        function renderProcedures() {
+            const container = document.getElementById('proceduresList');
+            container.innerHTML = procedures.map((proc, idx) => `
+                <div class="procedure-item">
+                    <div class="procedure-header ${idx === 0 ? 'active' : ''}"
+                         onclick="toggleProcedure('proc-${idx}')">
+                        <span>${proc.title}</span>
+                        <span>⌄</span>
+                    </div>
+                    <div class="procedure-content ${idx === 0 ? 'show' : ''}" id="proc-${idx}">
+                        ${proc.steps.map(step => `
+                            <div class="procedure-step">${step}</div>
+                        `).join('')}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function toggleProcedure(id) {
+            const content = document.getElementById(id);
+            const header = content.previousElementSibling;
+
+            if (content.classList.contains('show')) {
+                content.classList.remove('show');
+                header.classList.remove('active');
+            } else {
+                content.classList.add('show');
+                header.classList.add('active');
+            }
+        }
+
+        function toggleAll() {
+            allExpanded = !allExpanded;
+            document.querySelectorAll('.procedure-content').forEach(el => {
+                if (allExpanded) {
+                    el.classList.add('show');
+                    el.previousElementSibling.classList.add('active');
+                } else {
+                    el.classList.remove('show');
+                    el.previousElementSibling.classList.remove('active');
+                }
+            });
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', renderProcedures);
+    </script>
+</body>
+</html>

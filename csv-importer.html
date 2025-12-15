@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>استيراد بيانات CSV</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Cairo', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 2rem;
+            direction: rtl;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 10px 50px rgba(0,0,0,0.3);
+        }
+
+        h1 {
+            text-align: center;
+            color: #4B3A8C;
+            margin-bottom: 2rem;
+            font-size: 2rem;
+        }
+
+        .upload-section {
+            border: 3px dashed #4B3A8C;
+            border-radius: 15px;
+            padding: 3rem;
+            text-align: center;
+            margin-bottom: 2rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .upload-section:hover {
+            background: #f0f0f0;
+            border-color: #764ba2;
+        }
+
+        .upload-section.dragover {
+            background: #e0e0ff;
+            border-color: #667eea;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .upload-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+
+        .btn {
+            padding: 1rem 2rem;
+            background: linear-gradient(135deg, #4B3A8C, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-block;
+            margin: 0.5rem;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(75, 58, 140, 0.4);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #28A745, #20C997);
+        }
+
+        .preview {
+            margin-top: 2rem;
+            max-height: 400px;
+            overflow: auto;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            padding: 1rem;
+        }
+
+        .preview table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .preview th,
+        .preview td {
+            border: 1px solid #ddd;
+            padding: 0.5rem;
+            text-align: right;
+        }
+
+        .preview th {
+            background: #4B3A8C;
+            color: white;
+            font-weight: 700;
+        }
+
+        .status {
+            padding: 1rem;
+            border-radius: 10px;
+            margin: 1rem 0;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .instructions {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .instructions h3 {
+            color: #856404;
+            margin-bottom: 1rem;
+        }
+
+        .instructions ol {
+            margin-right: 1.5rem;
+        }
+
+        .instructions li {
+            margin-bottom: 0.5rem;
+            color: #856404;
+        }
+
+        .output-area {
+            background: #f8f9fa;
+            border: 2px solid #4B3A8C;
+            border-radius: 10px;
+            padding: 1rem;
+            margin-top: 2rem;
+            max-height: 300px;
+            overflow: auto;
+        }
+
+        .output-area pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            direction: ltr;
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📊 استيراد بيانات CSV إلى JavaScript</h1>
+
+        <div class="instructions">
+            <h3>📋 التعليمات:</h3>
+            <ol>
+                <li>احفظ كل صفحة Excel كملف CSV منفصل</li>
+                <li>اختر نوع البيانات (بلاغات، استردادات، محادثات، مبيعات)</li>
+                <li>اسحب الملف هنا أو اضغط للاختيار</li>
+                <li>راح يتحول تلقائياً إلى JavaScript</li>
+                <li>انسخ الكود وأرسله لي!</li>
+            </ol>
+        </div>
+
+        <div style="text-align: center; margin-bottom: 1rem;">
+            <label style="font-weight: 700; font-size: 1.2rem; margin-left: 1rem;">نوع البيانات:</label>
+            <select id="dataType" style="padding: 0.8rem; border-radius: 8px; font-size: 1rem; border: 2px solid #4B3A8C;">
+                <option value="reports">🚨 البلاغات</option>
+                <option value="refunds">💰 الاستردادات</option>
+                <option value="conversations">💬 المحادثات</option>
+                <option value="sales">📈 المبيعات</option>
+            </select>
+        </div>
+
+        <div class="upload-section" id="uploadSection">
+            <div class="upload-icon">📁</div>
+            <h2>اسحب ملف CSV هنا أو اضغط للاختيار</h2>
+            <p style="color: #666; margin-top: 1rem;">يدعم: .csv, .txt</p>
+            <input type="file" id="fileInput" accept=".csv,.txt">
+        </div>
+
+        <div style="text-align: center;">
+            <button class="btn" onclick="document.getElementById('fileInput').click()">📂 اختر ملف CSV</button>
+            <button class="btn btn-success" id="downloadBtn" style="display: none;" onclick="downloadJS()">💾 تنزيل ملف JavaScript</button>
+            <button class="btn" id="copyBtn" style="display: none;" onclick="copyToClipboard()">📋 نسخ الكود</button>
+        </div>
+
+        <div id="status"></div>
+
+        <div id="preview"></div>
+
+        <div id="outputArea" class="output-area" style="display: none;">
+            <h3 style="margin-bottom: 1rem;">الكود الناتج:</h3>
+            <pre id="jsOutput"></pre>
+        </div>
+    </div>
+
+    <script>
+        let parsedData = [];
+        let currentType = 'reports';
+
+        const uploadSection = document.getElementById('uploadSection');
+        const fileInput = document.getElementById('fileInput');
+        const dataTypeSelect = document.getElementById('dataType');
+
+        dataTypeSelect.addEventListener('change', (e) => {
+            currentType = e.target.value;
+        });
+
+        uploadSection.addEventListener('click', () => {
+            fileInput.click();
+        });
+
+        uploadSection.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadSection.classList.add('dragover');
+        });
+
+        uploadSection.addEventListener('dragleave', () => {
+            uploadSection.classList.remove('dragover');
+        });
+
+        uploadSection.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadSection.classList.remove('dragover');
+            const file = e.dataTransfer.files[0];
+            if (file) {
+                processFile(file);
+            }
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                processFile(file);
+            }
+        });
+
+        function processFile(file) {
+            showStatus('جاري قراءة الملف...', 'info');
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const content = e.target.result;
+                parseCSV(content);
+            };
+            reader.readAsText(file, 'UTF-8');
+        }
+
+        function parseCSV(content) {
+            try {
+                const lines = content.split('\n').filter(line => line.trim());
+                if (lines.length < 2) {
+                    showStatus('الملف فارغ أو غير صالح!', 'error');
+                    return;
+                }
+
+                const headers = lines[0].split(/[,\t]/).map(h => h.trim());
+                parsedData = [];
+
+                for (let i = 1; i < lines.length; i++) {
+                    const values = lines[i].split(/[,\t]/);
+                    if (values.length === headers.length) {
+                        const row = {};
+                        headers.forEach((header, index) => {
+                            row[header] = values[index]?.trim() || '';
+                        });
+                        parsedData.push(row);
+                    }
+                }
+
+                showStatus(`✅ تم قراءة ${parsedData.length} صف بنجاح!`, 'success');
+                showPreview(headers, parsedData.slice(0, 10));
+                generateJavaScript();
+
+                document.getElementById('downloadBtn').style.display = 'inline-block';
+                document.getElementById('copyBtn').style.display = 'inline-block';
+
+            } catch (error) {
+                showStatus('خطأ في قراءة الملف: ' + error.message, 'error');
+            }
+        }
+
+        function showPreview(headers, data) {
+            const preview = document.getElementById('preview');
+            let html = '<h3>معاينة أول 10 صفوف:</h3><table><thead><tr>';
+
+            headers.forEach(h => {
+                html += `<th>${h}</th>`;
+            });
+            html += '</tr></thead><tbody>';
+
+            data.forEach(row => {
+                html += '<tr>';
+                headers.forEach(h => {
+                    html += `<td>${row[h] || ''}</td>`;
+                });
+                html += '</tr>';
+            });
+
+            html += '</tbody></table>';
+            preview.innerHTML = html;
+        }
+
+        function generateJavaScript() {
+            const typeNames = {
+                reports: 'ALL_REPORTS',
+                refunds: 'ALL_REFUNDS',
+                conversations: 'ALL_CONVERSATIONS',
+                sales: 'ALL_SALES'
+            };
+
+            const varName = typeNames[currentType];
+            const jsCode = `// بيانات ${getTypeName(currentType)} - ${parsedData.length} سجل
+
+const ${varName} = ${JSON.stringify(parsedData, null, 2)};
+
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = { ${varName} };
+}`;
+
+            document.getElementById('jsOutput').textContent = jsCode;
+            document.getElementById('outputArea').style.display = 'block';
+
+            // Store for download
+            window.generatedJS = jsCode;
+        }
+
+        function getTypeName(type) {
+            const names = {
+                reports: 'البلاغات',
+                refunds: 'الاستردادات',
+                conversations: 'المحادثات',
+                sales: 'المبيعات'
+            };
+            return names[type];
+        }
+
+        function downloadJS() {
+            const fileNames = {
+                reports: 'reports-data.js',
+                refunds: 'refunds-data.js',
+                conversations: 'conversations-data.js',
+                sales: 'complete-sales-data.js'
+            };
+
+            const blob = new Blob([window.generatedJS], { type: 'text/javascript' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = fileNames[currentType];
+            a.click();
+            URL.revokeObjectURL(url);
+
+            showStatus('✅ تم تنزيل الملف بنجاح!', 'success');
+        }
+
+        function copyToClipboard() {
+            const output = document.getElementById('jsOutput').textContent;
+            navigator.clipboard.writeText(output).then(() => {
+                showStatus('✅ تم نسخ الكود إلى الحافظة!', 'success');
+            }).catch(err => {
+                showStatus('خطأ في النسخ: ' + err, 'error');
+            });
+        }
+
+        function showStatus(message, type) {
+            const status = document.getElementById('status');
+            status.className = 'status ' + type;
+            status.textContent = message;
+            status.style.display = 'block';
+        }
+    </script>
+</body>
+</html>
