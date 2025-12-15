@@ -56,29 +56,87 @@ let libraryData = {
     ]
 };
 
+// Initialize Firebase
+let firebaseReady = false;
+
+async function initFirebaseConnection() {
+    if (typeof initFirebase === 'function') {
+        firebaseReady = initFirebase();
+        if (firebaseReady) {
+            console.log('✅ Firebase connected in admin panel');
+        }
+    }
+}
+
 // Load saved data or use defaults
-function loadData() {
+async function loadData() {
+    // Try to load from Firebase first
+    if (firebaseReady && typeof GoldenHostDB !== 'undefined') {
+        try {
+            const firebaseResponses = await GoldenHostDB.loadResponses();
+            if (firebaseResponses && Object.keys(firebaseResponses).length > 0) {
+                // Convert Firebase object to array
+                libraryData.responses = Object.entries(firebaseResponses).map(([key, value]) => ({
+                    ...value,
+                    firebaseKey: key
+                }));
+                console.log('✅ Loaded responses from Firebase:', libraryData.responses.length);
+            } else {
+                // No data in Firebase, use defaults and save to Firebase
+                libraryData.responses = getDefaultResponses();
+                libraryData.procedures = getDefaultProcedures();
+                await saveDataToFirebase();
+            }
+        } catch (error) {
+            console.error('Error loading from Firebase:', error);
+            loadFromLocalStorage();
+        }
+    } else {
+        loadFromLocalStorage();
+    }
+    updateStats();
+}
+
+function loadFromLocalStorage() {
     const saved = localStorage.getItem('libraryData');
     if (saved) {
         libraryData = JSON.parse(saved);
-        // إذا كانت البيانات القديمة أقل من 38 رد، نحدث البيانات
         if (!libraryData.responses || libraryData.responses.length < 38) {
             libraryData.responses = getDefaultResponses();
             libraryData.procedures = getDefaultProcedures();
             saveData();
         }
     } else {
-        // Initialize with default data
         libraryData.responses = getDefaultResponses();
         libraryData.procedures = getDefaultProcedures();
         saveData();
     }
+}
+
+async function saveData() {
+    // Save to localStorage
+    localStorage.setItem('libraryData', JSON.stringify(libraryData));
+    // Also save to Firebase
+    await saveDataToFirebase();
     updateStats();
 }
 
-function saveData() {
-    localStorage.setItem('libraryData', JSON.stringify(libraryData));
-    updateStats();
+async function saveDataToFirebase() {
+    if (firebaseReady && typeof GoldenHostDB !== 'undefined') {
+        try {
+            // Convert array to object for Firebase
+            const responsesObj = {};
+            libraryData.responses.forEach((r, index) => {
+                const key = r.firebaseKey || `response_${r.id || index}`;
+                responsesObj[key] = { ...r };
+                delete responsesObj[key].firebaseKey;
+            });
+            await GoldenHostDB.saveResponses(responsesObj);
+            console.log('✅ Saved to Firebase');
+        } catch (error) {
+            console.error('Error saving to Firebase:', error);
+        }
+    }
 }
 
 function updateStats() {
@@ -2131,8 +2189,10 @@ function loadDesignNotes() {
 }
 
 // Initialize
-window.addEventListener('DOMContentLoaded', () => {
-    loadData();
+window.addEventListener('DOMContentLoaded', async () => {
+    // Initialize Firebase first
+    await initFirebaseConnection();
+    await loadData();
     loadRecentActivity();
 
     // Load reports if on reports page

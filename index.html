@@ -1278,6 +1278,28 @@
     </div>
 
     <script>
+        // Check authentication - redirect to login if not logged in
+        (function checkAuth() {
+            const session = localStorage.getItem('adminSession');
+            if (!session) {
+                // Not logged in - redirect to login page
+                window.location.href = 'admin-login.html';
+                return;
+            }
+
+            const data = JSON.parse(session);
+            const loginTime = new Date(data.loginTime);
+            const now = new Date();
+            const hoursDiff = (now - loginTime) / (1000 * 60 * 60);
+
+            // Session expires after 24 hours
+            if (hoursDiff >= 24) {
+                localStorage.removeItem('adminSession');
+                window.location.href = 'admin-login.html';
+                return;
+            }
+        })();
+
         // Complete Data Structure with ALL content
         let currentFilter = 'all';
 
@@ -1849,8 +1871,37 @@
             rolesTitle.classList.toggle('collapsed');
         }
 
+        // Initialize Firebase for realtime updates
+        let firebaseInitialized = false;
+
+        async function initFirebaseForLibrary() {
+            if (typeof initFirebase === 'function') {
+                firebaseInitialized = initFirebase();
+                if (firebaseInitialized && typeof GoldenHostDB !== 'undefined') {
+                    // Listen for realtime changes to responses
+                    GoldenHostDB.listenToResponses((data) => {
+                        if (data) {
+                            // Convert Firebase object to array
+                            const updatedResponses = Object.entries(data).map(([key, value]) => ({
+                                ...value,
+                                firebaseKey: key
+                            }));
+                            // Update local data and re-render
+                            window.responsesData = updatedResponses;
+                            renderResponses();
+                            console.log('🔄 الردود تم تحديثها تلقائياً من Firebase');
+                            showNotification('🔄 تم تحديث الردود');
+                        }
+                    });
+                    console.log('✅ Firebase realtime listening enabled');
+                }
+            }
+        }
+
         // Initialize
-        function init() {
+        async function init() {
+            // Initialize Firebase first
+            await initFirebaseForLibrary();
             renderFilterTabs();
             renderResponses();
             renderQuickActions();
@@ -1972,11 +2023,13 @@
                 return;
             }
 
-            console.log('Total responses:', libraryData.responses.length);
+            // Use Firebase data if available, otherwise use local data
+            const responses = window.responsesData || libraryData.responses;
+            console.log('Total responses:', responses.length);
 
             const searchTerm = document.getElementById('searchInput')?.value?.toLowerCase() || '';
 
-            let filtered = libraryData.responses.filter(response => {
+            let filtered = responses.filter(response => {
                 const matchesFilter = currentFilter === 'all' || response.category === currentFilter;
                 const matchesSearch = !searchTerm ||
                     response.title.toLowerCase().includes(searchTerm) ||
