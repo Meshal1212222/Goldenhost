@@ -1068,16 +1068,30 @@
                         <span class="attendance-status status-offline" id="attendanceStatus">غير مسجل</span>
                     </div>
                     <div class="attendance-employee">
-                        <select id="attendanceEmployee" onchange="checkEmployeeAttendance()">
-                            <option value="">اختر الموظف</option>
-                            <option value="abdulaziz">عبدالعزيز - مشرف</option>
-                            <option value="hanouf">هنوف - مشرف تطوير</option>
-                            <option value="yazeed">يزيد - دعم فني ومبيعات</option>
-                            <option value="rawabi">روابي - دعم فني ومبيعات</option>
-                            <option value="raja">رجا - دعم فني ومساعد مبيعات</option>
-                            <option value="ibrahim">ابراهيم - دعم فني ومساعد مبيعات</option>
-                            <option value="mostafa">مصطفى - دعم فني ومساعد مبيعات</option>
-                        </select>
+                        <div id="loggedInEmployee" style="
+                            background: linear-gradient(135deg, #4CAF50, #45a049);
+                            color: white;
+                            padding: 0.6rem 1.2rem;
+                            border-radius: 10px;
+                            font-weight: 700;
+                            display: none;
+                            align-items: center;
+                            gap: 0.5rem;
+                        ">
+                            <span>👤</span>
+                            <span id="employeeDisplayName">-</span>
+                        </div>
+                        <a href="admin-login.html" id="loginLink" style="
+                            background: linear-gradient(135deg, #E91E8C, #FF1493);
+                            color: white;
+                            padding: 0.6rem 1.2rem;
+                            border-radius: 10px;
+                            text-decoration: none;
+                            font-weight: 700;
+                            display: inline-flex;
+                            align-items: center;
+                            gap: 0.5rem;
+                        ">🔐 تسجيل الدخول أولاً</a>
                     </div>
                 </div>
 
@@ -1102,7 +1116,7 @@
 
                 <div class="attendance-buttons">
                     <button class="attendance-btn btn-checkin" id="btnCheckin" onclick="checkIn()" disabled>
-                        <span>✅</span> تسجيل الدخول
+                        <span>✅</span> تأكيد الدخول
                     </button>
                     <button class="attendance-btn btn-break" id="btnBreak" onclick="toggleBreak()" disabled>
                         <span>☕</span> <span id="breakBtnText">بدء البريك</span>
@@ -1844,6 +1858,8 @@
             setInterval(updateCurrentTime, 1000);
             checkPerformanceTime();
             setInterval(checkPerformanceTime, 60000);
+            // Initialize attendance system
+            initAttendanceSystem();
         }
 
         // Update current time
@@ -2371,8 +2387,36 @@
             breakInterval: null
         };
 
-        function checkEmployeeAttendance() {
-            const employee = document.getElementById('attendanceEmployee').value;
+        // Check if user is logged in from admin-login
+        function getLoggedInUser() {
+            const session = localStorage.getItem('adminSession');
+            if (session) {
+                return JSON.parse(session);
+            }
+            return null;
+        }
+
+        function initAttendanceSystem() {
+            const user = getLoggedInUser();
+
+            if (!user) {
+                // Not logged in - show login link
+                document.getElementById('loginLink').style.display = 'inline-flex';
+                document.getElementById('loggedInEmployee').style.display = 'none';
+                resetAttendanceUI();
+                return;
+            }
+
+            // User is logged in - show their name
+            document.getElementById('loginLink').style.display = 'none';
+            document.getElementById('loggedInEmployee').style.display = 'flex';
+            document.getElementById('employeeDisplayName').textContent = user.name;
+
+            // Check attendance for this employee
+            checkEmployeeAttendance(user.username);
+        }
+
+        function checkEmployeeAttendance(employee) {
             if (!employee) {
                 resetAttendanceUI();
                 return;
@@ -2426,12 +2470,14 @@
         }
 
         function checkIn() {
-            const employee = document.getElementById('attendanceEmployee').value;
-            if (!employee) {
-                alert('⚠️ يرجى اختيار الموظف أولاً');
+            const user = getLoggedInUser();
+            if (!user) {
+                alert('⚠️ يرجى تسجيل الدخول أولاً');
+                window.location.href = 'admin-login.html';
                 return;
             }
 
+            const employee = user.username;
             const now = new Date();
             attendanceData.checkinTime = now.getTime();
             attendanceData.employee = employee;
@@ -2746,16 +2792,16 @@
 
         // Get current logged in employee
         function getCurrentEmployee() {
-            const employee = document.getElementById('attendanceEmployee').value;
-            if (!employee) {
+            const user = getLoggedInUser();
+            if (!user) {
                 return null;
             }
-            // Check if employee has checked in
-            const savedData = localStorage.getItem(`attendance_${employee}_${getTodayDate()}`);
+            // Check if employee has checked in for attendance
+            const savedData = localStorage.getItem(`attendance_${user.username}_${getTodayDate()}`);
             if (savedData) {
                 const data = JSON.parse(savedData);
                 if (data.checkinTime && !data.checkoutTime) {
-                    return employee;
+                    return user.username;
                 }
             }
             return null;
@@ -2776,9 +2822,15 @@
 
         // Check if employee is logged in before opening modals
         function checkEmployeeLoggedIn() {
+            const user = getLoggedInUser();
+            if (!user) {
+                alert('⚠️ يجب تسجيل الدخول أولاً!');
+                window.location.href = 'admin-login.html';
+                return false;
+            }
             const employee = getCurrentEmployee();
             if (!employee) {
-                alert('⚠️ يجب تسجيل الدخول في نظام الحضور أولاً!\n\nاختر اسمك من القائمة واضغط "تسجيل الدخول"');
+                alert('⚠️ يجب تأكيد الدخول في نظام الحضور أولاً!\n\nاضغط زر "تأكيد الدخول" لبدء يوم العمل');
                 return false;
             }
             return true;
