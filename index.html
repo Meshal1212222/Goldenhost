@@ -2138,8 +2138,6 @@
         🚨
     </button>
 
-    <!-- قسم الاستردادات ملغي - الإلغاء يتم من النظام -->
-    <!--
     <button onclick="showRefundModal()" style="
         position: fixed;
         bottom: 100px;
@@ -2158,7 +2156,6 @@
     " onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'" title="طلب استرداد">
         💰
     </button>
-    -->
 
     <button onclick="showConversationModal()" style="
         position: fixed;
@@ -2442,9 +2439,9 @@
             <form id="refundForm" onsubmit="submitRefund(event)" style="display: flex; flex-direction: column; gap: 1rem;">
                 <div>
                     <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: #333;">
-                        اسم الموظف <span style="color: red;">*</span>
+                        يوزر الموظف <span style="color: red;">*</span>
                     </label>
-                    <input type="text" id="refundEmployeeName" required style="
+                    <select id="refundEmployeeName" required style="
                         width: 100%;
                         padding: 0.8rem;
                         border: 2px solid #ddd;
@@ -2452,6 +2449,15 @@
                         font-family: 'Cairo', sans-serif;
                         font-size: 1rem;
                     ">
+                        <option value="">اختر الموظف</option>
+                        <option value="abdulaziz">عبدالعزيز - مشرف</option>
+                        <option value="hanouf">هنوف - مشرف تطوير</option>
+                        <option value="yazeed">يزيد - دعم فني ومبيعات</option>
+                        <option value="rawabi">روابي - دعم فني ومبيعات</option>
+                        <option value="raja">رجا - دعم فني ومساعد مبيعات</option>
+                        <option value="ibrahim">ابراهيم - دعم فني ومساعد مبيعات</option>
+                        <option value="mostafa">مصطفى - دعم فني ومساعد مبيعات</option>
+                    </select>
                 </div>
 
                 <div>
