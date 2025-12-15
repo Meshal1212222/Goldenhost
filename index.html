@@ -879,18 +879,8 @@
                     <span class="toggle-icon">▼</span>
                 </div>
                 <div class="roles-grid hidden" id="rolesGrid">
-                    <div class="role-card">
-                        <div class="role-name">يزيد (Yazeed)</div>
-                        <div class="role-desc">
-                            • مسؤول عن التقرير اليومي للمبيعات<br>
-                            • إعداد تقارير الأداء<br>
-                            • متابعة معدلات التحويل<br>
-                            • تحليل البيانات اليومية
-                        </div>
-                    </div>
-
-                    <div class="role-card">
-                        <div class="role-name">عبدالعزيز (Abdulaziz)</div>
+                    <div class="role-card" style="border-right-color: #FFD700;">
+                        <div class="role-name">عبدالعزيز (Abdulaziz) - مشرف</div>
                         <div class="role-desc">
                             • مراقبة ومتابعة التقارير من هنوف ويزيد<br>
                             • اتخاذ الإجراءات ورفعها للمدير المباشر للاعتماد<br>
@@ -901,20 +891,8 @@
                         </div>
                     </div>
 
-                    <div class="role-card">
-                        <div class="role-name">إبراهيم (Ibrahim)</div>
-                        <div class="role-desc">دعم العملاء عبر المحادثة فقط</div>
-                        <div class="role-warning">⛔ ممنوع منعاً باتاً الرد خارج النصوص المحددة في المكتبة</div>
-                    </div>
-
-                    <div class="role-card">
-                        <div class="role-name">مصطفى (Mostafa)</div>
-                        <div class="role-desc">دعم العملاء عبر المحادثة فقط</div>
-                        <div class="role-warning">⛔ ممنوع منعاً باتاً الرد خارج النصوص المحددة في المكتبة</div>
-                    </div>
-
-                    <div class="role-card">
-                        <div class="role-name">هنوف (Hanouf)</div>
+                    <div class="role-card" style="border-right-color: #E91E8C;">
+                        <div class="role-name">هنوف (Hanouf) - مشرف تطوير</div>
                         <div class="role-desc">
                             • مراقبة وسماع جودة المكالمات حسب شروط الأداء<br>
                             • تقارير جودة المحادثات<br>
@@ -922,6 +900,45 @@
                             • فحص العقارات اليومي<br>
                             • تقييم الالتزام بمعايير الجودة
                         </div>
+                    </div>
+
+                    <div class="role-card" style="border-right-color: #28A745;">
+                        <div class="role-name">يزيد (Yazeed) - دعم فني ومبيعات</div>
+                        <div class="role-desc">
+                            • مسؤول عن التقرير اليومي للمبيعات<br>
+                            • إعداد تقارير الأداء<br>
+                            • متابعة معدلات التحويل<br>
+                            • تحليل البيانات اليومية<br>
+                            • دعم العملاء
+                        </div>
+                    </div>
+
+                    <div class="role-card" style="border-right-color: #28A745;">
+                        <div class="role-name">روابي (Rawabi) - دعم فني ومبيعات</div>
+                        <div class="role-desc">
+                            • دعم العملاء عبر المحادثة والاتصال<br>
+                            • متابعة عمليات المبيعات<br>
+                            • تقديم المساعدة للعملاء
+                        </div>
+                        <div class="role-warning">⛔ ممنوع منعاً باتاً الرد خارج النصوص المحددة في المكتبة</div>
+                    </div>
+
+                    <div class="role-card">
+                        <div class="role-name">رجا (Raja) - دعم فني ومساعد مبيعات</div>
+                        <div class="role-desc">دعم العملاء عبر المحادثة + مساعدة في المبيعات</div>
+                        <div class="role-warning">⛔ ممنوع منعاً باتاً الرد خارج النصوص المحددة في المكتبة</div>
+                    </div>
+
+                    <div class="role-card">
+                        <div class="role-name">ابراهيم (Ibrahim) - دعم فني ومساعد مبيعات</div>
+                        <div class="role-desc">دعم العملاء عبر المحادثة + مساعدة في المبيعات</div>
+                        <div class="role-warning">⛔ ممنوع منعاً باتاً الرد خارج النصوص المحددة في المكتبة</div>
+                    </div>
+
+                    <div class="role-card">
+                        <div class="role-name">مصطفى (Mostafa) - دعم فني ومساعد مبيعات</div>
+                        <div class="role-desc">دعم العملاء عبر المحادثة + مساعدة في المبيعات</div>
+                        <div class="role-warning">⛔ ممنوع منعاً باتاً الرد خارج النصوص المحددة في المكتبة</div>
                     </div>
                 </div>
             </div>
@@ -2217,9 +2234,9 @@
             <form id="reportForm" onsubmit="submitReport(event)" style="display: flex; flex-direction: column; gap: 1rem;">
                 <div>
                     <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: #333;">
-                        اسم الموظف <span style="color: red;">*</span>
+                        يوزر الموظف <span style="color: red;">*</span>
                     </label>
-                    <input type="text" id="employeeName" required placeholder="اسمك الكامل" style="
+                    <select id="employeeName" required style="
                         width: 100%;
                         padding: 0.8rem;
                         border: 2px solid #ddd;
@@ -2227,6 +2244,15 @@
                         font-family: 'Cairo', sans-serif;
                         font-size: 1rem;
                     ">
+                        <option value="">اختر الموظف</option>
+                        <option value="abdulaziz">عبدالعزيز - مشرف</option>
+                        <option value="hanouf">هنوف - مشرف تطوير</option>
+                        <option value="yazeed">يزيد - دعم فني ومبيعات</option>
+                        <option value="rawabi">روابي - دعم فني ومبيعات</option>
+                        <option value="raja">رجا - دعم فني ومساعد مبيعات</option>
+                        <option value="ibrahim">ابراهيم - دعم فني ومساعد مبيعات</option>
+                        <option value="mostafa">مصطفى - دعم فني ومساعد مبيعات</option>
+                    </select>
                 </div>
 
                 <div>
@@ -2581,7 +2607,7 @@
                     <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: #333;">
                         يوزر الموظف <span style="color: red;">*</span>
                     </label>
-                    <input type="text" id="convEmployeeName" required placeholder="مثال: ahmed_123" style="
+                    <select id="convEmployeeName" required style="
                         width: 100%;
                         padding: 0.8rem;
                         border: 2px solid #ddd;
@@ -2589,6 +2615,15 @@
                         font-family: 'Cairo', sans-serif;
                         font-size: 1rem;
                     ">
+                        <option value="">اختر الموظف</option>
+                        <option value="abdulaziz">عبدالعزيز - مشرف</option>
+                        <option value="hanouf">هنوف - مشرف تطوير</option>
+                        <option value="yazeed">يزيد - دعم فني ومبيعات</option>
+                        <option value="rawabi">روابي - دعم فني ومبيعات</option>
+                        <option value="raja">رجا - دعم فني ومساعد مبيعات</option>
+                        <option value="ibrahim">ابراهيم - دعم فني ومساعد مبيعات</option>
+                        <option value="mostafa">مصطفى - دعم فني ومساعد مبيعات</option>
+                    </select>
                 </div>
 
                 <div>
@@ -2650,7 +2685,7 @@
 
                 <div>
                     <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: #333;">
-                        الإجراء <span style="color: red;">*</span>
+                        الإجراء المتخذ (على المضيف) <span style="color: red;">*</span>
                     </label>
                     <select id="requiredAction" required style="
                         width: 100%;
@@ -2661,8 +2696,9 @@
                         font-size: 1rem;
                     ">
                         <option value="">اختر الإجراء</option>
-                        <option value="تحذير المضيف">تحذير المضيف</option>
-                        <option value="ايقاف العقار">ايقاف العقار</option>
+                        <option value="انذار بتعليق العقار">إنذار بتعليق العقار</option>
+                        <option value="تنويه بتكرار المخالفة">بعد المراجعة - تنويه في حال التكرار يتم تعليق العقار</option>
+                        <option value="تعليق العقار">تعليق العقار</option>
                     </select>
                 </div>
 
@@ -2740,7 +2776,7 @@
                     <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: #333;">
                         يوزر الموظف <span style="color: red;">*</span>
                     </label>
-                    <input type="text" id="salesEmployeeName" required placeholder="مثال: ahmed_123" style="
+                    <select id="salesEmployeeName" required style="
                         width: 100%;
                         padding: 0.8rem;
                         border: 2px solid #ddd;
@@ -2748,6 +2784,15 @@
                         font-family: 'Cairo', sans-serif;
                         font-size: 1rem;
                     ">
+                        <option value="">اختر الموظف</option>
+                        <option value="abdulaziz">عبدالعزيز - مشرف</option>
+                        <option value="hanouf">هنوف - مشرف تطوير</option>
+                        <option value="yazeed">يزيد - دعم فني ومبيعات</option>
+                        <option value="rawabi">روابي - دعم فني ومبيعات</option>
+                        <option value="raja">رجا - دعم فني ومساعد مبيعات</option>
+                        <option value="ibrahim">ابراهيم - دعم فني ومساعد مبيعات</option>
+                        <option value="mostafa">مصطفى - دعم فني ومساعد مبيعات</option>
+                    </select>
                 </div>
 
                 <div>
