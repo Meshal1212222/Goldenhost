@@ -7,6 +7,34 @@
 
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
 
+    <!-- Security: Auth Check BEFORE page renders -->
+    <script>
+        (function() {
+            const session = localStorage.getItem('adminSession');
+            if (!session) {
+                window.location.replace('admin-login.html');
+                document.write('');
+                return;
+            }
+            try {
+                const data = JSON.parse(session);
+                const loginTime = new Date(data.loginTime);
+                const now = new Date();
+                const hoursDiff = (now - loginTime) / (1000 * 60 * 60);
+                if (hoursDiff >= 24) {
+                    localStorage.removeItem('adminSession');
+                    window.location.replace('admin-login.html');
+                    document.write('');
+                    return;
+                }
+            } catch(e) {
+                localStorage.removeItem('adminSession');
+                window.location.replace('admin-login.html');
+                document.write('');
+            }
+        })();
+    </script>
+
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
@@ -82,16 +110,16 @@
             66% { transform: translate(-20px, 20px) scale(0.9); }
         }
 
-        /* Header Styles */
+        /* Header Styles - Compact */
         .header {
             background: rgba(15, 14, 27, 0.98);
             backdrop-filter: blur(20px);
-            border-bottom: 3px solid var(--primary-pink);
-            padding: 1.5rem 0;
+            border-bottom: 2px solid var(--primary-pink);
+            padding: 0.5rem 0;
             position: sticky;
             top: 0;
             z-index: 1000;
-            box-shadow: 0 4px 30px rgba(0,0,0,0.5);
+            box-shadow: 0 2px 15px rgba(0,0,0,0.4);
         }
 
         .container {
@@ -107,32 +135,32 @@
             justify-content: space-between;
             align-items: center;
             flex-wrap: wrap;
-            gap: 2rem;
-            margin-bottom: 1.5rem;
+            gap: 1rem;
+            margin-bottom: 0.5rem;
         }
 
         .logo {
             display: flex;
             align-items: center;
-            gap: 1rem;
+            gap: 0.7rem;
         }
 
         .logo-icon {
-            width: 60px;
-            height: 60px;
+            width: 40px;
+            height: 40px;
             background: linear-gradient(135deg, var(--primary-pink), var(--primary-purple));
-            border-radius: 15px;
+            border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: 700;
-            font-size: 1.4rem;
+            font-size: 1rem;
             color: white;
-            box-shadow: 0 0 30px rgba(233, 30, 140, 0.4);
+            box-shadow: 0 0 15px rgba(233, 30, 140, 0.3);
         }
 
         .logo-text {
-            font-size: 1.8rem;
+            font-size: 1.3rem;
             font-weight: 700;
             background: linear-gradient(135deg, white, var(--gold));
             -webkit-background-clip: text;
@@ -140,18 +168,18 @@
             background-clip: text;
         }
 
-        /* Performance Tracker */
+        /* Performance Tracker - Compact */
         .performance-tracker {
             display: flex;
-            gap: 1rem;
+            gap: 0.5rem;
             background: rgba(255, 255, 255, 0.1);
-            padding: 1rem;
-            border-radius: 50px;
+            padding: 0.5rem 1rem;
+            border-radius: 30px;
             border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
         .tracker-item {
-            padding: 0 1rem;
+            padding: 0 0.7rem;
             text-align: center;
             border-left: 1px solid rgba(255, 255, 255, 0.2);
         }
@@ -163,38 +191,38 @@
         .tracker-time {
             color: var(--gold);
             font-weight: 700;
-            font-size: 1.2rem;
+            font-size: 1rem;
             text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
         }
 
         .tracker-label {
             color: var(--text-light);
-            font-size: 0.8rem;
+            font-size: 0.7rem;
         }
 
-        /* Team Roles Section */
+        /* Team Roles Section - Compact */
         .team-roles {
             background: linear-gradient(135deg, var(--danger), var(--primary-pink));
-            border-radius: 15px;
-            padding: 1.5rem;
-            margin-bottom: 1.5rem;
-            border: 2px solid var(--gold);
-            box-shadow: 0 0 30px rgba(255, 0, 0, 0.3);
+            border-radius: 10px;
+            padding: 0.7rem 1rem;
+            margin-bottom: 1rem;
+            border: 1px solid var(--gold);
+            box-shadow: 0 0 15px rgba(255, 0, 0, 0.2);
         }
 
         .roles-title {
             color: white;
-            font-size: 1.5rem;
+            font-size: 1.1rem;
             font-weight: 700;
             text-align: center;
             cursor: pointer;
             display: flex;
             justify-content: center;
             align-items: center;
-            gap: 1rem;
+            gap: 0.7rem;
             margin-bottom: 0;
-            padding: 0.5rem;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            padding: 0.3rem;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
             transition: all 0.3s;
         }
 
@@ -262,21 +290,21 @@
             text-align: center;
         }
 
-        /* Search Box */
+        /* Search Box - Compact */
         .search-box {
             background: rgba(255, 255, 255, 0.1);
-            border-radius: 15px;
-            padding: 1rem;
-            margin: 1.5rem 0;
+            border-radius: 10px;
+            padding: 0.5rem;
+            margin: 0.8rem 0;
         }
 
         .search-input {
             width: 100%;
-            padding: 0.8rem 1.5rem;
+            padding: 0.6rem 1rem;
             background: rgba(255, 255, 255, 0.9);
             border: 2px solid var(--primary-pink);
-            border-radius: 25px;
-            font-size: 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
             font-family: 'Cairo', sans-serif;
             transition: all 0.3s;
         }
@@ -287,21 +315,21 @@
             box-shadow: 0 0 0 3px rgba(233, 30, 140, 0.2);
         }
 
-        /* Statistics Cards */
+        /* Statistics Cards - Compact */
         .stats {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 1rem;
-            margin: 2rem 0;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 0.7rem;
+            margin: 1rem 0;
         }
 
         .stat-card {
             background: linear-gradient(135deg, var(--primary-purple), var(--deep-purple));
-            padding: 1.5rem;
-            border-radius: 15px;
+            padding: 0.8rem;
+            border-radius: 10px;
             text-align: center;
             color: white;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            box-shadow: 0 3px 10px rgba(0,0,0,0.3);
             position: relative;
             overflow: hidden;
             cursor: pointer;
@@ -309,7 +337,7 @@
         }
 
         .stat-card:hover {
-            transform: translateY(-5px);
+            transform: translateY(-3px);
         }
 
         .stat-card::before {
@@ -329,63 +357,220 @@
         }
 
         .stat-num {
-            font-size: 2rem;
+            font-size: 1.5rem;
             font-weight: 700;
             position: relative;
         }
 
         .stat-text {
-            font-size: 0.9rem;
+            font-size: 0.75rem;
             position: relative;
         }
 
-        /* Quick Actions */
+        /* Quick Actions - Compact */
         .quick-actions {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1rem;
-            margin-bottom: 2rem;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 0.7rem;
+            margin-bottom: 1rem;
         }
 
         .quick-action {
             background: linear-gradient(135deg, var(--primary-purple), var(--deep-purple));
-            border-radius: 12px;
-            padding: 1rem;
+            border-radius: 10px;
+            padding: 0.7rem;
             display: flex;
             align-items: center;
-            gap: 1rem;
+            gap: 0.7rem;
             color: white;
             cursor: pointer;
             transition: all 0.3s;
-            box-shadow: 0 3px 10px rgba(0,0,0,0.3);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
         }
 
         .quick-action:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 5px 20px rgba(0,0,0,0.4);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.4);
         }
 
         .quick-action-icon {
-            font-size: 1.5rem;
+            font-size: 1.2rem;
         }
 
         .quick-action-label {
-            font-size: 0.8rem;
+            font-size: 0.7rem;
             opacity: 0.9;
         }
 
         .quick-action-value {
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        /* Mental Map - Decision Tree with Icons */
+        .mental-map {
+            background: white;
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+        }
+
+        .mental-map-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--primary-purple);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .mental-map-categories {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 0.8rem;
+        }
+
+        .map-category {
+            background: linear-gradient(135deg, var(--gray-light), white);
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 1rem 0.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .map-category:hover {
+            border-color: var(--primary-pink);
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(233, 30, 140, 0.2);
+        }
+
+        .map-category.active {
+            background: linear-gradient(135deg, var(--primary-pink), var(--primary-purple));
+            border-color: var(--primary-pink);
+            color: white;
+        }
+
+        .map-category-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        .map-category-label {
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .map-subcategories {
+            display: none;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 2px dashed #e0e0e0;
+        }
+
+        .map-subcategories.show {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .map-subcategories-title {
             font-size: 1rem;
             font-weight: 600;
+            color: var(--primary-purple);
+            margin-bottom: 0.8rem;
+        }
+
+        .map-problems {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 0.7rem;
+        }
+
+        .map-problem {
+            background: var(--gray-light);
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.85rem;
+        }
+
+        .map-problem:hover {
+            background: linear-gradient(135deg, rgba(233, 30, 140, 0.1), rgba(75, 58, 140, 0.1));
+            border-color: var(--primary-pink);
+        }
+
+        .map-problem.active {
+            background: linear-gradient(135deg, var(--primary-pink), var(--primary-purple));
+            color: white;
+            border-color: transparent;
+        }
+
+        .map-response {
+            display: none;
+            margin-top: 1rem;
+            padding: 1rem;
+            background: linear-gradient(135deg, rgba(76, 175, 80, 0.1), rgba(76, 175, 80, 0.05));
+            border: 2px solid var(--success);
+            border-radius: 10px;
+        }
+
+        .map-response.show {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .map-response-title {
+            font-weight: 700;
+            color: var(--success);
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .map-response-text {
+            background: white;
+            padding: 1rem;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            line-height: 1.7;
+            margin-bottom: 0.5rem;
+        }
+
+        .map-copy-btn {
+            background: var(--success);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: 'Cairo', sans-serif;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+
+        .map-copy-btn:hover {
+            background: #388E3C;
         }
 
         /* Main Content Grid */
         .main-grid {
             display: grid;
             grid-template-columns: 1fr;
-            gap: 2rem;
-            margin-top: 2rem;
-            margin-bottom: 3rem;
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+            margin-bottom: 2rem;
         }
 
         .section-card {
@@ -844,6 +1029,193 @@
                 top: 0.5rem;
             }
         }
+
+        /* Attendance System Styles */
+        .attendance-system {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            border: 2px solid var(--primary-pink);
+            box-shadow: 0 0 30px rgba(233, 30, 140, 0.2);
+        }
+
+        .attendance-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .attendance-title {
+            color: white;
+            font-size: 1.3rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .attendance-employee {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .attendance-employee select {
+            padding: 0.6rem 1rem;
+            border-radius: 10px;
+            border: 2px solid var(--primary-pink);
+            background: rgba(255,255,255,0.1);
+            color: white;
+            font-family: 'Cairo', sans-serif;
+            font-size: 0.95rem;
+        }
+
+        .attendance-employee select option {
+            background: #1a1a2e;
+            color: white;
+        }
+
+        .attendance-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .attendance-card {
+            background: rgba(255,255,255,0.1);
+            border-radius: 12px;
+            padding: 1.2rem;
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+        .attendance-card:hover {
+            background: rgba(255,255,255,0.15);
+            transform: translateY(-3px);
+        }
+
+        .attendance-card-title {
+            color: rgba(255,255,255,0.7);
+            font-size: 0.85rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .attendance-card-value {
+            color: var(--gold);
+            font-size: 1.8rem;
+            font-weight: 700;
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+        }
+
+        .attendance-card-value.work-time {
+            color: #4CAF50;
+        }
+
+        .attendance-card-value.break-time {
+            color: #FFA500;
+        }
+
+        .attendance-buttons {
+            display: flex;
+            gap: 0.8rem;
+            flex-wrap: wrap;
+            margin-top: 1rem;
+            justify-content: center;
+        }
+
+        .attendance-btn {
+            padding: 0.8rem 1.5rem;
+            border: none;
+            border-radius: 10px;
+            font-family: 'Cairo', sans-serif;
+            font-weight: 700;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .attendance-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+        }
+
+        .attendance-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-checkin {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+        }
+
+        .btn-checkout {
+            background: linear-gradient(135deg, #f44336, #d32f2f);
+            color: white;
+        }
+
+        .btn-break {
+            background: linear-gradient(135deg, #FFA500, #FF8C00);
+            color: white;
+        }
+
+        .btn-break.on-break {
+            background: linear-gradient(135deg, #9C27B0, #7B1FA2);
+            animation: pulse-break 1s ease-in-out infinite;
+        }
+
+        @keyframes pulse-break {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(156, 39, 176, 0.7); }
+            50% { box-shadow: 0 0 0 10px rgba(156, 39, 176, 0); }
+        }
+
+        .break-warning {
+            background: linear-gradient(135deg, #f44336, #d32f2f);
+            color: white;
+            padding: 0.8rem;
+            border-radius: 8px;
+            text-align: center;
+            margin-top: 1rem;
+            font-weight: 600;
+            animation: shake 0.5s ease-in-out;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        .attendance-status {
+            display: inline-block;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .status-active {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .status-break {
+            background: #FFA500;
+            color: white;
+        }
+
+        .status-offline {
+            background: #666;
+            color: white;
+        }
     </style>
 </head>
 <body>
@@ -870,6 +1242,76 @@
                         <div class="tracker-label">منتصف الليل</div>
                     </div>
                 </div>
+            </div>
+
+            <!-- Attendance System -->
+            <div class="attendance-system" id="attendanceSystem">
+                <div class="attendance-header">
+                    <div class="attendance-title">
+                        <span>⏰</span>
+                        <span>نظام الحضور والانصراف</span>
+                        <span class="attendance-status status-offline" id="attendanceStatus">غير مسجل</span>
+                    </div>
+                    <div class="attendance-employee">
+                        <div id="loggedInEmployee" style="
+                            background: linear-gradient(135deg, #4CAF50, #45a049);
+                            color: white;
+                            padding: 0.6rem 1.2rem;
+                            border-radius: 10px;
+                            font-weight: 700;
+                            display: none;
+                            align-items: center;
+                            gap: 0.5rem;
+                        ">
+                            <span>👤</span>
+                            <span id="employeeDisplayName">-</span>
+                        </div>
+                        <a href="admin-login.html" id="loginLink" style="
+                            background: linear-gradient(135deg, #E91E8C, #FF1493);
+                            color: white;
+                            padding: 0.6rem 1.2rem;
+                            border-radius: 10px;
+                            text-decoration: none;
+                            font-weight: 700;
+                            display: inline-flex;
+                            align-items: center;
+                            gap: 0.5rem;
+                        ">🔐 تسجيل الدخول أولاً</a>
+                    </div>
+                </div>
+
+                <div class="attendance-content">
+                    <div class="attendance-card">
+                        <div class="attendance-card-title">وقت الدخول</div>
+                        <div class="attendance-card-value" id="checkinTime">--:--</div>
+                    </div>
+                    <div class="attendance-card">
+                        <div class="attendance-card-title">ساعات العمل</div>
+                        <div class="attendance-card-value work-time" id="workHours">0:00:00</div>
+                    </div>
+                    <div class="attendance-card">
+                        <div class="attendance-card-title">وقت البريك المتبقي</div>
+                        <div class="attendance-card-value break-time" id="breakRemaining">45:00</div>
+                    </div>
+                    <div class="attendance-card">
+                        <div class="attendance-card-title">وقت الخروج المتوقع</div>
+                        <div class="attendance-card-value" id="expectedCheckout">--:--</div>
+                    </div>
+                </div>
+
+                <div class="attendance-buttons">
+                    <button class="attendance-btn btn-checkin" id="btnCheckin" onclick="checkIn()" disabled>
+                        <span>✅</span> تأكيد الدخول
+                    </button>
+                    <button class="attendance-btn btn-break" id="btnBreak" onclick="toggleBreak()" disabled>
+                        <span>☕</span> <span id="breakBtnText">بدء البريك</span>
+                    </button>
+                    <button class="attendance-btn btn-checkout" id="btnCheckout" onclick="checkOut()" disabled>
+                        <span>🚪</span> تسجيل الخروج
+                    </button>
+                </div>
+
+                <div id="breakWarning" style="display: none;"></div>
             </div>
 
             <!-- Team Roles Section -->
@@ -984,6 +1426,76 @@
         <!-- Quick Actions -->
         <div class="quick-actions" id="quickActions"></div>
 
+        <!-- Mental Map - Decision Tree with Icons -->
+        <div class="mental-map">
+            <div class="mental-map-title">
+                <span>🧠</span>
+                <span>الخريطة الذهنية - اختر التصنيف ثم المشكلة</span>
+            </div>
+            <div class="mental-map-categories" id="mapCategories">
+                <div class="map-category" data-category="identity" onclick="selectMapCategory('identity')">
+                    <span class="map-category-icon">🪪</span>
+                    <span class="map-category-label">التوثيق</span>
+                </div>
+                <div class="map-category" data-category="financial" onclick="selectMapCategory('financial')">
+                    <span class="map-category-icon">💰</span>
+                    <span class="map-category-label">المالية</span>
+                </div>
+                <div class="map-category" data-category="technical" onclick="selectMapCategory('technical')">
+                    <span class="map-category-icon">🔧</span>
+                    <span class="map-category-label">التقنية</span>
+                </div>
+                <div class="map-category" data-category="property" onclick="selectMapCategory('property')">
+                    <span class="map-category-icon">🏠</span>
+                    <span class="map-category-label">العقارات</span>
+                </div>
+                <div class="map-category" data-category="booking" onclick="selectMapCategory('booking')">
+                    <span class="map-category-icon">📅</span>
+                    <span class="map-category-label">الحجوزات</span>
+                </div>
+                <div class="map-category" data-category="ministry" onclick="selectMapCategory('ministry')">
+                    <span class="map-category-icon">🏛️</span>
+                    <span class="map-category-label">الوزارة</span>
+                </div>
+                <div class="map-category" data-category="violation" onclick="selectMapCategory('violation')">
+                    <span class="map-category-icon">⚠️</span>
+                    <span class="map-category-label">المخالفات</span>
+                </div>
+                <div class="map-category" data-category="support" onclick="selectMapCategory('support')">
+                    <span class="map-category-icon">💬</span>
+                    <span class="map-category-label">الدعم</span>
+                </div>
+                <div class="map-category" data-category="quality" onclick="selectMapCategory('quality')">
+                    <span class="map-category-icon">⭐</span>
+                    <span class="map-category-label">الجودة</span>
+                </div>
+                <div class="map-category" data-category="sales" onclick="selectMapCategory('sales')">
+                    <span class="map-category-icon">📈</span>
+                    <span class="map-category-label">المبيعات</span>
+                </div>
+                <div class="map-category" data-category="reports" onclick="selectMapCategory('reports')">
+                    <span class="map-category-icon">📊</span>
+                    <span class="map-category-label">التقارير</span>
+                </div>
+            </div>
+
+            <!-- Subcategories / Problems -->
+            <div class="map-subcategories" id="mapSubcategories">
+                <div class="map-subcategories-title" id="mapSubTitle">اختر المشكلة:</div>
+                <div class="map-problems" id="mapProblems"></div>
+            </div>
+
+            <!-- Response Display -->
+            <div class="map-response" id="mapResponse">
+                <div class="map-response-title">
+                    <span>✅</span>
+                    <span>الرد المعتمد:</span>
+                </div>
+                <div class="map-response-text" id="mapResponseText"></div>
+                <button class="map-copy-btn" onclick="copyMapResponse()">📋 نسخ الرد</button>
+            </div>
+        </div>
+
         <!-- Navigation Button -->
         <div style="text-align: center; margin: 2rem 0;">
             <button onclick="openModal()" style="
@@ -1021,6 +1533,28 @@
     </div>
 
     <script>
+        // Check authentication - redirect to login if not logged in
+        (function checkAuth() {
+            const session = localStorage.getItem('adminSession');
+            if (!session) {
+                // Not logged in - redirect to login page
+                window.location.href = 'admin-login.html';
+                return;
+            }
+
+            const data = JSON.parse(session);
+            const loginTime = new Date(data.loginTime);
+            const now = new Date();
+            const hoursDiff = (now - loginTime) / (1000 * 60 * 60);
+
+            // Session expires after 24 hours
+            if (hoursDiff >= 24) {
+                localStorage.removeItem('adminSession');
+                window.location.href = 'admin-login.html';
+                return;
+            }
+        })();
+
         // Complete Data Structure with ALL content
         let currentFilter = 'all';
 
@@ -1592,8 +2126,37 @@
             rolesTitle.classList.toggle('collapsed');
         }
 
+        // Initialize Firebase for realtime updates
+        let firebaseInitialized = false;
+
+        async function initFirebaseForLibrary() {
+            if (typeof initFirebase === 'function') {
+                firebaseInitialized = initFirebase();
+                if (firebaseInitialized && typeof GoldenHostDB !== 'undefined') {
+                    // Listen for realtime changes to responses
+                    GoldenHostDB.listenToResponses((data) => {
+                        if (data) {
+                            // Convert Firebase object to array
+                            const updatedResponses = Object.entries(data).map(([key, value]) => ({
+                                ...value,
+                                firebaseKey: key
+                            }));
+                            // Update local data and re-render
+                            window.responsesData = updatedResponses;
+                            renderResponses();
+                            console.log('🔄 الردود تم تحديثها تلقائياً من Firebase');
+                            showNotification('🔄 تم تحديث الردود');
+                        }
+                    });
+                    console.log('✅ Firebase realtime listening enabled');
+                }
+            }
+        }
+
         // Initialize
-        function init() {
+        async function init() {
+            // Initialize Firebase first
+            await initFirebaseForLibrary();
             renderFilterTabs();
             renderResponses();
             renderQuickActions();
@@ -1601,6 +2164,8 @@
             setInterval(updateCurrentTime, 1000);
             checkPerformanceTime();
             setInterval(checkPerformanceTime, 60000);
+            // Initialize attendance system
+            initAttendanceSystem();
         }
 
         // Update current time
@@ -1713,11 +2278,13 @@
                 return;
             }
 
-            console.log('Total responses:', libraryData.responses.length);
+            // Use Firebase data if available, otherwise use local data
+            const responses = window.responsesData || libraryData.responses;
+            console.log('Total responses:', responses.length);
 
             const searchTerm = document.getElementById('searchInput')?.value?.toLowerCase() || '';
 
-            let filtered = libraryData.responses.filter(response => {
+            let filtered = responses.filter(response => {
                 const matchesFilter = currentFilter === 'all' || response.category === currentFilter;
                 const matchesSearch = !searchTerm ||
                     response.title.toLowerCase().includes(searchTerm) ||
@@ -1888,6 +2455,74 @@
                 notification.style.transition = 'opacity 0.5s';
                 setTimeout(() => notification.remove(), 500);
             }, 3000);
+        }
+
+        // ==================== MENTAL MAP FUNCTIONS ====================
+        let selectedMapCategory = null;
+        let selectedMapProblem = null;
+
+        function selectMapCategory(category) {
+            // Update active state on categories
+            document.querySelectorAll('.map-category').forEach(el => {
+                el.classList.remove('active');
+            });
+            document.querySelector(`[data-category="${category}"]`).classList.add('active');
+
+            selectedMapCategory = category;
+            selectedMapProblem = null;
+
+            // Get responses for this category
+            const categoryResponses = libraryData.responses.filter(r => r.category === category);
+
+            // Show problems list
+            const problemsContainer = document.getElementById('mapProblems');
+            problemsContainer.innerHTML = '';
+
+            categoryResponses.forEach(response => {
+                const problemDiv = document.createElement('div');
+                problemDiv.className = 'map-problem';
+                problemDiv.setAttribute('data-id', response.id);
+                problemDiv.textContent = response.title;
+                problemDiv.onclick = () => selectMapProblem(response.id);
+                problemsContainer.appendChild(problemDiv);
+            });
+
+            // Show subcategories section
+            document.getElementById('mapSubcategories').classList.add('show');
+
+            // Hide response until problem is selected
+            document.getElementById('mapResponse').classList.remove('show');
+        }
+
+        function selectMapProblem(responseId) {
+            // Update active state on problems
+            document.querySelectorAll('.map-problem').forEach(el => {
+                el.classList.remove('active');
+            });
+            document.querySelector(`[data-id="${responseId}"]`).classList.add('active');
+
+            selectedMapProblem = responseId;
+
+            // Get the response
+            const response = libraryData.responses.find(r => r.id == responseId);
+
+            if (response) {
+                // Show the response
+                document.getElementById('mapResponseText').textContent = response.response;
+                document.getElementById('mapResponse').classList.add('show');
+
+                // Scroll to response
+                document.getElementById('mapResponse').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+        }
+
+        function copyMapResponse() {
+            const responseText = document.getElementById('mapResponseText').textContent;
+            if (responseText) {
+                navigator.clipboard.writeText(responseText).then(() => {
+                    showNotification('تم نسخ الرد بنجاح');
+                });
+            }
         }
 
         // ==================== REPORTS SYSTEM ====================
@@ -2113,6 +2748,500 @@
             closeSalesModal();
         }
 
+        // ==================== ATTENDANCE SYSTEM ====================
+
+        let attendanceData = {
+            employee: null,
+            checkinTime: null,
+            isOnBreak: false,
+            breakStartTime: null,
+            totalBreakUsed: 0, // in seconds
+            maxBreakTime: 45 * 60, // 45 minutes in seconds
+            workHours: 7, // required work hours
+            maxHours: 8, // auto checkout after 8 hours
+            workInterval: null,
+            breakInterval: null
+        };
+
+        // Check if user is logged in from admin-login
+        function getLoggedInUser() {
+            const session = localStorage.getItem('adminSession');
+            if (session) {
+                return JSON.parse(session);
+            }
+            return null;
+        }
+
+        function initAttendanceSystem() {
+            const user = getLoggedInUser();
+
+            if (!user) {
+                // Not logged in - show login link
+                document.getElementById('loginLink').style.display = 'inline-flex';
+                document.getElementById('loggedInEmployee').style.display = 'none';
+                resetAttendanceUI();
+                return;
+            }
+
+            // User is logged in - show their name
+            document.getElementById('loginLink').style.display = 'none';
+            document.getElementById('loggedInEmployee').style.display = 'flex';
+            document.getElementById('employeeDisplayName').textContent = user.name;
+
+            // Check attendance for this employee
+            checkEmployeeAttendance(user.username);
+        }
+
+        function checkEmployeeAttendance(employee) {
+            if (!employee) {
+                resetAttendanceUI();
+                return;
+            }
+
+            // Load saved attendance data for this employee
+            const savedData = localStorage.getItem(`attendance_${employee}_${getTodayDate()}`);
+            if (savedData) {
+                const data = JSON.parse(savedData);
+                attendanceData = { ...attendanceData, ...data };
+                attendanceData.employee = employee;
+
+                if (data.checkinTime && !data.checkoutTime) {
+                    // Employee already checked in today
+                    restoreAttendanceSession();
+                } else if (data.checkoutTime) {
+                    // Already checked out today
+                    showCheckedOutState(data);
+                } else {
+                    enableCheckin();
+                }
+            } else {
+                attendanceData.employee = employee;
+                enableCheckin();
+            }
+        }
+
+        function getTodayDate() {
+            return new Date().toISOString().split('T')[0];
+        }
+
+        function resetAttendanceUI() {
+            document.getElementById('btnCheckin').disabled = true;
+            document.getElementById('btnBreak').disabled = true;
+            document.getElementById('btnCheckout').disabled = true;
+            document.getElementById('checkinTime').textContent = '--:--';
+            document.getElementById('workHours').textContent = '0:00:00';
+            document.getElementById('breakRemaining').textContent = '45:00';
+            document.getElementById('expectedCheckout').textContent = '--:--';
+            document.getElementById('attendanceStatus').textContent = 'غير مسجل';
+            document.getElementById('attendanceStatus').className = 'attendance-status status-offline';
+            clearIntervals();
+        }
+
+        function enableCheckin() {
+            document.getElementById('btnCheckin').disabled = false;
+            document.getElementById('btnBreak').disabled = true;
+            document.getElementById('btnCheckout').disabled = true;
+            document.getElementById('attendanceStatus').textContent = 'غير مسجل';
+            document.getElementById('attendanceStatus').className = 'attendance-status status-offline';
+        }
+
+        function checkIn() {
+            const user = getLoggedInUser();
+            if (!user) {
+                alert('⚠️ يرجى تسجيل الدخول أولاً');
+                window.location.href = 'admin-login.html';
+                return;
+            }
+
+            const employee = user.username;
+            const now = new Date();
+            attendanceData.checkinTime = now.getTime();
+            attendanceData.employee = employee;
+            attendanceData.totalBreakUsed = 0;
+            attendanceData.isOnBreak = false;
+
+            // Update UI
+            document.getElementById('checkinTime').textContent = formatTime(now);
+
+            // Calculate expected checkout (8 hours later)
+            const expectedOut = new Date(now.getTime() + (8 * 60 * 60 * 1000));
+            document.getElementById('expectedCheckout').textContent = formatTime(expectedOut);
+
+            // Update status
+            document.getElementById('attendanceStatus').textContent = 'متصل';
+            document.getElementById('attendanceStatus').className = 'attendance-status status-active';
+
+            // Enable/disable buttons
+            document.getElementById('btnCheckin').disabled = true;
+            document.getElementById('btnBreak').disabled = false;
+            document.getElementById('btnCheckout').disabled = false;
+
+            // Start work timer
+            startWorkTimer();
+
+            // Save to localStorage
+            saveAttendanceData();
+
+            showNotification('✅ تم تسجيل الدخول بنجاح! يوم عمل موفق');
+        }
+
+        function startWorkTimer() {
+            clearIntervals();
+
+            attendanceData.workInterval = setInterval(() => {
+                if (attendanceData.isOnBreak) return;
+
+                const now = new Date().getTime();
+                const elapsed = now - attendanceData.checkinTime - (attendanceData.totalBreakUsed * 1000);
+
+                // Update work hours display
+                document.getElementById('workHours').textContent = formatDuration(elapsed);
+
+                // Check if 8 hours completed
+                const hoursWorked = elapsed / (1000 * 60 * 60);
+                if (hoursWorked >= attendanceData.maxHours) {
+                    autoCheckout();
+                }
+
+                // Save periodically
+                saveAttendanceData();
+            }, 1000);
+        }
+
+        function toggleBreak() {
+            if (attendanceData.isOnBreak) {
+                endBreak();
+            } else {
+                startBreak();
+            }
+        }
+
+        function startBreak() {
+            const remainingBreak = attendanceData.maxBreakTime - attendanceData.totalBreakUsed;
+            if (remainingBreak <= 0) {
+                alert('⚠️ لقد استنفدت وقت البريك المسموح (45 دقيقة)');
+                return;
+            }
+
+            attendanceData.isOnBreak = true;
+            attendanceData.breakStartTime = new Date().getTime();
+
+            // Update UI
+            document.getElementById('attendanceStatus').textContent = 'في البريك';
+            document.getElementById('attendanceStatus').className = 'attendance-status status-break';
+            document.getElementById('btnBreak').classList.add('on-break');
+            document.getElementById('breakBtnText').textContent = 'إنهاء البريك';
+
+            // Start break countdown
+            attendanceData.breakInterval = setInterval(() => {
+                const now = new Date().getTime();
+                const breakElapsed = Math.floor((now - attendanceData.breakStartTime) / 1000);
+                const totalUsed = attendanceData.totalBreakUsed + breakElapsed;
+                const remaining = attendanceData.maxBreakTime - totalUsed;
+
+                if (remaining <= 0) {
+                    // Break time exhausted
+                    endBreak();
+                    showBreakWarning('⚠️ انتهى وقت البريك! يرجى العودة للعمل');
+                    return;
+                }
+
+                // Update display
+                document.getElementById('breakRemaining').textContent = formatBreakTime(remaining);
+
+                // Warning at 5 minutes
+                if (remaining === 300) {
+                    showBreakWarning('⏰ تبقى 5 دقائق فقط من البريك!');
+                }
+            }, 1000);
+
+            saveAttendanceData();
+            showNotification('☕ بدأ وقت البريك - استمتع باستراحتك!');
+        }
+
+        function endBreak() {
+            if (!attendanceData.isOnBreak) return;
+
+            const now = new Date().getTime();
+            const breakDuration = Math.floor((now - attendanceData.breakStartTime) / 1000);
+            attendanceData.totalBreakUsed += breakDuration;
+            attendanceData.isOnBreak = false;
+            attendanceData.breakStartTime = null;
+
+            // Clear break interval
+            if (attendanceData.breakInterval) {
+                clearInterval(attendanceData.breakInterval);
+                attendanceData.breakInterval = null;
+            }
+
+            // Update UI
+            document.getElementById('attendanceStatus').textContent = 'متصل';
+            document.getElementById('attendanceStatus').className = 'attendance-status status-active';
+            document.getElementById('btnBreak').classList.remove('on-break');
+            document.getElementById('breakBtnText').textContent = 'بدء البريك';
+
+            // Update remaining break display
+            const remaining = attendanceData.maxBreakTime - attendanceData.totalBreakUsed;
+            document.getElementById('breakRemaining').textContent = formatBreakTime(Math.max(0, remaining));
+
+            // Hide warning
+            document.getElementById('breakWarning').style.display = 'none';
+
+            saveAttendanceData();
+            showNotification('💪 أهلاً بعودتك! استمر في العمل الرائع');
+        }
+
+        function checkOut() {
+            if (!confirm('هل أنت متأكد من تسجيل الخروج؟')) return;
+
+            performCheckout('manual');
+        }
+
+        function autoCheckout() {
+            performCheckout('auto');
+            showNotification('🎉 مبروك! أكملت 8 ساعات عمل - تم تسجيل خروجك تلقائياً');
+        }
+
+        function performCheckout(type) {
+            const now = new Date();
+            const checkoutTime = now.getTime();
+
+            // End break if on break
+            if (attendanceData.isOnBreak) {
+                endBreak();
+            }
+
+            // Calculate total work time
+            const totalWorkMs = checkoutTime - attendanceData.checkinTime - (attendanceData.totalBreakUsed * 1000);
+            const workHours = totalWorkMs / (1000 * 60 * 60);
+
+            // Save checkout data
+            const checkoutData = {
+                ...attendanceData,
+                checkoutTime: checkoutTime,
+                checkoutType: type,
+                totalWorkHours: workHours.toFixed(2)
+            };
+
+            localStorage.setItem(`attendance_${attendanceData.employee}_${getTodayDate()}`, JSON.stringify(checkoutData));
+
+            // Save to attendance history
+            saveToAttendanceHistory(checkoutData);
+
+            // Clear intervals
+            clearIntervals();
+
+            // Update UI
+            document.getElementById('attendanceStatus').textContent = 'تم الخروج';
+            document.getElementById('attendanceStatus').className = 'attendance-status status-offline';
+            document.getElementById('btnCheckin').disabled = true;
+            document.getElementById('btnBreak').disabled = true;
+            document.getElementById('btnCheckout').disabled = true;
+
+            if (type === 'manual') {
+                showNotification(`✅ تم تسجيل الخروج - عملت ${workHours.toFixed(1)} ساعة اليوم`);
+            }
+        }
+
+        function saveToAttendanceHistory(data) {
+            const history = JSON.parse(localStorage.getItem('attendanceHistory') || '[]');
+            history.unshift({
+                employee: data.employee,
+                date: getTodayDate(),
+                checkinTime: new Date(data.checkinTime).toLocaleTimeString('ar-SA'),
+                checkoutTime: new Date(data.checkoutTime).toLocaleTimeString('ar-SA'),
+                totalWorkHours: data.totalWorkHours,
+                breakUsed: Math.floor(data.totalBreakUsed / 60) + ' دقيقة',
+                checkoutType: data.checkoutType
+            });
+            localStorage.setItem('attendanceHistory', JSON.stringify(history));
+        }
+
+        function restoreAttendanceSession() {
+            // Restore UI from saved data
+            document.getElementById('checkinTime').textContent = formatTime(new Date(attendanceData.checkinTime));
+
+            const expectedOut = new Date(attendanceData.checkinTime + (8 * 60 * 60 * 1000));
+            document.getElementById('expectedCheckout').textContent = formatTime(expectedOut);
+
+            // Update break remaining
+            const breakRemaining = attendanceData.maxBreakTime - attendanceData.totalBreakUsed;
+            document.getElementById('breakRemaining').textContent = formatBreakTime(Math.max(0, breakRemaining));
+
+            // Enable buttons
+            document.getElementById('btnCheckin').disabled = true;
+            document.getElementById('btnBreak').disabled = breakRemaining <= 0;
+            document.getElementById('btnCheckout').disabled = false;
+
+            // Update status
+            if (attendanceData.isOnBreak) {
+                document.getElementById('attendanceStatus').textContent = 'في البريك';
+                document.getElementById('attendanceStatus').className = 'attendance-status status-break';
+                document.getElementById('btnBreak').classList.add('on-break');
+                document.getElementById('breakBtnText').textContent = 'إنهاء البريك';
+            } else {
+                document.getElementById('attendanceStatus').textContent = 'متصل';
+                document.getElementById('attendanceStatus').className = 'attendance-status status-active';
+            }
+
+            // Start timers
+            startWorkTimer();
+            if (attendanceData.isOnBreak) {
+                // Restore break timer
+                attendanceData.breakInterval = setInterval(() => {
+                    const now = new Date().getTime();
+                    const breakElapsed = Math.floor((now - attendanceData.breakStartTime) / 1000);
+                    const totalUsed = attendanceData.totalBreakUsed + breakElapsed;
+                    const remaining = attendanceData.maxBreakTime - totalUsed;
+
+                    if (remaining <= 0) {
+                        endBreak();
+                        showBreakWarning('⚠️ انتهى وقت البريك!');
+                        return;
+                    }
+
+                    document.getElementById('breakRemaining').textContent = formatBreakTime(remaining);
+                }, 1000);
+            }
+
+            showNotification('👋 مرحباً بعودتك! تم استعادة جلسة العمل');
+        }
+
+        function showCheckedOutState(data) {
+            document.getElementById('checkinTime').textContent = formatTime(new Date(data.checkinTime));
+            document.getElementById('workHours').textContent = data.totalWorkHours + ' ساعة';
+            document.getElementById('breakRemaining').textContent = 'انتهى';
+            document.getElementById('expectedCheckout').textContent = formatTime(new Date(data.checkoutTime));
+            document.getElementById('attendanceStatus').textContent = 'تم الخروج';
+            document.getElementById('attendanceStatus').className = 'attendance-status status-offline';
+            document.getElementById('btnCheckin').disabled = true;
+            document.getElementById('btnBreak').disabled = true;
+            document.getElementById('btnCheckout').disabled = true;
+        }
+
+        function saveAttendanceData() {
+            if (!attendanceData.employee) return;
+            localStorage.setItem(`attendance_${attendanceData.employee}_${getTodayDate()}`, JSON.stringify(attendanceData));
+        }
+
+        function clearIntervals() {
+            if (attendanceData.workInterval) {
+                clearInterval(attendanceData.workInterval);
+                attendanceData.workInterval = null;
+            }
+            if (attendanceData.breakInterval) {
+                clearInterval(attendanceData.breakInterval);
+                attendanceData.breakInterval = null;
+            }
+        }
+
+        function formatTime(date) {
+            return date.toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' });
+        }
+
+        function formatDuration(ms) {
+            const totalSeconds = Math.floor(ms / 1000);
+            const hours = Math.floor(totalSeconds / 3600);
+            const minutes = Math.floor((totalSeconds % 3600) / 60);
+            const seconds = totalSeconds % 60;
+            return `${hours}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        }
+
+        function formatBreakTime(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            return `${mins}:${String(secs).padStart(2, '0')}`;
+        }
+
+        function showBreakWarning(message) {
+            const warning = document.getElementById('breakWarning');
+            warning.className = 'break-warning';
+            warning.textContent = message;
+            warning.style.display = 'block';
+
+            // Play alert sound
+            try {
+                const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBjWO1vLPeywGKHvI8N2SQgoUXrTp66hVFApGn+DyvmwhBjWO1vLPeywGKHvI8N2SQgoUXrTp66hVFApGn+DyvmwhBjWO1vLPeywGKHvI8N2SQgoUXrTp66hVFA==');
+                audio.play();
+            } catch(e) {}
+        }
+
+        // Get current logged in employee
+        function getCurrentEmployee() {
+            const user = getLoggedInUser();
+            if (!user) {
+                return null;
+            }
+            // Check if employee has checked in for attendance
+            const savedData = localStorage.getItem(`attendance_${user.username}_${getTodayDate()}`);
+            if (savedData) {
+                const data = JSON.parse(savedData);
+                if (data.checkinTime && !data.checkoutTime) {
+                    return user.username;
+                }
+            }
+            return null;
+        }
+
+        function getEmployeeName(employeeId) {
+            const names = {
+                'abdulaziz': 'عبدالعزيز - مشرف',
+                'hanouf': 'هنوف - مشرف تطوير',
+                'yazeed': 'يزيد - دعم فني ومبيعات',
+                'rawabi': 'روابي - دعم فني ومبيعات',
+                'raja': 'رجا - دعم فني ومساعد مبيعات',
+                'ibrahim': 'ابراهيم - دعم فني ومساعد مبيعات',
+                'mostafa': 'مصطفى - دعم فني ومساعد مبيعات'
+            };
+            return names[employeeId] || employeeId;
+        }
+
+        // Check if employee is logged in before opening modals
+        function checkEmployeeLoggedIn() {
+            const user = getLoggedInUser();
+            if (!user) {
+                alert('⚠️ يجب تسجيل الدخول أولاً!');
+                window.location.href = 'admin-login.html';
+                return false;
+            }
+            const employee = getCurrentEmployee();
+            if (!employee) {
+                alert('⚠️ يجب تأكيد الدخول في نظام الحضور أولاً!\n\nاضغط زر "تأكيد الدخول" لبدء يوم العمل');
+                return false;
+            }
+            return true;
+        }
+
+        // Override modal functions to check login
+        const originalShowReportModal = showReportModal;
+        showReportModal = function() {
+            if (!checkEmployeeLoggedIn()) return;
+            originalShowReportModal();
+            // Auto-fill employee
+            document.getElementById('employeeName').value = getCurrentEmployee();
+        };
+
+        const originalShowRefundModal = showRefundModal;
+        showRefundModal = function() {
+            if (!checkEmployeeLoggedIn()) return;
+            originalShowRefundModal();
+            document.getElementById('refundEmployeeName').value = getCurrentEmployee();
+        };
+
+        const originalShowConversationModal = showConversationModal;
+        showConversationModal = function() {
+            if (!checkEmployeeLoggedIn()) return;
+            originalShowConversationModal();
+            document.getElementById('convEmployeeName').value = getCurrentEmployee();
+        };
+
+        const originalShowSalesModal = showSalesModal;
+        showSalesModal = function() {
+            if (!checkEmployeeLoggedIn()) return;
+            originalShowSalesModal();
+            document.getElementById('salesEmployeeName').value = getCurrentEmployee();
+        };
+
         // Initialize on page load
         document.addEventListener('DOMContentLoaded', init);
     </script>
@@ -2231,15 +3360,16 @@
             <form id="reportForm" onsubmit="submitReport(event)" style="display: flex; flex-direction: column; gap: 1rem;">
                 <div>
                     <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: #333;">
-                        يوزر الموظف <span style="color: red;">*</span>
+                        يوزر الموظف <span style="color: #4CAF50;">(تلقائي)</span>
                     </label>
-                    <select id="employeeName" required style="
+                    <select id="employeeName" required disabled style="
                         width: 100%;
                         padding: 0.8rem;
-                        border: 2px solid #ddd;
+                        border: 2px solid #4CAF50;
                         border-radius: 8px;
                         font-family: 'Cairo', sans-serif;
                         font-size: 1rem;
+                        background: #f0fff0;
                     ">
                         <option value="">اختر الموظف</option>
                         <option value="abdulaziz">عبدالعزيز - مشرف</option>
@@ -2439,15 +3569,16 @@
             <form id="refundForm" onsubmit="submitRefund(event)" style="display: flex; flex-direction: column; gap: 1rem;">
                 <div>
                     <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: #333;">
-                        يوزر الموظف <span style="color: red;">*</span>
+                        يوزر الموظف <span style="color: #4CAF50;">(تلقائي)</span>
                     </label>
-                    <select id="refundEmployeeName" required style="
+                    <select id="refundEmployeeName" required disabled style="
                         width: 100%;
                         padding: 0.8rem;
-                        border: 2px solid #ddd;
+                        border: 2px solid #4CAF50;
                         border-radius: 8px;
                         font-family: 'Cairo', sans-serif;
                         font-size: 1rem;
+                        background: #f0fff0;
                     ">
                         <option value="">اختر الموظف</option>
                         <option value="abdulaziz">عبدالعزيز - مشرف</option>
@@ -2611,15 +3742,16 @@
             <form id="conversationForm" onsubmit="submitConversation(event)" style="display: flex; flex-direction: column; gap: 1rem;">
                 <div>
                     <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: #333;">
-                        يوزر الموظف <span style="color: red;">*</span>
+                        يوزر الموظف <span style="color: #4CAF50;">(تلقائي)</span>
                     </label>
-                    <select id="convEmployeeName" required style="
+                    <select id="convEmployeeName" required disabled style="
                         width: 100%;
                         padding: 0.8rem;
-                        border: 2px solid #ddd;
+                        border: 2px solid #4CAF50;
                         border-radius: 8px;
                         font-family: 'Cairo', sans-serif;
                         font-size: 1rem;
+                        background: #f0fff0;
                     ">
                         <option value="">اختر الموظف</option>
                         <option value="abdulaziz">عبدالعزيز - مشرف</option>
@@ -2780,15 +3912,16 @@
             <form id="salesForm" onsubmit="submitSales(event)" style="display: flex; flex-direction: column; gap: 1rem;">
                 <div>
                     <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: #333;">
-                        يوزر الموظف <span style="color: red;">*</span>
+                        يوزر الموظف <span style="color: #4CAF50;">(تلقائي)</span>
                     </label>
-                    <select id="salesEmployeeName" required style="
+                    <select id="salesEmployeeName" required disabled style="
                         width: 100%;
                         padding: 0.8rem;
-                        border: 2px solid #ddd;
+                        border: 2px solid #4CAF50;
                         border-radius: 8px;
                         font-family: 'Cairo', sans-serif;
                         font-size: 1rem;
+                        background: #f0fff0;
                     ">
                         <option value="">اختر الموظف</option>
                         <option value="abdulaziz">عبدالعزيز - مشرف</option>

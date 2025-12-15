@@ -117,9 +117,12 @@ const GoldenHostDB = {
         conversations: 'goldenhost/conversations',
         sales: 'goldenhost/sales',
         library: 'goldenhost/library',
+        responses: 'goldenhost/responses',
+        categories: 'goldenhost/categories',
         activity: 'goldenhost/activity',
         users: 'goldenhost/users',
-        sessions: 'goldenhost/sessions'
+        sessions: 'goldenhost/sessions',
+        attendance: 'goldenhost/attendance'
     },
 
     // Reports (البلاغات)
@@ -172,6 +175,45 @@ const GoldenHostDB = {
     },
     async loadLibrary() {
         return await loadFromFirebase(this.paths.library);
+    },
+
+    // Responses (الردود المعتمدة)
+    async saveResponses(responses) {
+        return await saveToFirebase(this.paths.responses, responses);
+    },
+    async loadResponses() {
+        return await loadFromFirebase(this.paths.responses) || [];
+    },
+    async addResponse(response) {
+        return await pushToFirebase(this.paths.responses, response);
+    },
+    async updateResponse(responseId, updates) {
+        return await updateInFirebase(`${this.paths.responses}/${responseId}`, updates);
+    },
+    async deleteResponse(responseId) {
+        return await deleteFromFirebase(`${this.paths.responses}/${responseId}`);
+    },
+    listenToResponses(callback) {
+        listenToFirebase(this.paths.responses, callback);
+    },
+
+    // Categories (التصنيفات)
+    async saveCategories(categories) {
+        return await saveToFirebase(this.paths.categories, categories);
+    },
+    async loadCategories() {
+        return await loadFromFirebase(this.paths.categories) || [];
+    },
+
+    // Attendance (الحضور)
+    async saveAttendance(date, employeeId, data) {
+        return await saveToFirebase(`${this.paths.attendance}/${date}/${employeeId}`, data);
+    },
+    async loadAttendance(date) {
+        return await loadFromFirebase(`${this.paths.attendance}/${date}`) || {};
+    },
+    async loadAllAttendance() {
+        return await loadFromFirebase(this.paths.attendance) || {};
     },
 
     // Activity Log (سجل النشاطات)
