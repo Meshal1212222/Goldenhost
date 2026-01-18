@@ -2845,7 +2845,11 @@
                 return;
             }
 
-            const message = `🔔 *طلب استرداد جديد*
+            // Get and increment refund counter
+            let refundCounter = parseInt(localStorage.getItem('refundCounter') || '0') + 1;
+            localStorage.setItem('refundCounter', refundCounter.toString());
+
+            const message = `🔔 *طلب استرداد #${refundCounter}*
 
 📋 *رقم الحجز:* ${refund.bookingNumber}
 👤 *اسم العميل:* ${refund.customerName}
