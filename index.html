@@ -2796,10 +2796,65 @@
             refunds.unshift(refund);
             localStorage.setItem('customerRefunds', JSON.stringify(refunds));
 
+            // Send WhatsApp notification
+            sendRefundNotification(refund);
+
             // Show success message
             showNotification('✅ تم رفع طلب الاسترداد بنجاح! سيتم معالجته خلال 48 ساعة');
 
             closeRefundModal();
+        }
+
+        // ==================== ULTRAMSG WHATSAPP API ====================
+
+        const ULTRAMSG_CONFIG = {
+            instanceId: 'instance117440',
+            token: '21jybm4xten03x21',
+            apiUrl: 'https://api.ultramsg.com/instance117440',
+            groupId: '' // سيتم تعبئته لاحقاً
+        };
+
+        async function sendWhatsAppMessage(message, to) {
+            try {
+                const response = await fetch(`${ULTRAMSG_CONFIG.apiUrl}/messages/chat`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: new URLSearchParams({
+                        token: ULTRAMSG_CONFIG.token,
+                        to: to,
+                        body: message
+                    })
+                });
+                const result = await response.json();
+                console.log('WhatsApp message sent:', result);
+                return result;
+            } catch (error) {
+                console.error('WhatsApp error:', error);
+                return null;
+            }
+        }
+
+        async function sendRefundNotification(refund) {
+            if (!ULTRAMSG_CONFIG.groupId) {
+                console.log('Group ID not configured');
+                return;
+            }
+
+            const message = `🔔 *طلب استرداد جديد*
+
+📋 *رقم الحجز:* ${refund.bookingNumber}
+👤 *اسم العميل:* ${refund.customerName}
+💰 *المبلغ:* ${refund.amount} ريال
+📝 *السبب:* ${refund.reason}
+📄 *التفاصيل:* ${refund.details}
+👨‍💼 *الموظف:* ${refund.employeeName}
+⏰ *الوقت:* ${refund.submitTime}
+
+⏳ في انتظار الموافقة`;
+
+            await sendWhatsAppMessage(message, ULTRAMSG_CONFIG.groupId);
         }
 
         // ==================== CONVERSATIONS SYSTEM ====================
