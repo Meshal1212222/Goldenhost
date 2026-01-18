@@ -561,7 +561,7 @@
 
         // Continue to admin
         function continueToAdmin() {
-            window.location.href = 'index.html';
+            window.location.href = 'admin.html';
         }
 
         // Google Logout
@@ -708,7 +708,7 @@
                     if (data.authType === 'google') {
                         showLoggedInUser(data);
                     } else {
-                        window.location.href = 'index.html';
+                        window.location.href = 'admin.html';
                     }
                 } else {
                     localStorage.removeItem('adminSession');
