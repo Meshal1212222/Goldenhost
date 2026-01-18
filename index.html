@@ -1030,6 +1030,171 @@
             }
         }
 
+        /* Mobile Responsive - Floating Buttons */
+        @media (max-width: 768px) {
+            /* Make floating buttons smaller and repositioned */
+            .floating-action-btn {
+                width: 45px !important;
+                height: 45px !important;
+                font-size: 1.1rem !important;
+            }
+
+            /* Container padding for mobile */
+            .container {
+                padding: 0 1rem;
+            }
+
+            /* Header adjustments */
+            .header {
+                padding: 0.3rem 0;
+            }
+
+            .logo-icon {
+                width: 35px;
+                height: 35px;
+                font-size: 0.9rem;
+            }
+
+            .logo-text {
+                font-size: 1rem;
+            }
+
+            /* Performance tracker mobile */
+            .performance-tracker {
+                padding: 0.4rem 0.6rem;
+                gap: 0.3rem;
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            .tracker-item {
+                padding: 0 0.4rem;
+            }
+
+            .tracker-time {
+                font-size: 0.85rem;
+            }
+
+            .tracker-label {
+                font-size: 0.6rem;
+            }
+
+            /* Team roles compact */
+            .team-roles {
+                padding: 0.5rem 0.8rem;
+                margin-bottom: 0.8rem;
+            }
+
+            .roles-title {
+                font-size: 0.95rem;
+            }
+
+            /* Search box mobile */
+            .search-box {
+                padding: 0.4rem;
+                margin: 0.5rem 0;
+            }
+
+            .search-input {
+                padding: 0.5rem 0.8rem;
+                font-size: 0.85rem;
+            }
+
+            /* Stats cards mobile */
+            .stats {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 0.5rem;
+            }
+
+            .stat-card {
+                padding: 0.6rem 0.4rem;
+            }
+
+            .stat-num {
+                font-size: 1.2rem;
+            }
+
+            .stat-text {
+                font-size: 0.65rem;
+            }
+
+            /* Mental map mobile */
+            .mental-map {
+                padding: 1rem;
+                margin-bottom: 1rem;
+            }
+
+            .mental-map-title {
+                font-size: 1rem;
+            }
+
+            .mental-map-categories {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 0.5rem;
+            }
+
+            .map-category {
+                padding: 0.6rem 0.3rem;
+            }
+
+            .map-category-icon {
+                font-size: 1.3rem;
+                margin-bottom: 0.3rem;
+            }
+
+            .map-category-label {
+                font-size: 0.65rem;
+            }
+
+            /* Category tabs mobile */
+            .category-tabs {
+                gap: 0.3rem;
+                flex-wrap: nowrap;
+                overflow-x: auto;
+                padding-bottom: 0.5rem;
+            }
+
+            .category-tab {
+                padding: 0.4rem 0.8rem;
+                font-size: 0.75rem;
+                white-space: nowrap;
+                flex-shrink: 0;
+            }
+
+            /* Response cards mobile */
+            .response-card {
+                padding: 0.8rem;
+            }
+
+            .response-title {
+                font-size: 0.9rem;
+            }
+
+            /* Add bottom padding for floating buttons */
+            body {
+                padding-bottom: 80px;
+            }
+        }
+
+        /* Extra small devices */
+        @media (max-width: 480px) {
+            .stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .mental-map-categories {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .performance-tracker {
+                width: 100%;
+            }
+
+            .logo-section {
+                gap: 0.5rem;
+            }
+        }
+
         /* Attendance System Styles */
         .attendance-system {
             background: linear-gradient(135deg, #1a1a2e, #16213e);
@@ -3247,82 +3412,66 @@
     </script>
 
     <!-- Floating Report Button -->
-    <!-- Quick Action Buttons -->
-    <button onclick="showReportModal()" style="
-        position: fixed;
-        bottom: 30px;
-        left: 30px;
-        width: 60px;
-        height: 60px;
-        border-radius: 50%;
+    <!-- Quick Action Buttons - Mobile Responsive -->
+    <style>
+        .fab-btn {
+            position: fixed;
+            left: 15px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            color: white;
+            border: none;
+            font-size: 1.2rem;
+            cursor: pointer;
+            z-index: 1000;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .fab-btn:hover {
+            transform: scale(1.1);
+        }
+        @media (max-width: 768px) {
+            .fab-btn {
+                width: 42px;
+                height: 42px;
+                font-size: 1rem;
+                left: 10px;
+            }
+            .fab-btn.fab-1 { bottom: 15px; }
+            .fab-btn.fab-2 { bottom: 65px; }
+            .fab-btn.fab-3 { bottom: 115px; }
+            .fab-btn.fab-4 { bottom: 165px; }
+        }
+        @media (min-width: 769px) {
+            .fab-btn.fab-1 { bottom: 30px; }
+            .fab-btn.fab-2 { bottom: 95px; }
+            .fab-btn.fab-3 { bottom: 160px; }
+            .fab-btn.fab-4 { bottom: 225px; }
+        }
+    </style>
+
+    <button class="fab-btn fab-1" onclick="showReportModal()" style="
         background: linear-gradient(135deg, #FF0000, #CC0000);
-        color: white;
-        border: none;
-        font-size: 1.5rem;
-        cursor: pointer;
-        box-shadow: 0 4px 20px rgba(255,0,0,0.4);
-        z-index: 1000;
-        transition: all 0.3s;
-    " onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'" title="رفع بلاغ">
-        🚨
-    </button>
+        box-shadow: 0 4px 15px rgba(255,0,0,0.4);
+    " title="رفع بلاغ">🚨</button>
 
-    <button onclick="showRefundModal()" style="
-        position: fixed;
-        bottom: 100px;
-        left: 30px;
-        width: 60px;
-        height: 60px;
-        border-radius: 50%;
+    <button class="fab-btn fab-2" onclick="showRefundModal()" style="
         background: linear-gradient(135deg, #FFA500, #FF8C00);
-        color: white;
-        border: none;
-        font-size: 1.5rem;
-        cursor: pointer;
-        box-shadow: 0 4px 20px rgba(255,165,0,0.4);
-        z-index: 1000;
-        transition: all 0.3s;
-    " onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'" title="طلب استرداد">
-        💰
-    </button>
+        box-shadow: 0 4px 15px rgba(255,165,0,0.4);
+    " title="طلب استرداد">💰</button>
 
-    <button onclick="showConversationModal()" style="
-        position: fixed;
-        bottom: 170px;
-        left: 30px;
-        width: 60px;
-        height: 60px;
-        border-radius: 50%;
+    <button class="fab-btn fab-3" onclick="showConversationModal()" style="
         background: linear-gradient(135deg, #4B3A8C, #6B4FB5);
-        color: white;
-        border: none;
-        font-size: 1.5rem;
-        cursor: pointer;
-        box-shadow: 0 4px 20px rgba(75,58,140,0.4);
-        z-index: 1000;
-        transition: all 0.3s;
-    " onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'" title="متابعة محادثة">
-        💬
-    </button>
+        box-shadow: 0 4px 15px rgba(75,58,140,0.4);
+    " title="متابعة محادثة">💬</button>
 
-    <button onclick="showSalesModal()" style="
-        position: fixed;
-        bottom: 240px;
-        left: 30px;
-        width: 60px;
-        height: 60px;
-        border-radius: 50%;
+    <button class="fab-btn fab-4" onclick="showSalesModal()" style="
         background: linear-gradient(135deg, #28A745, #20C997);
-        color: white;
-        border: none;
-        font-size: 1.5rem;
-        cursor: pointer;
-        box-shadow: 0 4px 20px rgba(40,167,69,0.4);
-        z-index: 1000;
-        transition: all 0.3s;
-    " onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'" title="تسجيل عملية مبيعات">
-        📈
-    </button>
+        box-shadow: 0 4px 15px rgba(40,167,69,0.4);
+    " title="تسجيل عملية مبيعات">📈</button>
 
     <!-- Report Modal -->
     <div id="reportModal" style="
