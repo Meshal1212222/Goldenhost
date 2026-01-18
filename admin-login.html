@@ -10,7 +10,6 @@
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-    <script src="firebase-config.js"></script>
 
     <style>
         * {
@@ -470,15 +469,7 @@
     </div>
 
     <script>
-        // Catch all errors
-        window.onerror = function(msg, url, line) {
-            alert('خطأ: ' + msg + ' في السطر ' + line);
-            return false;
-        };
-
-        alert('الصفحة تم تحميلها!');
-
-        // Initialize Firebase
+        // Firebase Configuration
         const firebaseConfig = {
             apiKey: "AIzaSyACk3UhHouKfGsOu3ZJfaOhqLqucumn2UQ",
             authDomain: "sunday-fb28c.firebaseapp.com",
@@ -489,19 +480,40 @@
             appId: "1:24752239756:web:386c2c72624eb67ba337a9"
         };
 
-        // Initialize Firebase
-        if (!firebase.apps.length) {
-            firebase.initializeApp(firebaseConfig);
-        }
+        let auth, googleProvider;
 
-        const auth = firebase.auth();
-        const googleProvider = new firebase.auth.GoogleAuthProvider();
+        // Initialize Firebase when DOM is ready
+        document.addEventListener('DOMContentLoaded', function() {
+            try {
+                if (typeof firebase === 'undefined') {
+                    console.error('Firebase SDK not loaded');
+                    alert('خطأ: Firebase لم يتم تحميله');
+                    return;
+                }
+
+                if (!firebase.apps.length) {
+                    firebase.initializeApp(firebaseConfig);
+                }
+
+                auth = firebase.auth();
+                googleProvider = new firebase.auth.GoogleAuthProvider();
+                console.log('Firebase initialized successfully');
+            } catch (error) {
+                console.error('Firebase init error:', error);
+                alert('خطأ في تهيئة Firebase: ' + error.message);
+            }
+        });
 
         // Google Sign In
         async function googleSignIn() {
-            alert('تم الضغط على الزر!');
             console.log('Google Sign-in clicked');
             const googleBtn = document.getElementById('googleBtn');
+
+            if (!auth || !googleProvider) {
+                alert('خطأ: Firebase غير جاهز. أعد تحميل الصفحة.');
+                return;
+            }
+
             googleBtn.disabled = true;
             googleBtn.innerHTML = '<span>جاري التحميل...</span>';
 
@@ -717,24 +729,28 @@
                     }
                 } else {
                     localStorage.removeItem('adminSession');
-                    if (data.authType === 'google') {
+                    if (data.authType === 'google' && auth) {
                         auth.signOut();
                     }
                 }
             }
 
-            // Listen for auth state changes
-            auth.onAuthStateChanged((user) => {
-                if (user) {
-                    const session = localStorage.getItem('adminSession');
-                    if (session) {
-                        const data = JSON.parse(session);
-                        if (data.authType === 'google') {
-                            showLoggedInUser(data);
+            // Listen for auth state changes (wait for auth to be ready)
+            setTimeout(() => {
+                if (auth) {
+                    auth.onAuthStateChanged((user) => {
+                        if (user) {
+                            const session = localStorage.getItem('adminSession');
+                            if (session) {
+                                const data = JSON.parse(session);
+                                if (data.authType === 'google') {
+                                    showLoggedInUser(data);
+                                }
+                            }
                         }
-                    }
+                    });
                 }
-            });
+            }, 500);
         });
     </script>
 </body>
