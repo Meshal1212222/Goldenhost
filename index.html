@@ -2888,12 +2888,10 @@
 التفاصيل: ${refund.details}
 الوقت: ${dateTime}
 
-@966553174481 @966534806762
-أرجو تأكيد العملية من المالية`;
+أرجو تأكيد العملية من المالية
+@966553174481 @966534806762`;
 
-            // Send with mentions
-            const mentions = ['966553174481@c.us', '966534806762@c.us'];
-            await sendWhatsAppMessageWithMentions(message, ULTRAMSG_CONFIG.groupId, mentions);
+            await sendWhatsAppMessage(message, ULTRAMSG_CONFIG.groupId);
         }
 
         // ==================== CONVERSATIONS SYSTEM ====================
