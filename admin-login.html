@@ -5,29 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>تسجيل الدخول - لوحة التحكم | Golden Host</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
-
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         :root {
             --primary-purple: #4B3A8C;
-            --deep-purple: #362666;
             --primary-pink: #E91E8C;
             --hot-pink: #FF1493;
-            --gold: #FFD700;
             --dark-bg: #1A1A2E;
             --darker-bg: #0F0E1B;
         }
-
         body {
             font-family: 'Cairo', sans-serif;
             background: linear-gradient(135deg, var(--darker-bg) 0%, var(--dark-bg) 50%, var(--primary-purple) 100%);
@@ -35,44 +21,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            position: relative;
-            overflow: hidden;
         }
-
-        /* Animated Background */
-        body::before, body::after {
-            content: '';
-            position: fixed;
-            border-radius: 50%;
-            filter: blur(100px);
-            opacity: 0.3;
-            animation: float 20s ease-in-out infinite;
-            pointer-events: none;
-        }
-
-        body::before {
-            width: 400px;
-            height: 400px;
-            background: var(--primary-pink);
-            top: -200px;
-            right: -200px;
-        }
-
-        body::after {
-            width: 300px;
-            height: 300px;
-            background: var(--primary-purple);
-            bottom: -150px;
-            left: -150px;
-            animation-delay: 10s;
-        }
-
-        @keyframes float {
-            0%, 100% { transform: translate(0, 0) scale(1); }
-            33% { transform: translate(30px, -30px) scale(1.1); }
-            66% { transform: translate(-20px, 20px) scale(0.9); }
-        }
-
         .login-container {
             background: rgba(255, 255, 255, 0.95);
             border-radius: 20px;
@@ -80,309 +29,77 @@
             padding: 3rem;
             width: 90%;
             max-width: 450px;
-            position: relative;
-            z-index: 10;
-            animation: slideUp 0.5s ease;
         }
-
-        @keyframes slideUp {
-            from {
-                opacity: 0;
-                transform: translateY(50px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .logo-section {
-            text-align: center;
-            margin-bottom: 2rem;
-        }
-
+        .logo-section { text-align: center; margin-bottom: 2rem; }
         .logo-icon {
-            width: 80px;
-            height: 80px;
+            width: 80px; height: 80px;
             background: linear-gradient(135deg, var(--primary-pink), var(--primary-purple));
             border-radius: 20px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 700;
-            font-size: 2rem;
-            color: white;
-            box-shadow: 0 10px 30px rgba(233, 30, 140, 0.4);
+            display: inline-flex; align-items: center; justify-content: center;
+            font-weight: 700; font-size: 2rem; color: white;
             margin-bottom: 1rem;
         }
-
         .logo-text {
-            font-size: 1.8rem;
-            font-weight: 700;
+            font-size: 1.8rem; font-weight: 700;
             background: linear-gradient(135deg, var(--primary-purple), var(--primary-pink));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            margin-bottom: 0.5rem;
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
         }
-
-        .subtitle {
-            color: #666;
-            font-size: 1rem;
-        }
-
-        .form-group {
-            margin-bottom: 1.5rem;
-        }
-
-        .form-label {
-            display: block;
-            margin-bottom: 0.5rem;
-            color: var(--primary-purple);
-            font-weight: 600;
-            font-size: 1rem;
-        }
-
+        .subtitle { color: #666; font-size: 1rem; }
+        .form-group { margin-bottom: 1.5rem; }
+        .form-label { display: block; margin-bottom: 0.5rem; color: var(--primary-purple); font-weight: 600; }
         .form-input {
-            width: 100%;
-            padding: 1rem;
-            border: 2px solid #e0e0e0;
-            border-radius: 10px;
-            font-size: 1rem;
-            font-family: 'Cairo', sans-serif;
-            transition: all 0.3s;
+            width: 100%; padding: 1rem;
+            border: 2px solid #e0e0e0; border-radius: 10px;
+            font-size: 1rem; font-family: 'Cairo', sans-serif;
         }
-
-        .form-input:focus {
-            outline: none;
-            border-color: var(--primary-pink);
-            box-shadow: 0 0 0 3px rgba(233, 30, 140, 0.1);
-        }
-
-        .password-toggle {
-            position: relative;
-        }
-
+        .form-input:focus { outline: none; border-color: var(--primary-pink); }
+        .password-toggle { position: relative; }
         .toggle-btn {
-            position: absolute;
-            left: 1rem;
-            top: 50%;
-            transform: translateY(-50%);
-            background: none;
-            border: none;
-            cursor: pointer;
-            font-size: 1.2rem;
-            color: #999;
+            position: absolute; left: 1rem; top: 50%; transform: translateY(-50%);
+            background: none; border: none; cursor: pointer; font-size: 1.2rem;
         }
-
         .login-btn {
-            width: 100%;
-            padding: 1rem;
+            width: 100%; padding: 1rem;
             background: linear-gradient(135deg, var(--primary-pink), var(--hot-pink));
-            color: white;
-            border: none;
-            border-radius: 10px;
-            font-size: 1.1rem;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.3s;
-            box-shadow: 0 5px 20px rgba(233, 30, 140, 0.4);
+            color: white; border: none; border-radius: 10px;
+            font-size: 1.1rem; font-weight: 700; cursor: pointer;
             font-family: 'Cairo', sans-serif;
         }
-
-        .login-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 7px 30px rgba(233, 30, 140, 0.6);
-        }
-
-        .login-btn:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-        }
-
+        .login-btn:disabled { opacity: 0.6; cursor: not-allowed; }
         .error-message {
-            background: linear-gradient(135deg, #ff6b6b, #ee5a6f);
-            color: white;
-            padding: 1rem;
-            border-radius: 10px;
-            margin-bottom: 1rem;
-            display: none;
-            animation: shake 0.5s;
+            background: #ff6b6b; color: white; padding: 1rem;
+            border-radius: 10px; margin-bottom: 1rem; display: none;
         }
-
-        .error-message.show {
-            display: block;
-        }
-
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-10px); }
-            75% { transform: translateX(10px); }
-        }
-
-        .back-link {
-            text-align: center;
-            margin-top: 1.5rem;
-        }
-
-        .back-link a {
-            color: var(--primary-purple);
-            text-decoration: none;
-            font-weight: 600;
-            transition: all 0.3s;
-        }
-
-        .back-link a:hover {
-            color: var(--primary-pink);
-        }
-
-        .default-creds {
-            background: linear-gradient(135deg, #fff3cd, #fff8dc);
-            border: 2px solid var(--gold);
-            border-radius: 10px;
-            padding: 1rem;
-            margin-top: 1.5rem;
-            font-size: 0.9rem;
-        }
-
-        .default-creds strong {
-            color: var(--primary-purple);
-        }
-
-        /* Divider */
-        .divider {
-            display: flex;
-            align-items: center;
-            margin: 1.5rem 0;
-            gap: 1rem;
-        }
-
-        .divider-line {
-            flex: 1;
-            height: 2px;
-            background: linear-gradient(90deg, transparent, #e0e0e0, transparent);
-        }
-
-        .divider-text {
-            color: #999;
-            font-size: 0.9rem;
-            font-weight: 600;
-        }
-
-        /* Google Sign-in Button */
+        .error-message.show { display: block; }
+        .divider { display: flex; align-items: center; margin: 1.5rem 0; gap: 1rem; }
+        .divider-line { flex: 1; height: 2px; background: #e0e0e0; }
+        .divider-text { color: #999; font-size: 0.9rem; }
         .google-btn {
-            width: 100%;
-            padding: 1rem;
-            background: white;
-            color: #333;
-            border: 2px solid #e0e0e0;
-            border-radius: 10px;
-            font-size: 1.1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
+            width: 100%; padding: 1rem;
+            background: white; color: #333;
+            border: 2px solid #e0e0e0; border-radius: 10px;
+            font-size: 1.1rem; font-weight: 600; cursor: pointer;
             font-family: 'Cairo', sans-serif;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.8rem;
+            display: flex; align-items: center; justify-content: center; gap: 0.8rem;
         }
-
-        .google-btn:hover {
-            background: #f8f9fa;
-            border-color: #4285f4;
-            box-shadow: 0 5px 20px rgba(66, 133, 244, 0.3);
-            transform: translateY(-2px);
-        }
-
-        .google-btn:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-        }
-
-        .google-icon {
-            width: 24px;
-            height: 24px;
-        }
-
-        /* User Info (after login) */
-        .user-logged-in {
-            text-align: center;
-            display: none;
-        }
-
-        .user-logged-in.show {
-            display: block;
-        }
-
-        .user-avatar {
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            margin: 0 auto 1rem;
-            border: 3px solid var(--primary-pink);
-        }
-
-        .user-name {
-            font-size: 1.3rem;
-            font-weight: 700;
-            color: var(--primary-purple);
-            margin-bottom: 0.5rem;
-        }
-
-        .user-email {
-            color: #666;
-            font-size: 0.95rem;
-            margin-bottom: 1.5rem;
-        }
-
+        .google-btn:hover { border-color: #4285f4; background: #f8f9fa; }
+        .google-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+        .google-icon { width: 24px; height: 24px; }
+        .user-logged-in { text-align: center; display: none; }
+        .user-logged-in.show { display: block; }
+        .user-avatar { width: 80px; height: 80px; border-radius: 50%; margin: 0 auto 1rem; border: 3px solid var(--primary-pink); }
+        .user-name { font-size: 1.3rem; font-weight: 700; color: var(--primary-purple); margin-bottom: 0.5rem; }
+        .user-email { color: #666; margin-bottom: 1.5rem; }
         .continue-btn {
-            width: 100%;
-            padding: 1rem;
-            background: linear-gradient(135deg, var(--success), #45a049);
-            color: white;
-            border: none;
-            border-radius: 10px;
-            font-size: 1.1rem;
-            font-weight: 700;
-            cursor: pointer;
-            font-family: 'Cairo', sans-serif;
-            transition: all 0.3s;
+            width: 100%; padding: 1rem;
+            background: #4CAF50; color: white; border: none; border-radius: 10px;
+            font-size: 1.1rem; font-weight: 700; cursor: pointer; font-family: 'Cairo', sans-serif;
         }
-
-        .continue-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 20px rgba(76, 175, 80, 0.4);
-        }
-
-        .logout-link {
-            margin-top: 1rem;
-            color: var(--danger);
-            cursor: pointer;
-            font-size: 0.9rem;
-        }
-
-        .logout-link:hover {
-            text-decoration: underline;
-        }
-
-        .login-form-section {
-            display: block;
-        }
-
-        .login-form-section.hide {
-            display: none;
-        }
-
-        @media (max-width: 768px) {
-            .login-container {
-                padding: 2rem;
-            }
-
-            .logo-text {
-                font-size: 1.5rem;
-            }
-        }
+        .logout-link { margin-top: 1rem; color: #ff0000; cursor: pointer; }
+        .login-form-section { display: block; }
+        .login-form-section.hide { display: none; }
+        .back-link { text-align: center; margin-top: 1.5rem; }
+        .back-link a { color: var(--primary-purple); text-decoration: none; font-weight: 600; }
     </style>
 </head>
 <body>
@@ -395,135 +112,100 @@
 
         <div class="error-message" id="errorMessage"></div>
 
-        <!-- User Logged In Section -->
         <div class="user-logged-in" id="userLoggedIn">
-            <img class="user-avatar" id="userAvatar" src="" alt="User Avatar">
+            <img class="user-avatar" id="userAvatar" src="" alt="">
             <div class="user-name" id="userName"></div>
             <div class="user-email" id="userEmail"></div>
-            <button class="continue-btn" onclick="continueToAdmin()">
-                الدخول للوحة التحكم ←
-            </button>
-            <div class="logout-link" onclick="googleLogout()">تسجيل الخروج</div>
+            <button class="continue-btn" id="continueBtn">الدخول للوحة التحكم ←</button>
+            <div class="logout-link" id="logoutLink">تسجيل الخروج</div>
         </div>
 
-        <!-- Login Form Section -->
         <div class="login-form-section" id="loginFormSection">
-
-        <!-- Google Sign-in Button -->
-        <button type="button" class="google-btn" id="googleBtn" onclick="googleSignIn()">
-            <svg class="google-icon" viewBox="0 0 24 24">
-                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-            </svg>
-            تسجيل الدخول بـ Google
-        </button>
-
-        <div class="divider">
-            <div class="divider-line"></div>
-            <span class="divider-text">أو</span>
-            <div class="divider-line"></div>
-        </div>
-
-        <form id="loginForm" onsubmit="handleLogin(event)">
-            <div class="form-group">
-                <label class="form-label">اسم المستخدم</label>
-                <input
-                    type="text"
-                    class="form-input"
-                    id="username"
-                    placeholder="أدخل اسم المستخدم"
-                    required
-                    autocomplete="username"
-                >
-            </div>
-
-            <div class="form-group">
-                <label class="form-label">كلمة المرور</label>
-                <div class="password-toggle">
-                    <input
-                        type="password"
-                        class="form-input"
-                        id="password"
-                        placeholder="أدخل كلمة المرور"
-                        required
-                        autocomplete="current-password"
-                    >
-                    <button type="button" class="toggle-btn" onclick="togglePassword()">
-                        👁️
-                    </button>
-                </div>
-            </div>
-
-            <button type="submit" class="login-btn" id="loginBtn">
-                تسجيل الدخول
+            <button type="button" class="google-btn" id="googleBtn">
+                <svg class="google-icon" viewBox="0 0 24 24">
+                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                </svg>
+                تسجيل الدخول بـ Google
             </button>
-        </form>
 
-        </div><!-- End login-form-section -->
+            <div class="divider">
+                <div class="divider-line"></div>
+                <span class="divider-text">أو</span>
+                <div class="divider-line"></div>
+            </div>
+
+            <form id="loginForm">
+                <div class="form-group">
+                    <label class="form-label">اسم المستخدم</label>
+                    <input type="text" class="form-input" id="username" placeholder="أدخل اسم المستخدم" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">كلمة المرور</label>
+                    <div class="password-toggle">
+                        <input type="password" class="form-input" id="password" placeholder="أدخل كلمة المرور" required>
+                        <button type="button" class="toggle-btn" id="toggleBtn">👁️</button>
+                    </div>
+                </div>
+                <button type="submit" class="login-btn" id="loginBtn">تسجيل الدخول</button>
+            </form>
+        </div>
 
         <div class="back-link">
             <a href="index.html">← العودة للصفحة الرئيسية</a>
         </div>
     </div>
 
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+
     <script>
-        // Firebase Configuration
+        // Firebase Config
         const firebaseConfig = {
             apiKey: "AIzaSyACk3UhHouKfGsOu3ZJfaOhqLqucumn2UQ",
             authDomain: "sunday-fb28c.firebaseapp.com",
-            databaseURL: "https://sunday-fb28c-default-rtdb.firebaseio.com",
             projectId: "sunday-fb28c",
-            storageBucket: "sunday-fb28c.firebasestorage.app",
-            messagingSenderId: "24752239756",
             appId: "1:24752239756:web:386c2c72624eb67ba337a9"
         };
 
-        let auth, googleProvider;
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const googleProvider = new firebase.auth.GoogleAuthProvider();
 
-        // Initialize Firebase when DOM is ready
-        document.addEventListener('DOMContentLoaded', function() {
-            try {
-                if (typeof firebase === 'undefined') {
-                    console.error('Firebase SDK not loaded');
-                    alert('خطأ: Firebase لم يتم تحميله');
-                    return;
-                }
+        // Users
+        const USERS = {
+            'admin': { password: 'GoldenHost2025', role: 'admin', name: 'المدير العام' },
+            'abdulaziz': { password: 'Abdulaziz@123', role: 'supervisor', name: 'عبدالعزيز' },
+            'hanouf': { password: 'Hanouf@123', role: 'quality', name: 'هنوف' },
+            'yazeed': { password: 'Yazeed@123', role: 'sales_support', name: 'يزيد' },
+            'rawabi': { password: 'Rawabi@123', role: 'sales_support', name: 'روابي' },
+            'raja': { password: 'Raja@123', role: 'support_assistant', name: 'رجا' },
+            'ibrahim': { password: 'Ibrahim@123', role: 'support_assistant', name: 'ابراهيم' },
+            'mostafa': { password: 'Mostafa@123', role: 'support_assistant', name: 'مصطفى' }
+        };
 
-                if (!firebase.apps.length) {
-                    firebase.initializeApp(firebaseConfig);
-                }
-
-                auth = firebase.auth();
-                googleProvider = new firebase.auth.GoogleAuthProvider();
-                console.log('Firebase initialized successfully');
-            } catch (error) {
-                console.error('Firebase init error:', error);
-                alert('خطأ في تهيئة Firebase: ' + error.message);
-            }
-        });
+        // Elements
+        const googleBtn = document.getElementById('googleBtn');
+        const loginForm = document.getElementById('loginForm');
+        const loginBtn = document.getElementById('loginBtn');
+        const toggleBtn = document.getElementById('toggleBtn');
+        const continueBtn = document.getElementById('continueBtn');
+        const logoutLink = document.getElementById('logoutLink');
+        const errorMessage = document.getElementById('errorMessage');
 
         // Google Sign In
-        async function googleSignIn() {
-            console.log('Google Sign-in clicked');
-            const googleBtn = document.getElementById('googleBtn');
-
-            if (!auth || !googleProvider) {
-                alert('خطأ: Firebase غير جاهز. أعد تحميل الصفحة.');
-                return;
-            }
-
+        googleBtn.addEventListener('click', async function() {
             googleBtn.disabled = true;
-            googleBtn.innerHTML = '<span>جاري التحميل...</span>';
+            googleBtn.textContent = 'جاري التحميل...';
 
             try {
-                console.log('Opening Google popup...');
                 const result = await auth.signInWithPopup(googleProvider);
-                console.log('Sign-in successful:', result);
                 const user = result.user;
 
-                // Save session
                 const session = {
                     username: user.email,
                     name: user.displayName,
@@ -536,154 +218,34 @@
                 };
 
                 localStorage.setItem('adminSession', JSON.stringify(session));
-
-                // Show user info
                 showLoggedInUser(session);
-
             } catch (error) {
-                console.error('Google Sign-in Error:', error);
-                showError(getErrorMessage(error.code));
+                console.error('Error:', error);
+                showError(error.message);
                 googleBtn.disabled = false;
-                googleBtn.innerHTML = `
-                    <svg class="google-icon" viewBox="0 0 24 24">
-                        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-                        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-                    </svg>
-                    تسجيل الدخول بـ Google
-                `;
+                googleBtn.innerHTML = '<svg class="google-icon" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg> تسجيل الدخول بـ Google';
             }
-        }
+        });
 
-        // Get error message in Arabic
-        function getErrorMessage(code) {
-            const messages = {
-                'auth/popup-closed-by-user': 'تم إغلاق نافذة تسجيل الدخول',
-                'auth/cancelled-popup-request': 'تم إلغاء طلب تسجيل الدخول',
-                'auth/network-request-failed': 'فشل الاتصال بالشبكة',
-                'auth/popup-blocked': 'تم حظر النافذة المنبثقة - يرجى السماح بها'
-            };
-            return messages[code] || 'حدث خطأ أثناء تسجيل الدخول';
-        }
-
-        // Show logged in user
-        function showLoggedInUser(session) {
-            document.getElementById('loginFormSection').classList.add('hide');
-            document.getElementById('userLoggedIn').classList.add('show');
-            document.getElementById('userAvatar').src = session.photo || 'https://via.placeholder.com/80';
-            document.getElementById('userName').textContent = session.name;
-            document.getElementById('userEmail').textContent = session.email;
-        }
-
-        // Continue to admin
-        function continueToAdmin() {
-            window.location.href = 'admin.html';
-        }
-
-        // Google Logout
-        async function googleLogout() {
-            try {
-                await auth.signOut();
-                localStorage.removeItem('adminSession');
-                document.getElementById('loginFormSection').classList.remove('hide');
-                document.getElementById('userLoggedIn').classList.remove('show');
-            } catch (error) {
-                console.error('Logout error:', error);
-            }
-        }
-
-        // Default admin credentials
-        const DEFAULT_USERS = {
-            'admin': {
-                password: 'GoldenHost2025',
-                role: 'admin',
-                name: 'المدير العام'
-            },
-            'abdulaziz': {
-                password: 'Abdulaziz@123',
-                role: 'supervisor',
-                name: 'عبدالعزيز - مشرف'
-            },
-            'hanouf': {
-                password: 'Hanouf@123',
-                role: 'quality',
-                name: 'هنوف - مشرف تطوير'
-            },
-            'yazeed': {
-                password: 'Yazeed@123',
-                role: 'sales_support',
-                name: 'يزيد - دعم فني ومبيعات'
-            },
-            'rawabi': {
-                password: 'Rawabi@123',
-                role: 'sales_support',
-                name: 'روابي - دعم فني ومبيعات'
-            },
-            'raja': {
-                password: 'Raja@123',
-                role: 'support_assistant',
-                name: 'رجا - دعم فني ومساعد مبيعات'
-            },
-            'ibrahim': {
-                password: 'Ibrahim@123',
-                role: 'support_assistant',
-                name: 'ابراهيم - دعم فني ومساعد مبيعات'
-            },
-            'mostafa': {
-                password: 'Mostafa@123',
-                role: 'support_assistant',
-                name: 'مصطفى - دعم فني ومساعد مبيعات'
-            }
-        };
-
-        function togglePassword() {
-            const passwordInput = document.getElementById('password');
-            const type = passwordInput.type === 'password' ? 'text' : 'password';
-            passwordInput.type = type;
-        }
-
-        function showError(message) {
-            const errorDiv = document.getElementById('errorMessage');
-            errorDiv.textContent = message;
-            errorDiv.classList.add('show');
-            setTimeout(() => {
-                errorDiv.classList.remove('show');
-            }, 3000);
-        }
-
-        function handleLogin(event) {
-            event.preventDefault();
-
+        // Normal Login
+        loginForm.addEventListener('submit', function(e) {
+            e.preventDefault();
             const username = document.getElementById('username').value.toLowerCase().trim();
             const password = document.getElementById('password').value;
-            const loginBtn = document.getElementById('loginBtn');
 
-            // Disable button
             loginBtn.disabled = true;
             loginBtn.textContent = 'جاري التحقق...';
 
-            // Simulate loading
             setTimeout(() => {
-                // Check custom users first
-                const customUsers = JSON.parse(localStorage.getItem('adminUsers') || '{}');
-                const user = customUsers[username] || DEFAULT_USERS[username];
+                const user = USERS[username];
 
-                if (!user) {
-                    showError('اسم المستخدم غير صحيح');
+                if (!user || user.password !== password) {
+                    showError('اسم المستخدم أو كلمة المرور غير صحيحة');
                     loginBtn.disabled = false;
                     loginBtn.textContent = 'تسجيل الدخول';
                     return;
                 }
 
-                if (user.password !== password) {
-                    showError('كلمة المرور غير صحيحة');
-                    loginBtn.disabled = false;
-                    loginBtn.textContent = 'تسجيل الدخول';
-                    return;
-                }
-
-                // Success - save session
                 const session = {
                     username: username,
                     name: user.name,
@@ -692,66 +254,61 @@
                 };
 
                 localStorage.setItem('adminSession', JSON.stringify(session));
-
-                // Log activity
-                const activityLog = JSON.parse(localStorage.getItem('activityLog') || '[]');
-                activityLog.push({
-                    user: user.name,
-                    action: 'تسجيل دخول',
-                    timestamp: new Date().toISOString()
-                });
-                localStorage.setItem('activityLog', JSON.stringify(activityLog));
-
-                // Redirect to admin panel
-                loginBtn.textContent = 'تم بنجاح! جاري التحويل...';
-                setTimeout(() => {
-                    window.location.href = 'admin.html';
-                }, 500);
-            }, 1000);
-        }
-
-        // Check if already logged in
-        window.addEventListener('DOMContentLoaded', () => {
-            const session = localStorage.getItem('adminSession');
-            if (session) {
-                const data = JSON.parse(session);
-                // Check if session is less than 24 hours old
-                const loginTime = new Date(data.loginTime);
-                const now = new Date();
-                const hoursDiff = (now - loginTime) / (1000 * 60 * 60);
-
-                if (hoursDiff < 24) {
-                    // If Google user, show continue screen
-                    if (data.authType === 'google') {
-                        showLoggedInUser(data);
-                    } else {
-                        window.location.href = 'admin.html';
-                    }
-                } else {
-                    localStorage.removeItem('adminSession');
-                    if (data.authType === 'google' && auth) {
-                        auth.signOut();
-                    }
-                }
-            }
-
-            // Listen for auth state changes (wait for auth to be ready)
-            setTimeout(() => {
-                if (auth) {
-                    auth.onAuthStateChanged((user) => {
-                        if (user) {
-                            const session = localStorage.getItem('adminSession');
-                            if (session) {
-                                const data = JSON.parse(session);
-                                if (data.authType === 'google') {
-                                    showLoggedInUser(data);
-                                }
-                            }
-                        }
-                    });
-                }
+                window.location.href = 'admin.html';
             }, 500);
         });
+
+        // Toggle Password
+        toggleBtn.addEventListener('click', function() {
+            const pwd = document.getElementById('password');
+            pwd.type = pwd.type === 'password' ? 'text' : 'password';
+        });
+
+        // Continue to Admin
+        continueBtn.addEventListener('click', function() {
+            window.location.href = 'admin.html';
+        });
+
+        // Logout
+        logoutLink.addEventListener('click', async function() {
+            await auth.signOut();
+            localStorage.removeItem('adminSession');
+            document.getElementById('loginFormSection').classList.remove('hide');
+            document.getElementById('userLoggedIn').classList.remove('show');
+        });
+
+        // Show Error
+        function showError(msg) {
+            errorMessage.textContent = msg;
+            errorMessage.classList.add('show');
+            setTimeout(() => errorMessage.classList.remove('show'), 3000);
+        }
+
+        // Show Logged In User
+        function showLoggedInUser(session) {
+            document.getElementById('loginFormSection').classList.add('hide');
+            document.getElementById('userLoggedIn').classList.add('show');
+            document.getElementById('userAvatar').src = session.photo || 'https://via.placeholder.com/80';
+            document.getElementById('userName').textContent = session.name;
+            document.getElementById('userEmail').textContent = session.email;
+        }
+
+        // Check Session on Load
+        const session = localStorage.getItem('adminSession');
+        if (session) {
+            const data = JSON.parse(session);
+            const hoursDiff = (new Date() - new Date(data.loginTime)) / (1000 * 60 * 60);
+
+            if (hoursDiff < 24) {
+                if (data.authType === 'google') {
+                    showLoggedInUser(data);
+                } else {
+                    window.location.href = 'admin.html';
+                }
+            } else {
+                localStorage.removeItem('adminSession');
+            }
+        }
     </script>
 </body>
 </html>
