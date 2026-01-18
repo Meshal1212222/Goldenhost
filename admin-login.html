@@ -470,6 +470,14 @@
     </div>
 
     <script>
+        // Catch all errors
+        window.onerror = function(msg, url, line) {
+            alert('خطأ: ' + msg + ' في السطر ' + line);
+            return false;
+        };
+
+        alert('الصفحة تم تحميلها!');
+
         // Initialize Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyACk3UhHouKfGsOu3ZJfaOhqLqucumn2UQ",
@@ -491,6 +499,7 @@
 
         // Google Sign In
         async function googleSignIn() {
+            alert('تم الضغط على الزر!');
             console.log('Google Sign-in clicked');
             const googleBtn = document.getElementById('googleBtn');
             googleBtn.disabled = true;
