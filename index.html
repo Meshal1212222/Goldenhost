@@ -2763,14 +2763,17 @@
         function submitRefund(event) {
             event.preventDefault();
 
-            const employeeName = document.getElementById('refundEmployeeName').value.trim();
+            // Get employee name from session
+            const session = JSON.parse(localStorage.getItem('adminSession') || '{}');
+            const employeeName = session.name || 'غير معروف';
+
             const bookingNumber = document.getElementById('bookingNumber').value.trim();
             const customerName = document.getElementById('customerName').value.trim();
             const amount = document.getElementById('refundAmount').value;
             const reason = document.getElementById('refundReason').value;
             const details = document.getElementById('refundDetails').value.trim();
 
-            if (!employeeName || !bookingNumber || !customerName || !amount || !reason || !details) {
+            if (!bookingNumber || !customerName || !amount || !reason || !details) {
                 alert('⚠️ يرجى تعبئة جميع الحقول المطلوبة');
                 return;
             }
