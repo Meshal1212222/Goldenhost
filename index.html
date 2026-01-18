@@ -2839,6 +2839,29 @@
             }
         }
 
+        async function sendWhatsAppMessageWithMentions(message, to, mentions) {
+            try {
+                const response = await fetch(`${ULTRAMSG_CONFIG.apiUrl}/messages/chat`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: new URLSearchParams({
+                        token: ULTRAMSG_CONFIG.token,
+                        to: to,
+                        body: message,
+                        mentions: JSON.stringify(mentions)
+                    })
+                });
+                const result = await response.json();
+                console.log('WhatsApp message with mentions sent:', result);
+                return result;
+            } catch (error) {
+                console.error('WhatsApp error:', error);
+                return null;
+            }
+        }
+
         async function sendRefundNotification(refund) {
             if (!ULTRAMSG_CONFIG.groupId) {
                 console.log('Group ID not configured');
@@ -2865,9 +2888,12 @@
 التفاصيل: ${refund.details}
 الوقت: ${dateTime}
 
+@966553174481 @966534806762
 أرجو تأكيد العملية من المالية`;
 
-            await sendWhatsAppMessage(message, ULTRAMSG_CONFIG.groupId);
+            // Send with mentions
+            const mentions = ['966553174481@c.us', '966534806762@c.us'];
+            await sendWhatsAppMessageWithMentions(message, ULTRAMSG_CONFIG.groupId, mentions);
         }
 
         // ==================== CONVERSATIONS SYSTEM ====================
