@@ -2783,7 +2783,7 @@
                 employeeName: employeeName,
                 bookingNumber: bookingNumber,
                 customerName: customerName,
-                amount: parseFloat(amount),
+                amount: amount,
                 reason: reason,
                 details: details,
                 status: 'pending',
@@ -3866,7 +3866,7 @@
                     <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: #333;">
                         المبلغ المطلوب <span style="color: red;">*</span>
                     </label>
-                    <input type="number" id="refundAmount" required placeholder="مثال: 500" style="
+                    <input type="text" id="refundAmount" required placeholder="مثال: 500 أو 500 ريال" style="
                         width: 100%;
                         padding: 0.8rem;
                         border: 2px solid #ddd;
