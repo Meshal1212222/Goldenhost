@@ -2849,16 +2849,23 @@
             let refundCounter = parseInt(localStorage.getItem('refundCounter') || '0') + 1;
             localStorage.setItem('refundCounter', refundCounter.toString());
 
-            const message = `🔔 *طلب استرداد #${refundCounter}*
+            // Format date in English
+            const now = new Date();
+            const dateTime = now.toLocaleString('en-GB', {
+                day: '2-digit', month: '2-digit', year: 'numeric',
+                hour: '2-digit', minute: '2-digit', hour12: true
+            });
 
-📋 *رقم الحجز:* ${refund.bookingNumber}
-👤 *اسم العميل:* ${refund.customerName}
-💰 *المبلغ:* ${refund.amount} ريال
-📝 *السبب:* ${refund.reason}
-📄 *التفاصيل:* ${refund.details}
-⏰ *الوقت:* ${refund.submitTime}
+            const message = `*طلب استرداد #${refundCounter}*
 
-✅ أرجو تأكيد العملية من المالية`;
+رقم الحجز: ${refund.bookingNumber}
+اسم العميل: ${refund.customerName}
+المبلغ: ${refund.amount} ريال
+السبب: ${refund.reason}
+التفاصيل: ${refund.details}
+الوقت: ${dateTime}
+
+أرجو تأكيد العملية من المالية`;
 
             await sendWhatsAppMessage(message, ULTRAMSG_CONFIG.groupId);
         }
