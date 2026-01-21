@@ -2889,11 +2889,11 @@
 الوقت: ${dateTime}
 
 أرجو تأكيد العملية من المالية
-@966553174481 @966534806762`;
+@966553174481`;
 
             // Send with mentions
             try {
-                const formData = `token=${ULTRAMSG_CONFIG.token}&to=${ULTRAMSG_CONFIG.groupId}&body=${encodeURIComponent(message)}&mentions[]=966553174481@c.us&mentions[]=966534806762@c.us`;
+                const formData = `token=${ULTRAMSG_CONFIG.token}&to=${ULTRAMSG_CONFIG.groupId}&body=${encodeURIComponent(message)}&mentions[]=966553174481@c.us`;
                 const response = await fetch(`${ULTRAMSG_CONFIG.apiUrl}/messages/chat`, {
                     method: 'POST',
                     headers: {
