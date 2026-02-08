@@ -447,6 +447,27 @@ app.post('/api/send-template', async (req, res) => {
     }
 });
 
+// Get WhatsApp message templates
+app.get('/api/templates', async (req, res) => {
+    try {
+        const { accountId } = req.query;
+        const account = getAccount(accountId);
+        if (!account.token) {
+            return res.status(400).json({ error: 'No token configured' });
+        }
+
+        const url = `${CONFIG.META_API_URL}/${account.wabaId}/message_templates?fields=name,language,status,category,components`;
+        const response = await axios.get(url, {
+            headers: { 'Authorization': `Bearer ${account.token}` }
+        });
+
+        res.json(response.data);
+    } catch (error) {
+        console.error('Get templates error:', error.response?.data || error);
+        res.status(500).json({ error: error.response?.data || error.message });
+    }
+});
+
 // ==================== OTP System ====================
 
 // OTP Storage (in memory - for production use Redis or database)
