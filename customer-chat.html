@@ -881,16 +881,19 @@
         };
 
         function init() {
-            // Load local sample data first
-            loadConversations();
-            conversations = sampleConversations[currentChannel];
-            renderConversations();
-
             // Load available WhatsApp accounts
             loadWhatsAppAccounts();
 
-            // Then try to load from Firestore (real WhatsApp messages)
+            // Load from Backend API first (real WhatsApp messages)
+            loadBackendConversations();
+
+            // Then try Firestore as backup
             loadFirestoreConversations();
+
+            // Auto-refresh every 5 seconds
+            setInterval(() => {
+                loadBackendConversations();
+            }, 5000);
         }
 
         // Load available WhatsApp accounts from backend
@@ -1036,8 +1039,48 @@
             }
         }
 
+        // Load conversations from Backend API (in-memory storage)
+        async function loadBackendConversations() {
+            try {
+                const response = await fetch(`${BACKEND_CONFIG.apiUrl}/api/conversations`);
+                if (response.ok) {
+                    const backendConversations = await response.json();
+                    console.log('Backend conversations loaded:', backendConversations.length);
+
+                    if (backendConversations.length > 0) {
+                        const formattedConversations = backendConversations.map(conv => ({
+                            id: conv.id || conv.customerPhone,
+                            customerName: conv.customerName || 'عميل واتساب',
+                            customerPhone: conv.customerPhone || conv.id,
+                            lastMessage: conv.lastMessage || '',
+                            time: formatTime(new Date(conv.updatedAt)),
+                            unread: conv.unreadCount || 0,
+                            priority: false,
+                            status: conv.status || 'open',
+                            channel: 'whatsapp_meta',
+                            messages: [],
+                            notes: conv.notes || '',
+                            history: [],
+                            isBackend: true
+                        }));
+
+                        // Show backend conversations (real messages)
+                        if (currentChannel === 'whatsapp') {
+                            conversations = formattedConversations;
+                            renderConversations();
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading backend conversations:', error);
+            }
+        }
+
         // Load real conversations from Firestore
         function loadFirestoreConversations() {
+            // First try backend API (for in-memory storage)
+            loadBackendConversations();
+
             if (unsubscribeConversations) {
                 unsubscribeConversations();
             }
@@ -1067,10 +1110,9 @@
                             });
                         });
 
-                        // Merge with sample data
-                        if (currentChannel === 'whatsapp') {
-                            const merged = [...firestoreConversations, ...sampleConversations.whatsapp];
-                            conversations = merged;
+                        // Merge with backend data if we have Firestore data
+                        if (currentChannel === 'whatsapp' && firestoreConversations.length > 0) {
+                            conversations = firestoreConversations;
                             renderConversations();
                         }
 
@@ -1201,14 +1243,42 @@
             conv.unread = 0;
             renderConversations();
 
-            // Load messages from Firestore if it's a real conversation
-            if (conv.isFirestore) {
+            // Load messages from Backend API if it's a backend conversation
+            if (conv.isBackend) {
+                loadBackendMessages(conv.customerPhone || conv.id);
+            }
+            // Load messages from Firestore if it's a Firestore conversation
+            else if (conv.isFirestore) {
                 loadFirestoreMessages(conv.id);
             }
 
             // Render chat
             renderChat(conv);
             renderCustomerPanel(conv);
+        }
+
+        // Load messages from Backend API
+        async function loadBackendMessages(phone) {
+            try {
+                const response = await fetch(`${BACKEND_CONFIG.apiUrl}/api/conversations/${phone}/messages`);
+                if (response.ok) {
+                    const messages = await response.json();
+                    console.log('Backend messages loaded:', messages.length);
+
+                    if (currentConversation && (currentConversation.customerPhone === phone || currentConversation.id === phone)) {
+                        currentConversation.messages = messages.map(msg => ({
+                            sender: msg.from === 'employee' ? 'employee' : 'customer',
+                            text: msg.content || msg.text || '',
+                            time: formatTime(new Date(msg.createdAt || msg.timestamp)),
+                            status: msg.status || 'delivered'
+                        }));
+
+                        renderChat(currentConversation);
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading backend messages:', error);
+            }
         }
 
         function renderChat(conv) {

@@ -447,6 +447,143 @@ app.post('/api/send-template', async (req, res) => {
     }
 });
 
+// ==================== OTP System ====================
+
+// OTP Storage (in memory - for production use Redis or database)
+const otpStore = new Map();
+
+// Generate and send OTP
+app.post('/api/otp/send', async (req, res) => {
+    try {
+        const { phone, templateName = 'otp', accountId } = req.body;
+
+        if (!phone) {
+            return res.status(400).json({ error: 'رقم الهاتف مطلوب' });
+        }
+
+        // Format phone number
+        const formattedPhone = phone.replace(/[\s+\-]/g, '');
+
+        // Generate 6-digit OTP
+        const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+        // Store OTP with 5-minute expiry
+        otpStore.set(formattedPhone, {
+            code: otp,
+            expires: Date.now() + 5 * 60 * 1000, // 5 minutes
+            attempts: 0
+        });
+
+        // Get account
+        const account = getAccount(accountId);
+        if (!account.token) {
+            return res.status(400).json({ error: 'لا يوجد توكن للحساب' });
+        }
+
+        // Send OTP via WhatsApp Template
+        const url = `${CONFIG.META_API_URL}/${account.phoneNumberId}/messages`;
+        const payload = {
+            messaging_product: 'whatsapp',
+            recipient_type: 'individual',
+            to: formattedPhone,
+            type: 'template',
+            template: {
+                name: templateName,
+                language: { code: 'ar' },
+                components: [
+                    {
+                        type: 'body',
+                        parameters: [
+                            { type: 'text', text: otp }
+                        ]
+                    }
+                ]
+            }
+        };
+
+        const response = await axios.post(url, payload, {
+            headers: {
+                'Authorization': `Bearer ${account.token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        console.log(`OTP sent to ${formattedPhone}: ${otp}`);
+
+        res.json({
+            success: true,
+            message: 'تم إرسال رمز التحقق',
+            messageId: response.data.messages?.[0]?.id,
+            expiresIn: 300 // 5 minutes in seconds
+        });
+
+    } catch (error) {
+        console.error('OTP send error:', error.response?.data || error);
+        res.status(500).json({ error: error.response?.data?.error?.message || 'فشل إرسال رمز التحقق' });
+    }
+});
+
+// Verify OTP
+app.post('/api/otp/verify', (req, res) => {
+    try {
+        const { phone, code } = req.body;
+
+        if (!phone || !code) {
+            return res.status(400).json({ error: 'رقم الهاتف ورمز التحقق مطلوبان' });
+        }
+
+        const formattedPhone = phone.replace(/[\s+\-]/g, '');
+        const storedOtp = otpStore.get(formattedPhone);
+
+        if (!storedOtp) {
+            return res.status(400).json({
+                success: false,
+                error: 'لم يتم إرسال رمز تحقق لهذا الرقم'
+            });
+        }
+
+        // Check expiry
+        if (Date.now() > storedOtp.expires) {
+            otpStore.delete(formattedPhone);
+            return res.status(400).json({
+                success: false,
+                error: 'انتهت صلاحية رمز التحقق'
+            });
+        }
+
+        // Check attempts (max 3)
+        if (storedOtp.attempts >= 3) {
+            otpStore.delete(formattedPhone);
+            return res.status(400).json({
+                success: false,
+                error: 'تجاوزت الحد الأقصى للمحاولات'
+            });
+        }
+
+        // Verify code
+        if (storedOtp.code === code) {
+            otpStore.delete(formattedPhone);
+            console.log(`OTP verified for ${formattedPhone}`);
+            return res.json({
+                success: true,
+                message: 'تم التحقق بنجاح',
+                verified: true
+            });
+        } else {
+            storedOtp.attempts++;
+            return res.status(400).json({
+                success: false,
+                error: 'رمز التحقق غير صحيح',
+                attemptsLeft: 3 - storedOtp.attempts
+            });
+        }
+
+    } catch (error) {
+        console.error('OTP verify error:', error);
+        res.status(500).json({ error: 'فشل التحقق' });
+    }
+});
+
 // ==================== Conversations API ====================
 
 // Get all conversations
