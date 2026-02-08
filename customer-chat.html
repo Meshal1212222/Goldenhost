@@ -708,130 +708,10 @@
         let whatsappAccounts = [];
         let selectedAccountId = 'golden_ticket'; // Default account
 
-        // Sample conversation data
+        // Conversations data (loaded from backend/Firestore)
         const sampleConversations = {
-            whatsapp: [
-                {
-                    id: 'wa_001',
-                    customerName: 'أحمد محمد',
-                    customerPhone: '0537123456',
-                    lastMessage: 'مرحباً، أريد الاستفسار عن حجز عقار في الرياض',
-                    time: '10:30 ص',
-                    unread: 2,
-                    priority: false,
-                    status: 'open',
-                    channel: 'whatsapp',
-                    bookingNumber: '98125',
-                    lastCall: '10/11/2025 - 09:45 ص',
-                    callDuration: '5 دقائق',
-                    messages: [
-                        { sender: 'customer', text: 'مرحباً، أريد الاستفسار عن حجز عقار في الرياض', time: '10:28 ص', status: 'read' },
-                        { sender: 'employee', text: 'أهلاً وسهلاً! يسعدني مساعدتك. ما نوع العقار الذي تبحث عنه؟', time: '10:29 ص', status: 'read' },
-                        { sender: 'customer', text: 'أبحث عن شقة مفروشة، 3 غرف نوم', time: '10:30 ص', status: 'delivered' }
-                    ],
-                    notes: 'عميل مهتم بحجز طويل المدى',
-                    history: [
-                        { action: 'حجز سابق رقم #97850', date: '15/10/2025' },
-                        { action: 'تقييم ممتاز (5 نجوم)', date: '20/10/2025' }
-                    ]
-                },
-                {
-                    id: 'wa_002',
-                    customerName: 'فاطمة السالم',
-                    customerPhone: '0538765432',
-                    lastMessage: 'متى يتم تأكيد الحجز؟',
-                    time: '09:15 ص',
-                    unread: 0,
-                    priority: true,
-                    status: 'open',
-                    channel: 'whatsapp',
-                    bookingNumber: '98126',
-                    lastCall: '09/11/2025 - 02:30 م',
-                    callDuration: '8 دقائق',
-                    messages: [
-                        { sender: 'customer', text: 'السلام عليكم، قدمت طلب حجز أمس', time: '09:10 ص', status: 'read' },
-                        { sender: 'employee', text: 'وعليكم السلام، نعم استلمنا طلبك. رقم الحجز #98126', time: '09:12 ص', status: 'read' },
-                        { sender: 'customer', text: 'متى يتم تأكيد الحجز؟', time: '09:15 ص', status: 'read' }
-                    ],
-                    notes: '',
-                    history: [
-                        { action: 'طلب حجز جديد #98126', date: 'اليوم' }
-                    ]
-                },
-                {
-                    id: 'wa_003',
-                    customerName: 'خالد العتيبي',
-                    customerPhone: '0539876543',
-                    lastMessage: 'شكراً على الخدمة الممتازة',
-                    time: 'أمس',
-                    unread: 0,
-                    priority: false,
-                    status: 'closed',
-                    channel: 'whatsapp',
-                    bookingNumber: '98100',
-                    lastCall: '08/11/2025 - 11:20 ص',
-                    callDuration: '3 دقائق',
-                    messages: [
-                        { sender: 'customer', text: 'تم استلام العقار بنجاح', time: '02:00 م', status: 'read' },
-                        { sender: 'employee', text: 'ممتاز! نتمنى لك إقامة سعيدة', time: '02:05 م', status: 'read' },
-                        { sender: 'customer', text: 'شكراً على الخدمة الممتازة', time: '02:10 م', status: 'read' }
-                    ],
-                    notes: 'عميل راضي - محادثة مغلقة',
-                    history: [
-                        { action: 'حجز مكتمل #98100', date: 'أمس' },
-                        { action: 'دفع مكتمل', date: 'أمس' }
-                    ]
-                }
-            ],
-            app: [
-                {
-                    id: 'app_001',
-                    customerName: 'نورة الدوسري',
-                    customerPhone: '0532123456',
-                    lastMessage: 'هل يمكن تغيير موعد الحجز؟',
-                    time: '11:45 ص',
-                    unread: 1,
-                    priority: false,
-                    status: 'open',
-                    channel: 'app',
-                    bookingNumber: '98127',
-                    lastCall: '10/11/2025 - 10:15 ص',
-                    callDuration: '6 دقائق',
-                    messages: [
-                        { sender: 'customer', text: 'مرحباً، لدي حجز رقم #98127', time: '11:40 ص', status: 'read' },
-                        { sender: 'employee', text: 'أهلاً نورة، كيف يمكنني مساعدتك؟', time: '11:42 ص', status: 'read' },
-                        { sender: 'customer', text: 'هل يمكن تغيير موعد الحجز؟', time: '11:45 ص', status: 'delivered' }
-                    ],
-                    notes: '',
-                    history: [
-                        { action: 'حجز نشط #98127', date: 'اليوم' }
-                    ]
-                },
-                {
-                    id: 'app_002',
-                    customerName: 'عبدالله القحطاني',
-                    customerPhone: '0533456789',
-                    lastMessage: 'تم استلام المبلغ، شكراً',
-                    time: 'أمس',
-                    unread: 0,
-                    priority: false,
-                    status: 'closed',
-                    channel: 'app',
-                    bookingNumber: '98115',
-                    lastCall: '09/11/2025 - 01:45 م',
-                    callDuration: '4 دقائق',
-                    messages: [
-                        { sender: 'customer', text: 'أريد استرداد مبلغ الحجز', time: '03:00 م', status: 'read' },
-                        { sender: 'employee', text: 'تم معالجة طلب الاسترداد', time: '03:15 م', status: 'read' },
-                        { sender: 'customer', text: 'تم استلام المبلغ، شكراً', time: '04:30 م', status: 'read' }
-                    ],
-                    notes: 'طلب استرداد مكتمل',
-                    history: [
-                        { action: 'طلب استرداد #98115', date: 'أمس' },
-                        { action: 'تمت الموافقة والدفع', date: 'أمس' }
-                    ]
-                }
-            ]
+            whatsapp: [],
+            app: []
         };
 
         // Load/Save conversations from localStorage
@@ -940,7 +820,7 @@
         // WhatsApp Message Templates
         const whatsappTemplates = [
             { name: 'hello_world', displayName: 'مرحباً', language: 'en_US', description: 'رسالة ترحيبية' },
-            { name: 'otp', displayName: 'OTP', language: 'ar', description: 'رمز التحقق' }
+            { name: 'otp', displayName: 'OTP', language: 'en_US', description: 'رمز التحقق' }
         ];
 
         function renderTemplateButton() {

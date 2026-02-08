@@ -402,7 +402,7 @@ async function sendWhatsAppMessage(to, message, type = 'text', accountId = null)
 // Send template message
 app.post('/api/send-template', async (req, res) => {
     try {
-        const { to, templateName, languageCode = 'ar', components = [], accountId } = req.body;
+        const { to, templateName, languageCode = 'en_US', components = [], accountId } = req.body;
 
         if (!to || !templateName) {
             return res.status(400).json({ error: 'Missing required fields: to, templateName' });
@@ -455,7 +455,7 @@ const otpStore = new Map();
 // Generate and send OTP
 app.post('/api/otp/send', async (req, res) => {
     try {
-        const { phone, templateName = 'otp', accountId } = req.body;
+        const { phone, templateName = 'otp', language = 'en_US', accountId } = req.body;
 
         if (!phone) {
             return res.status(400).json({ error: 'رقم الهاتف مطلوب' });
@@ -489,7 +489,7 @@ app.post('/api/otp/send', async (req, res) => {
             type: 'template',
             template: {
                 name: templateName,
-                language: { code: 'ar' },
+                language: { code: language },
                 components: [
                     {
                         type: 'body',
