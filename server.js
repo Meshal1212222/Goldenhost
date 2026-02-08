@@ -126,6 +126,50 @@ app.get('/api', (req, res) => {
 
 let db;
 
+// ==================== In-Memory Storage (Temporary Solution) ====================
+// This stores messages in memory when Firebase is not configured
+// Messages will be lost on server restart - configure Firebase for persistence
+
+const memoryStore = {
+    conversations: new Map(),
+    messages: new Map()
+};
+
+function getMemoryConversation(phone) {
+    if (!memoryStore.conversations.has(phone)) {
+        memoryStore.conversations.set(phone, {
+            id: phone,
+            customerPhone: phone,
+            customerName: 'Unknown',
+            channel: 'whatsapp_meta',
+            status: 'open',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            unreadCount: 0,
+            lastMessage: '',
+            lastMessageTime: null
+        });
+        memoryStore.messages.set(phone, []);
+    }
+    return memoryStore.conversations.get(phone);
+}
+
+function addMemoryMessage(phone, messageData) {
+    const conv = getMemoryConversation(phone);
+    conv.updatedAt = new Date().toISOString();
+    conv.lastMessage = messageData.content;
+    conv.lastMessageTime = new Date().toISOString();
+    conv.unreadCount = (conv.unreadCount || 0) + 1;
+
+    const messages = memoryStore.messages.get(phone) || [];
+    messages.push({
+        id: messageData.id || `msg_${Date.now()}`,
+        ...messageData,
+        createdAt: new Date().toISOString()
+    });
+    memoryStore.messages.set(phone, messages);
+}
+
 function initFirebase() {
     try {
         const serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT
@@ -205,6 +249,12 @@ async function processIncomingMessage(message, contact, metadata) {
         } catch (error) {
             console.error('Error saving to Firebase:', error);
         }
+    } else {
+        // Save to memory (temporary solution)
+        const conv = getMemoryConversation(message.from);
+        conv.customerName = contact.profile?.name || conv.customerName;
+        addMemoryMessage(message.from, messageData);
+        console.log('Message saved to memory (temporary)');
     }
 
     return messageData;
@@ -301,7 +351,7 @@ async function sendWhatsAppMessage(to, message, type = 'text', accountId = null)
         }
     });
 
-    // Save sent message to Firebase
+    // Save sent message
     if (db) {
         try {
             const conversationRef = db.collection('conversations').doc(formattedPhone);
@@ -326,6 +376,19 @@ async function sendWhatsAppMessage(to, message, type = 'text', accountId = null)
         } catch (error) {
             console.error('Error saving sent message:', error);
         }
+    } else {
+        // Save to memory
+        addMemoryMessage(formattedPhone, {
+            id: response.data.messages?.[0]?.id,
+            from: 'employee',
+            to: formattedPhone,
+            content: message,
+            type: type,
+            status: 'sent',
+            channel: 'whatsapp_meta',
+            accountId: accountId || CONFIG.DEFAULT_ACCOUNT,
+            accountName: account.name
+        });
     }
 
     return {
@@ -389,21 +452,23 @@ app.post('/api/send-template', async (req, res) => {
 // Get all conversations
 app.get('/api/conversations', async (req, res) => {
     try {
-        if (!db) {
-            return res.status(500).json({ error: 'Database not initialized' });
+        if (db) {
+            const snapshot = await db.collection('conversations')
+                .orderBy('updatedAt', 'desc')
+                .limit(50)
+                .get();
+
+            const conversations = [];
+            snapshot.forEach(doc => {
+                conversations.push({ id: doc.id, ...doc.data() });
+            });
+            return res.json(conversations);
+        } else {
+            // Return from memory
+            const conversations = Array.from(memoryStore.conversations.values())
+                .sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
+            return res.json(conversations);
         }
-
-        const snapshot = await db.collection('conversations')
-            .orderBy('updatedAt', 'desc')
-            .limit(50)
-            .get();
-
-        const conversations = [];
-        snapshot.forEach(doc => {
-            conversations.push({ id: doc.id, ...doc.data() });
-        });
-
-        res.json(conversations);
     } catch (error) {
         console.error('Get conversations error:', error);
         res.status(500).json({ error: error.message });
@@ -413,29 +478,34 @@ app.get('/api/conversations', async (req, res) => {
 // Get messages for a conversation
 app.get('/api/conversations/:phone/messages', async (req, res) => {
     try {
-        if (!db) {
-            return res.status(500).json({ error: 'Database not initialized' });
-        }
-
         const { phone } = req.params;
-        const snapshot = await db.collection('conversations')
-            .doc(phone)
-            .collection('messages')
-            .orderBy('createdAt', 'asc')
-            .limit(100)
-            .get();
 
-        const messages = [];
-        snapshot.forEach(doc => {
-            messages.push({ id: doc.id, ...doc.data() });
-        });
+        if (db) {
+            const snapshot = await db.collection('conversations')
+                .doc(phone)
+                .collection('messages')
+                .orderBy('createdAt', 'asc')
+                .limit(100)
+                .get();
 
-        // Mark as read
-        await db.collection('conversations').doc(phone).update({
-            unreadCount: 0
-        });
+            const messages = [];
+            snapshot.forEach(doc => {
+                messages.push({ id: doc.id, ...doc.data() });
+            });
 
-        res.json(messages);
+            // Mark as read
+            await db.collection('conversations').doc(phone).update({
+                unreadCount: 0
+            });
+
+            return res.json(messages);
+        } else {
+            // Return from memory
+            const messages = memoryStore.messages.get(phone) || [];
+            const conv = memoryStore.conversations.get(phone);
+            if (conv) conv.unreadCount = 0;
+            return res.json(messages);
+        }
     } catch (error) {
         console.error('Get messages error:', error);
         res.status(500).json({ error: error.message });
