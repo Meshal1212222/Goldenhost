@@ -18,9 +18,6 @@ const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Serve static files from parent directory (HTML, CSS, JS)
-app.use(express.static(path.join(__dirname, '..')));
-
 // ==================== Configuration ====================
 
 const CONFIG = {
@@ -34,36 +31,10 @@ const CONFIG = {
     META_API_URL: 'https://graph.facebook.com/v18.0'
 };
 
-// ==================== Firebase Setup ====================
-
-let db;
-
-function initFirebase() {
-    try {
-        // For Railway, use environment variable for service account
-        const serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT
-            ? JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT)
-            : require('./firebase-service-account.json');
-
-        admin.initializeApp({
-            credential: admin.credential.cert(serviceAccount),
-            databaseURL: 'https://sunday-fb28c-default-rtdb.firebaseio.com'
-        });
-
-        db = admin.firestore();
-        console.log('Firebase initialized successfully');
-    } catch (error) {
-        console.error('Firebase initialization error:', error.message);
-        console.log('Running without Firebase - messages will not be stored');
-    }
-}
-
-initFirebase();
-
 // ==================== Middleware ====================
 
 app.use(cors({
-    origin: ['https://meshal1212222.github.io', 'http://localhost:3000', '*'],
+    origin: '*',
     methods: ['GET', 'POST', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization']
 }));
@@ -71,7 +42,7 @@ app.use(cors({
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-// ==================== WhatsApp Webhook ====================
+// ==================== WhatsApp Webhook (MUST BE BEFORE STATIC) ====================
 
 // Webhook Verification (GET request from Meta)
 app.get('/webhook', (req, res) => {
@@ -94,40 +65,73 @@ app.get('/webhook', (req, res) => {
 app.post('/webhook', async (req, res) => {
     try {
         const body = req.body;
-
         console.log('Received webhook:', JSON.stringify(body, null, 2));
 
-        // Check if this is a WhatsApp message
         if (body.object === 'whatsapp_business_account') {
             const entries = body.entry || [];
-
             for (const entry of entries) {
                 const changes = entry.changes || [];
-
                 for (const change of changes) {
                     if (change.field === 'messages') {
                         const value = change.value;
                         const messages = value.messages || [];
                         const contacts = value.contacts || [];
-
                         for (let i = 0; i < messages.length; i++) {
                             const message = messages[i];
                             const contact = contacts[i] || {};
-
                             await processIncomingMessage(message, contact, value.metadata);
                         }
                     }
                 }
             }
         }
-
-        // Always respond with 200 OK to acknowledge receipt
         res.sendStatus(200);
     } catch (error) {
         console.error('Webhook processing error:', error);
-        res.sendStatus(200); // Still respond 200 to prevent retries
+        res.sendStatus(200);
     }
 });
+
+// Health check
+app.get('/health', (req, res) => {
+    res.json({ status: 'healthy', timestamp: new Date().toISOString() });
+});
+
+// API info
+app.get('/api', (req, res) => {
+    res.json({
+        status: 'running',
+        service: 'Golden Host WhatsApp Backend',
+        version: '1.0.0'
+    });
+});
+
+// ==================== Firebase Setup ====================
+
+let db;
+
+function initFirebase() {
+    try {
+        const serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT
+            ? JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT)
+            : null;
+
+        if (serviceAccount) {
+            admin.initializeApp({
+                credential: admin.credential.cert(serviceAccount),
+                databaseURL: 'https://sunday-fb28c-default-rtdb.firebaseio.com'
+            });
+            db = admin.firestore();
+            console.log('Firebase initialized successfully');
+        } else {
+            console.log('No Firebase credentials - running without database');
+        }
+    } catch (error) {
+        console.error('Firebase initialization error:', error.message);
+    }
+}
+
+initFirebase();
 
 // ==================== Message Processing ====================
 
@@ -415,6 +419,10 @@ app.get('/', (req, res) => {
 app.get('/health', (req, res) => {
     res.json({ status: 'healthy', timestamp: new Date().toISOString() });
 });
+
+// ==================== Static Files (AFTER API routes) ====================
+
+app.use(express.static(__dirname));
 
 // ==================== Start Server ====================
 
