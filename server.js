@@ -26,7 +26,7 @@ const WHATSAPP_ACCOUNTS = {
         name: 'Golden Ticket',
         phoneNumberId: '596898763496238',
         wabaId: '531042513430236',
-        token: process.env.GOLDEN_TICKET_TOKEN || 'EAAMg7ZBDWUAoBQlwwy6TTxsjntfeWFzavQNrAtFZA9XzKvkRv7Qx2J7A7uAOwhJEhNjZCDHxMJ5lj54J3k3UM9mrRCRlZAYel8h0LJnaZBm0SHThhqpCrt4HXZAqslcLX03cYo5ybqmPmtPauPlcSZBAf2DIxkWVDVCZAlv64iRfzuxv8ZAaY4FZAG6qacyIKuBZBv6kqFL5JNIi5odKvcZAni6dMGH0VIZCrC6hzZCOIR7vNZC3fWzZAsXf0JkwRpLgJVdgR3xYM8foZCWdG58lmrZAZAiuNjmkAZDZD'
+        token: process.env.GOLDEN_TICKET_TOKEN || 'EAALAVP2dSyQBQsgmZApRytz6ZArVaZAJWU8B8tmT9FnXPp7QGJvVSIBXOqhMyEPyot01EZAhBi0sbUixxpyknThUWbPo864186QbYIt3rRUkdGNrpeErgVs9XP7kBuHQzdYyuMkS9O2OhuwlzmqiYIZAFnYQbJ7fdubG6QhYlOQnrZBWHB4QV3ehiJtp2FggZDZD'
     },
     'golden_host': {
         name: 'Golden Host',
