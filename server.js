@@ -479,7 +479,7 @@ app.post('/api/otp/send', async (req, res) => {
         const { phone, templateName = 'code_otp', language = 'en', accountId } = req.body;
 
         if (!phone) {
-            return res.status(400).json({ error: 'رقم الهاتف مطلوب' });
+            return res.status(400).json({ error: 'Phone number is required' });
         }
 
         // Format phone number
@@ -498,7 +498,7 @@ app.post('/api/otp/send', async (req, res) => {
         // Get account
         const account = getAccount(accountId);
         if (!account.token) {
-            return res.status(400).json({ error: 'لا يوجد توكن للحساب' });
+            return res.status(400).json({ error: 'No token configured for this account' });
         }
 
         // Send OTP via WhatsApp Template
@@ -541,14 +541,14 @@ app.post('/api/otp/send', async (req, res) => {
 
         res.json({
             success: true,
-            message: 'تم إرسال رمز التحقق',
+            message: 'OTP sent successfully',
             messageId: response.data.messages?.[0]?.id,
             expiresIn: 300 // 5 minutes in seconds
         });
 
     } catch (error) {
         console.error('OTP send error:', error.response?.data || error);
-        res.status(500).json({ error: error.response?.data?.error?.message || 'فشل إرسال رمز التحقق' });
+        res.status(500).json({ error: error.response?.data?.error?.message || 'Failed to send OTP' });
     }
 });
 
@@ -558,7 +558,7 @@ app.post('/api/otp/verify', (req, res) => {
         const { phone, code } = req.body;
 
         if (!phone || !code) {
-            return res.status(400).json({ error: 'رقم الهاتف ورمز التحقق مطلوبان' });
+            return res.status(400).json({ error: 'Phone number and OTP code are required' });
         }
 
         const formattedPhone = phone.replace(/[\s+\-]/g, '');
@@ -567,7 +567,7 @@ app.post('/api/otp/verify', (req, res) => {
         if (!storedOtp) {
             return res.status(400).json({
                 success: false,
-                error: 'لم يتم إرسال رمز تحقق لهذا الرقم'
+                error: 'No OTP was sent to this number'
             });
         }
 
@@ -576,7 +576,7 @@ app.post('/api/otp/verify', (req, res) => {
             otpStore.delete(formattedPhone);
             return res.status(400).json({
                 success: false,
-                error: 'انتهت صلاحية رمز التحقق'
+                error: 'OTP has expired'
             });
         }
 
@@ -585,7 +585,7 @@ app.post('/api/otp/verify', (req, res) => {
             otpStore.delete(formattedPhone);
             return res.status(400).json({
                 success: false,
-                error: 'تجاوزت الحد الأقصى للمحاولات'
+                error: 'Maximum attempts exceeded'
             });
         }
 
@@ -595,21 +595,21 @@ app.post('/api/otp/verify', (req, res) => {
             console.log(`OTP verified for ${formattedPhone}`);
             return res.json({
                 success: true,
-                message: 'تم التحقق بنجاح',
+                message: 'OTP verified successfully',
                 verified: true
             });
         } else {
             storedOtp.attempts++;
             return res.status(400).json({
                 success: false,
-                error: 'رمز التحقق غير صحيح',
+                error: 'Invalid OTP code',
                 attemptsLeft: 3 - storedOtp.attempts
             });
         }
 
     } catch (error) {
         console.error('OTP verify error:', error);
-        res.status(500).json({ error: 'فشل التحقق' });
+        res.status(500).json({ error: 'Verification failed' });
     }
 });
 
