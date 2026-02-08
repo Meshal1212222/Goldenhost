@@ -671,10 +671,40 @@
         </div>
     </div>
 
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
     <script>
+        // ==================== Configuration ====================
+        const BACKEND_CONFIG = {
+            // Railway Backend URL - UPDATE THIS after deployment
+            apiUrl: 'https://your-railway-app.up.railway.app',
+            // Set to true when backend is deployed
+            useMetaAPI: false
+        };
+
+        // Firebase Config
+        const firebaseConfig = {
+            apiKey: "AIzaSyACk3UhHouKfGsOu3ZJfaOhqLqucumn2UQ",
+            authDomain: "sunday-fb28c.firebaseapp.com",
+            projectId: "sunday-fb28c",
+            storageBucket: "sunday-fb28c.firebasestorage.app",
+            messagingSenderId: "24752239756",
+            appId: "1:24752239756:web:386c2c72624eb67ba337a9"
+        };
+
+        // Initialize Firebase
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        const firestore = firebase.firestore();
+
         let currentChannel = 'whatsapp';
         let currentConversation = null;
         let conversations = [];
+        let unsubscribeConversations = null;
+        let unsubscribeMessages = null;
 
         // Sample conversation data
         const sampleConversations = {
@@ -849,9 +879,110 @@
         };
 
         function init() {
+            // Load local sample data first
             loadConversations();
             conversations = sampleConversations[currentChannel];
             renderConversations();
+
+            // Then try to load from Firestore (real WhatsApp messages)
+            loadFirestoreConversations();
+        }
+
+        // Load real conversations from Firestore
+        function loadFirestoreConversations() {
+            if (unsubscribeConversations) {
+                unsubscribeConversations();
+            }
+
+            try {
+                unsubscribeConversations = firestore
+                    .collection('conversations')
+                    .orderBy('updatedAt', 'desc')
+                    .onSnapshot((snapshot) => {
+                        const firestoreConversations = [];
+                        snapshot.forEach(doc => {
+                            const data = doc.data();
+                            firestoreConversations.push({
+                                id: doc.id,
+                                customerName: data.customerName || 'عميل واتساب',
+                                customerPhone: data.customerPhone || doc.id,
+                                lastMessage: data.lastMessage || '',
+                                time: formatTime(data.updatedAt?.toDate()),
+                                unread: data.unreadCount || 0,
+                                priority: false,
+                                status: data.status || 'open',
+                                channel: 'whatsapp_meta',
+                                messages: [],
+                                notes: data.notes || '',
+                                history: [],
+                                isFirestore: true
+                            });
+                        });
+
+                        // Merge with sample data
+                        if (currentChannel === 'whatsapp') {
+                            const merged = [...firestoreConversations, ...sampleConversations.whatsapp];
+                            conversations = merged;
+                            renderConversations();
+                        }
+
+                        console.log('Firestore conversations loaded:', firestoreConversations.length);
+                    }, (error) => {
+                        console.error('Firestore error:', error);
+                    });
+            } catch (error) {
+                console.error('Error setting up Firestore listener:', error);
+            }
+        }
+
+        function formatTime(date) {
+            if (!date) return '';
+            const now = new Date();
+            const diff = now - date;
+            const hours = diff / (1000 * 60 * 60);
+
+            if (hours < 1) {
+                return Math.floor(diff / (1000 * 60)) + ' دقيقة';
+            } else if (hours < 24) {
+                return date.toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' });
+            } else {
+                return 'أمس';
+            }
+        }
+
+        // Load messages for a Firestore conversation
+        async function loadFirestoreMessages(conversationId) {
+            if (unsubscribeMessages) {
+                unsubscribeMessages();
+            }
+
+            unsubscribeMessages = firestore
+                .collection('conversations')
+                .doc(conversationId)
+                .collection('messages')
+                .orderBy('createdAt', 'asc')
+                .onSnapshot((snapshot) => {
+                    const messages = [];
+                    snapshot.forEach(doc => {
+                        const data = doc.data();
+                        messages.push({
+                            sender: data.from === 'employee' ? 'employee' : 'customer',
+                            text: data.content || data.text || '',
+                            time: formatTime(data.createdAt?.toDate()),
+                            status: data.status || 'delivered'
+                        });
+                    });
+
+                    if (currentConversation && currentConversation.id === conversationId) {
+                        currentConversation.messages = messages;
+                        renderChat(currentConversation);
+                    }
+                });
+
+            // Mark as read
+            await firestore.collection('conversations').doc(conversationId).update({
+                unreadCount: 0
+            }).catch(() => {});
         }
 
         function switchChannel(channel) {
@@ -921,6 +1052,11 @@
             // Mark as read
             conv.unread = 0;
             renderConversations();
+
+            // Load messages from Firestore if it's a real conversation
+            if (conv.isFirestore) {
+                loadFirestoreMessages(conv.id);
+            }
 
             // Render chat
             renderChat(conv);
@@ -1061,7 +1197,7 @@
             document.getElementById('messageInput').focus();
         }
 
-        function sendMessage() {
+        async function sendMessage() {
             const input = document.getElementById('messageInput');
             const text = input.value.trim();
 
@@ -1071,24 +1207,49 @@
                 sender: 'employee',
                 text: text,
                 time: new Date().toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' }),
-                status: 'delivered'
+                status: 'sending'
             };
 
+            // Add message to UI immediately
             currentConversation.messages.push(newMessage);
-            currentConversation.lastMessage = text;
-            currentConversation.time = new Date().toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' });
-
-            // Save to localStorage
-            saveConversations();
-
-            // Update UI
             renderChat(currentConversation);
-            renderConversations();
-
             input.value = '';
 
-            // Show notification
-            showNotification('✅ تم إرسال الرسالة بنجاح');
+            // Send via Meta WhatsApp API if it's a real conversation
+            if (currentConversation.isFirestore && BACKEND_CONFIG.useMetaAPI) {
+                try {
+                    const response = await fetch(`${BACKEND_CONFIG.apiUrl}/api/send-message`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            to: currentConversation.customerPhone,
+                            message: text
+                        })
+                    });
+
+                    if (response.ok) {
+                        newMessage.status = 'delivered';
+                        showNotification('تم إرسال الرسالة عبر WhatsApp');
+                    } else {
+                        newMessage.status = 'failed';
+                        showNotification('فشل إرسال الرسالة');
+                    }
+                } catch (error) {
+                    console.error('Send error:', error);
+                    newMessage.status = 'failed';
+                    showNotification('خطأ في الإرسال');
+                }
+            } else {
+                // Local/demo mode
+                newMessage.status = 'delivered';
+                currentConversation.lastMessage = text;
+                currentConversation.time = new Date().toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' });
+                saveConversations();
+                showNotification('تم إرسال الرسالة');
+            }
+
+            renderChat(currentConversation);
+            renderConversations();
         }
 
         function handleEnter(event) {
