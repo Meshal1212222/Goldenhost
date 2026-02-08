@@ -18,8 +18,8 @@ const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Serve static files from parent directory (HTML, CSS, JS)
-app.use(express.static(path.join(__dirname, '..')));
+// Serve static files (HTML, CSS, JS)
+app.use(express.static(__dirname));
 
 // ==================== Configuration ====================
 
