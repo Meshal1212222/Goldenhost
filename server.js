@@ -20,16 +20,32 @@ const PORT = process.env.PORT || 3000;
 
 // ==================== Configuration ====================
 
-const CONFIG = {
-    // Meta WhatsApp API
-    WHATSAPP_TOKEN: process.env.WHATSAPP_TOKEN || 'EAAa4f8LAgtEBQtc0Ve11QAlEZBdksIPejqFKpWqDhdOHqgYFdcDAihn0leHPC0f1b930AZCtaaE4d9LJAZAHTZCxb4J3HSj9jS7za85qxENh6L3EuzNzgD1oEQNVyjZA0IheqNsdvabFrMoIZCwk8VaDd8soMIa4ZAHquaInSDraxGmBzYuLAYNxjexZB5ZBlTzNwTMYMHCSyTYTkYqyv1iLBjV7AAZBmGhMHXkenanGh6luuzRoFAoUvCZAZCOGUXabmrKKUxZACmZAvRyOATdnxPVOkf',
-    PHONE_NUMBER_ID: process.env.PHONE_NUMBER_ID || '529770810215816',
-    WABA_ID: process.env.WABA_ID || '435381729669619',
-    VERIFY_TOKEN: process.env.VERIFY_TOKEN || 'goldenhost_webhook_2024',
-
-    // Meta API URL
-    META_API_URL: 'https://graph.facebook.com/v18.0'
+// Multiple WhatsApp Business Accounts
+const WHATSAPP_ACCOUNTS = {
+    'golden_ticket': {
+        name: 'Golden Ticket',
+        phoneNumberId: '596898763496238',
+        wabaId: '531042513430236',
+        token: process.env.GOLDEN_TICKET_TOKEN || 'EAAMg7ZBDWUAoBQlwwy6TTxsjntfeWFzavQNrAtFZA9XzKvkRv7Qx2J7A7uAOwhJEhNjZCDHxMJ5lj54J3k3UM9mrRCRlZAYel8h0LJnaZBm0SHThhqpCrt4HXZAqslcLX03cYo5ybqmPmtPauPlcSZBAf2DIxkWVDVCZAlv64iRfzuxv8ZAaY4FZAG6qacyIKuBZBv6kqFL5JNIi5odKvcZAni6dMGH0VIZCrC6hzZCOIR7vNZC3fWzZAsXf0JkwRpLgJVdgR3xYM8foZCWdG58lmrZAZAiuNjmkAZDZD'
+    },
+    'golden_host': {
+        name: 'Golden Host',
+        phoneNumberId: '529770810215816',
+        wabaId: '435381729669619',
+        token: process.env.GOLDEN_HOST_TOKEN || '' // Waiting for admin approval
+    }
 };
+
+const CONFIG = {
+    VERIFY_TOKEN: process.env.VERIFY_TOKEN || 'goldenhost_webhook_2024',
+    META_API_URL: 'https://graph.facebook.com/v18.0',
+    DEFAULT_ACCOUNT: 'golden_ticket' // Default account to use
+};
+
+// Helper function to get account config
+function getAccount(accountId) {
+    return WHATSAPP_ACCOUNTS[accountId] || WHATSAPP_ACCOUNTS[CONFIG.DEFAULT_ACCOUNT];
+}
 
 // ==================== Middleware ====================
 
@@ -223,16 +239,28 @@ function extractMessageContent(message) {
 
 // ==================== Send Messages API ====================
 
+// Get available WhatsApp accounts
+app.get('/api/whatsapp-accounts', (req, res) => {
+    const accounts = Object.entries(WHATSAPP_ACCOUNTS)
+        .filter(([id, acc]) => acc.token) // Only return accounts with valid tokens
+        .map(([id, acc]) => ({
+            id: id,
+            name: acc.name,
+            phoneNumberId: acc.phoneNumberId
+        }));
+    res.json(accounts);
+});
+
 // Send text message
 app.post('/api/send-message', async (req, res) => {
     try {
-        const { to, message, type = 'text' } = req.body;
+        const { to, message, type = 'text', accountId } = req.body;
 
         if (!to || !message) {
             return res.status(400).json({ error: 'Missing required fields: to, message' });
         }
 
-        const result = await sendWhatsAppMessage(to, message, type);
+        const result = await sendWhatsAppMessage(to, message, type, accountId);
         res.json(result);
     } catch (error) {
         console.error('Send message error:', error);
@@ -240,11 +268,18 @@ app.post('/api/send-message', async (req, res) => {
     }
 });
 
-async function sendWhatsAppMessage(to, message, type = 'text') {
+async function sendWhatsAppMessage(to, message, type = 'text', accountId = null) {
+    // Get the account to use
+    const account = getAccount(accountId);
+
+    if (!account.token) {
+        throw new Error(`No token configured for account: ${accountId || CONFIG.DEFAULT_ACCOUNT}`);
+    }
+
     // Format phone number (remove + and any spaces)
     const formattedPhone = to.replace(/[\s+\-]/g, '');
 
-    const url = `${CONFIG.META_API_URL}/${CONFIG.PHONE_NUMBER_ID}/messages`;
+    const url = `${CONFIG.META_API_URL}/${account.phoneNumberId}/messages`;
 
     const payload = {
         messaging_product: 'whatsapp',
@@ -257,11 +292,11 @@ async function sendWhatsAppMessage(to, message, type = 'text') {
         payload.text = { body: message };
     }
 
-    console.log('Sending message:', { to: formattedPhone, message });
+    console.log('Sending message:', { to: formattedPhone, message, account: account.name });
 
     const response = await axios.post(url, payload, {
         headers: {
-            'Authorization': `Bearer ${CONFIG.WHATSAPP_TOKEN}`,
+            'Authorization': `Bearer ${account.token}`,
             'Content-Type': 'application/json'
         }
     });
@@ -278,6 +313,8 @@ async function sendWhatsAppMessage(to, message, type = 'text') {
                 type: type,
                 status: 'sent',
                 channel: 'whatsapp_meta',
+                accountId: accountId || CONFIG.DEFAULT_ACCOUNT,
+                accountName: account.name,
                 createdAt: admin.firestore.FieldValue.serverTimestamp()
             });
 
@@ -294,6 +331,7 @@ async function sendWhatsAppMessage(to, message, type = 'text') {
     return {
         success: true,
         messageId: response.data.messages?.[0]?.id,
+        account: account.name,
         data: response.data
     };
 }
@@ -301,14 +339,19 @@ async function sendWhatsAppMessage(to, message, type = 'text') {
 // Send template message
 app.post('/api/send-template', async (req, res) => {
     try {
-        const { to, templateName, languageCode = 'ar', components = [] } = req.body;
+        const { to, templateName, languageCode = 'ar', components = [], accountId } = req.body;
 
         if (!to || !templateName) {
             return res.status(400).json({ error: 'Missing required fields: to, templateName' });
         }
 
+        const account = getAccount(accountId);
+        if (!account.token) {
+            return res.status(400).json({ error: `No token configured for account: ${accountId || CONFIG.DEFAULT_ACCOUNT}` });
+        }
+
         const formattedPhone = to.replace(/[\s+\-]/g, '');
-        const url = `${CONFIG.META_API_URL}/${CONFIG.PHONE_NUMBER_ID}/messages`;
+        const url = `${CONFIG.META_API_URL}/${account.phoneNumberId}/messages`;
 
         const payload = {
             messaging_product: 'whatsapp',
@@ -324,7 +367,7 @@ app.post('/api/send-template', async (req, res) => {
 
         const response = await axios.post(url, payload, {
             headers: {
-                'Authorization': `Bearer ${CONFIG.WHATSAPP_TOKEN}`,
+                'Authorization': `Bearer ${account.token}`,
                 'Content-Type': 'application/json'
             }
         });
@@ -332,6 +375,7 @@ app.post('/api/send-template', async (req, res) => {
         res.json({
             success: true,
             messageId: response.data.messages?.[0]?.id,
+            account: account.name,
             data: response.data
         });
     } catch (error) {
