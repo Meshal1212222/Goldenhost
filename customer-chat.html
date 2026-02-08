@@ -705,6 +705,8 @@
         let conversations = [];
         let unsubscribeConversations = null;
         let unsubscribeMessages = null;
+        let whatsappAccounts = [];
+        let selectedAccountId = 'golden_ticket'; // Default account
 
         // Sample conversation data
         const sampleConversations = {
@@ -884,8 +886,154 @@
             conversations = sampleConversations[currentChannel];
             renderConversations();
 
+            // Load available WhatsApp accounts
+            loadWhatsAppAccounts();
+
             // Then try to load from Firestore (real WhatsApp messages)
             loadFirestoreConversations();
+        }
+
+        // Load available WhatsApp accounts from backend
+        async function loadWhatsAppAccounts() {
+            try {
+                const response = await fetch(`${BACKEND_CONFIG.apiUrl}/api/whatsapp-accounts`);
+                if (response.ok) {
+                    whatsappAccounts = await response.json();
+                    if (whatsappAccounts.length > 0) {
+                        selectedAccountId = whatsappAccounts[0].id;
+                    }
+                    console.log('WhatsApp accounts loaded:', whatsappAccounts);
+                }
+            } catch (error) {
+                console.error('Error loading WhatsApp accounts:', error);
+                // Fallback accounts
+                whatsappAccounts = [
+                    { id: 'golden_ticket', name: 'Golden Ticket', phoneNumberId: '596898763496238' },
+                    { id: 'golden_host', name: 'Golden Host', phoneNumberId: '529770810215816' }
+                ];
+            }
+        }
+
+        function renderAccountSelector() {
+            if (whatsappAccounts.length === 0) return '';
+            return `
+                <select id="whatsappAccountSelector" onchange="changeWhatsAppAccount(this.value)"
+                    style="padding: 0.5rem 1rem; border-radius: 8px; border: 2px solid #25D366;
+                    font-family: 'Cairo', sans-serif; font-weight: 600; background: #e8f5e9;
+                    color: #128C7E; cursor: pointer; margin-left: 1rem;">
+                    ${whatsappAccounts.map(acc =>
+                        `<option value="${acc.id}" ${acc.id === selectedAccountId ? 'selected' : ''}>${acc.name}</option>`
+                    ).join('')}
+                </select>
+            `;
+        }
+
+        function changeWhatsAppAccount(accountId) {
+            selectedAccountId = accountId;
+            const account = whatsappAccounts.find(a => a.id === accountId);
+            showNotification(`تم اختيار: ${account?.name || accountId}`);
+        }
+
+        // WhatsApp Message Templates
+        const whatsappTemplates = [
+            { name: 'hello_world', displayName: 'مرحباً', language: 'en_US', description: 'رسالة ترحيبية' },
+            { name: 'otp', displayName: 'OTP', language: 'ar', description: 'رمز التحقق' }
+        ];
+
+        function renderTemplateButton() {
+            return `
+                <button onclick="showTemplateModal()"
+                    style="padding: 0.5rem 1rem; border-radius: 8px; border: 2px solid #FF9800;
+                    font-family: 'Cairo', sans-serif; font-weight: 600; background: #FFF3E0;
+                    color: #E65100; cursor: pointer; margin-left: 0.5rem;">
+                    📋 قوالب
+                </button>
+            `;
+        }
+
+        function showTemplateModal() {
+            if (!currentConversation) {
+                showNotification('اختر محادثة أولاً');
+                return;
+            }
+
+            const modal = document.createElement('div');
+            modal.id = 'templateModal';
+            modal.style.cssText = `
+                position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+                background: rgba(0,0,0,0.5); display: flex; align-items: center;
+                justify-content: center; z-index: 10000;
+            `;
+            modal.innerHTML = `
+                <div style="background: white; padding: 2rem; border-radius: 16px; width: 400px; max-width: 90%;">
+                    <h3 style="margin-bottom: 1rem; color: #333;">📋 إرسال قالب رسالة</h3>
+                    <p style="color: #666; font-size: 0.9rem; margin-bottom: 1rem;">
+                        القوالب تُستخدم لبدء محادثة جديدة مع العميل
+                    </p>
+                    <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                        ${whatsappTemplates.map(t => `
+                            <button onclick="sendTemplate('${t.name}', '${t.language}')"
+                                style="padding: 1rem; border: 2px solid #ddd; border-radius: 8px;
+                                background: white; cursor: pointer; text-align: right;
+                                font-family: 'Cairo', sans-serif; transition: all 0.3s;">
+                                <div style="font-weight: 700; color: #333;">${t.displayName}</div>
+                                <div style="font-size: 0.8rem; color: #666;">${t.description}</div>
+                            </button>
+                        `).join('')}
+                    </div>
+                    <button onclick="closeTemplateModal()"
+                        style="margin-top: 1rem; width: 100%; padding: 0.8rem;
+                        background: #f5f5f5; border: none; border-radius: 8px;
+                        font-family: 'Cairo', sans-serif; cursor: pointer;">
+                        إلغاء
+                    </button>
+                </div>
+            `;
+            document.body.appendChild(modal);
+            modal.onclick = (e) => { if (e.target === modal) closeTemplateModal(); };
+        }
+
+        function closeTemplateModal() {
+            const modal = document.getElementById('templateModal');
+            if (modal) modal.remove();
+        }
+
+        async function sendTemplate(templateName, languageCode) {
+            if (!currentConversation) return;
+            closeTemplateModal();
+
+            try {
+                const response = await fetch(`${BACKEND_CONFIG.apiUrl}/api/send-template`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        to: currentConversation.customerPhone,
+                        templateName: templateName,
+                        languageCode: languageCode,
+                        accountId: selectedAccountId
+                    })
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    showNotification(`تم إرسال القالب عبر ${result.account || 'WhatsApp'}`);
+
+                    // Add to chat UI
+                    currentConversation.messages.push({
+                        sender: 'employee',
+                        text: `[قالب: ${templateName}]`,
+                        time: new Date().toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' }),
+                        status: 'delivered'
+                    });
+                    renderChat(currentConversation);
+                } else {
+                    const error = await response.json();
+                    showNotification('فشل إرسال القالب: ' + (error.error?.message || error.error || 'خطأ'));
+                }
+            } catch (error) {
+                console.error('Template error:', error);
+                showNotification('خطأ في إرسال القالب');
+            }
         }
 
         // Load real conversations from Firestore
@@ -1077,6 +1225,8 @@
                         </div>
                     </div>
                     <div class="chat-actions">
+                        ${currentChannel === 'whatsapp' ? renderAccountSelector() : ''}
+                        ${currentChannel === 'whatsapp' ? renderTemplateButton() : ''}
                         <button class="chat-action-btn btn-assign" onclick="assignToEmployee()">📋 تعيين لموظف</button>
                         <button class="chat-action-btn btn-close-chat" onclick="closeChat()">✓ إغلاق المحادثة</button>
                     </div>
@@ -1218,21 +1368,25 @@
             // Send via Meta WhatsApp API if it's a real conversation
             if (currentConversation.isFirestore && BACKEND_CONFIG.useMetaAPI) {
                 try {
+                    const account = whatsappAccounts.find(a => a.id === selectedAccountId);
                     const response = await fetch(`${BACKEND_CONFIG.apiUrl}/api/send-message`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
                             to: currentConversation.customerPhone,
-                            message: text
+                            message: text,
+                            accountId: selectedAccountId
                         })
                     });
 
                     if (response.ok) {
+                        const result = await response.json();
                         newMessage.status = 'delivered';
-                        showNotification('تم إرسال الرسالة عبر WhatsApp');
+                        showNotification(`تم إرسال الرسالة عبر ${result.account || account?.name || 'WhatsApp'}`);
                     } else {
+                        const error = await response.json();
                         newMessage.status = 'failed';
-                        showNotification('فشل إرسال الرسالة');
+                        showNotification('فشل إرسال الرسالة: ' + (error.error || 'خطأ غير معروف'));
                     }
                 } catch (error) {
                     console.error('Send error:', error);
