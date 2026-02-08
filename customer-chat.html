@@ -705,6 +705,8 @@
         let conversations = [];
         let unsubscribeConversations = null;
         let unsubscribeMessages = null;
+        let whatsappAccounts = [];
+        let selectedAccountId = 'golden_ticket'; // Default account
 
         // Sample conversation data
         const sampleConversations = {
@@ -884,8 +886,52 @@
             conversations = sampleConversations[currentChannel];
             renderConversations();
 
+            // Load available WhatsApp accounts
+            loadWhatsAppAccounts();
+
             // Then try to load from Firestore (real WhatsApp messages)
             loadFirestoreConversations();
+        }
+
+        // Load available WhatsApp accounts from backend
+        async function loadWhatsAppAccounts() {
+            try {
+                const response = await fetch(`${BACKEND_CONFIG.apiUrl}/api/whatsapp-accounts`);
+                if (response.ok) {
+                    whatsappAccounts = await response.json();
+                    if (whatsappAccounts.length > 0) {
+                        selectedAccountId = whatsappAccounts[0].id;
+                    }
+                    console.log('WhatsApp accounts loaded:', whatsappAccounts);
+                }
+            } catch (error) {
+                console.error('Error loading WhatsApp accounts:', error);
+                // Fallback accounts
+                whatsappAccounts = [
+                    { id: 'golden_ticket', name: 'Golden Ticket', phoneNumberId: '596898763496238' },
+                    { id: 'golden_host', name: 'Golden Host', phoneNumberId: '529770810215816' }
+                ];
+            }
+        }
+
+        function renderAccountSelector() {
+            if (whatsappAccounts.length === 0) return '';
+            return `
+                <select id="whatsappAccountSelector" onchange="changeWhatsAppAccount(this.value)"
+                    style="padding: 0.5rem 1rem; border-radius: 8px; border: 2px solid #25D366;
+                    font-family: 'Cairo', sans-serif; font-weight: 600; background: #e8f5e9;
+                    color: #128C7E; cursor: pointer; margin-left: 1rem;">
+                    ${whatsappAccounts.map(acc =>
+                        `<option value="${acc.id}" ${acc.id === selectedAccountId ? 'selected' : ''}>${acc.name}</option>`
+                    ).join('')}
+                </select>
+            `;
+        }
+
+        function changeWhatsAppAccount(accountId) {
+            selectedAccountId = accountId;
+            const account = whatsappAccounts.find(a => a.id === accountId);
+            showNotification(`تم اختيار: ${account?.name || accountId}`);
         }
 
         // Load real conversations from Firestore
@@ -1077,6 +1123,7 @@
                         </div>
                     </div>
                     <div class="chat-actions">
+                        ${currentChannel === 'whatsapp' ? renderAccountSelector() : ''}
                         <button class="chat-action-btn btn-assign" onclick="assignToEmployee()">📋 تعيين لموظف</button>
                         <button class="chat-action-btn btn-close-chat" onclick="closeChat()">✓ إغلاق المحادثة</button>
                     </div>
@@ -1218,21 +1265,25 @@
             // Send via Meta WhatsApp API if it's a real conversation
             if (currentConversation.isFirestore && BACKEND_CONFIG.useMetaAPI) {
                 try {
+                    const account = whatsappAccounts.find(a => a.id === selectedAccountId);
                     const response = await fetch(`${BACKEND_CONFIG.apiUrl}/api/send-message`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
                             to: currentConversation.customerPhone,
-                            message: text
+                            message: text,
+                            accountId: selectedAccountId
                         })
                     });
 
                     if (response.ok) {
+                        const result = await response.json();
                         newMessage.status = 'delivered';
-                        showNotification('تم إرسال الرسالة عبر WhatsApp');
+                        showNotification(`تم إرسال الرسالة عبر ${result.account || account?.name || 'WhatsApp'}`);
                     } else {
+                        const error = await response.json();
                         newMessage.status = 'failed';
-                        showNotification('فشل إرسال الرسالة');
+                        showNotification('فشل إرسال الرسالة: ' + (error.error || 'خطأ غير معروف'));
                     }
                 } catch (error) {
                     console.error('Send error:', error);
