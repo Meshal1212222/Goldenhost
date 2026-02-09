@@ -510,12 +510,20 @@ app.post('/api/otp/send', async (req, res) => {
             language: { code: languageCode }
         };
 
-        // Add body component with OTP
+        // Add body and button components for OTP
         templateObj.components = [
             {
                 type: 'body',
                 parameters: [
                     { type: 'text', text: otp }
+                ]
+            },
+            {
+                type: 'button',
+                sub_type: 'otp',
+                index: '0',
+                parameters: [
+                    { type: 'payload', payload: otp }
                 ]
             }
         ];
