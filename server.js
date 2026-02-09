@@ -510,7 +510,7 @@ app.post('/api/otp/send', async (req, res) => {
             language: { code: languageCode }
         };
 
-        // Add body and button components for OTP
+        // Add body and button components for OTP with Copy Code
         templateObj.components = [
             {
                 type: 'body',
@@ -520,10 +520,10 @@ app.post('/api/otp/send', async (req, res) => {
             },
             {
                 type: 'button',
-                sub_type: 'otp',
-                index: '0',
+                sub_type: 'copy_code',
+                index: 0,
                 parameters: [
-                    { type: 'payload', payload: otp }
+                    { type: 'coupon_code', coupon_code: otp }
                 ]
             }
         ];
