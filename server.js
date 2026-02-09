@@ -520,11 +520,8 @@ app.post('/api/otp/send', async (req, res) => {
             },
             {
                 type: 'button',
-                sub_type: 'copy_code',
-                index: 0,
-                parameters: [
-                    { type: 'coupon_code', coupon_code: otp }
-                ]
+                sub_type: 'COPY_CODE',
+                index: 0
             }
         ];
 
