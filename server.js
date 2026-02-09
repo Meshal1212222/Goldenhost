@@ -510,25 +510,15 @@ app.post('/api/otp/send', async (req, res) => {
             language: { code: languageCode }
         };
 
-        // Add components only if includeComponents is not false
-        if (req.body.includeComponents !== false) {
-            templateObj.components = [
-                {
-                    type: 'body',
-                    parameters: [
-                        { type: 'text', text: otp }
-                    ]
-                },
-                {
-                    type: 'button',
-                    sub_type: 'copy_code',
-                    index: '0',
-                    parameters: [
-                        { type: 'text', text: otp }
-                    ]
-                }
-            ];
-        }
+        // Add body component with OTP
+        templateObj.components = [
+            {
+                type: 'body',
+                parameters: [
+                    { type: 'text', text: otp }
+                ]
+            }
+        ];
 
         const payload = {
             messaging_product: 'whatsapp',
