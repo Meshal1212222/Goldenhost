@@ -476,7 +476,7 @@ const otpStore = new Map();
 // Generate and send OTP
 app.post('/api/otp/send', async (req, res) => {
     try {
-        const { phone, templateName = 'code_otp', language = 'en', accountId } = req.body;
+        const { phone, templateName = 'code_otp', accountId, languageCode = 'en' } = req.body;
 
         if (!phone) {
             return res.status(400).json({ error: 'رقم الهاتف مطلوب' });
@@ -485,13 +485,13 @@ app.post('/api/otp/send', async (req, res) => {
         // Format phone number
         const formattedPhone = phone.replace(/[\s+\-]/g, '');
 
-        // Generate 6-digit OTP
-        const otp = Math.floor(100000 + Math.random() * 900000).toString();
+        // Generate 4-digit OTP
+        const otp = Math.floor(1000 + Math.random() * 9000).toString();
 
-        // Store OTP with 5-minute expiry
+        // Store OTP with 10-minute expiry
         otpStore.set(formattedPhone, {
             code: otp,
-            expires: Date.now() + 5 * 60 * 1000, // 5 minutes
+            expires: Date.now() + 10 * 60 * 1000, // 10 minutes
             attempts: 0
         });
 
@@ -503,32 +503,34 @@ app.post('/api/otp/send', async (req, res) => {
 
         // Send OTP via WhatsApp Template
         const url = `${CONFIG.META_API_URL}/${account.phoneNumberId}/messages`;
+
+        // Build template object
+        const templateObj = {
+            name: templateName,
+            language: { code: languageCode }
+        };
+
+        // Add components only if includeComponents is not false
+        if (req.body.includeComponents !== false) {
+            templateObj.components = [
+                {
+                    type: 'body',
+                    parameters: [
+                        { type: 'text', text: otp }
+                    ]
+                }
+            ];
+        }
+
         const payload = {
             messaging_product: 'whatsapp',
             recipient_type: 'individual',
             to: formattedPhone,
             type: 'template',
-            template: {
-                name: templateName,
-                language: { code: language },
-                components: [
-                    {
-                        type: 'body',
-                        parameters: [
-                            { type: 'text', text: otp }
-                        ]
-                    },
-                    {
-                        type: 'button',
-                        sub_type: 'url',
-                        index: '0',
-                        parameters: [
-                            { type: 'text', text: otp }
-                        ]
-                    }
-                ]
-            }
+            template: templateObj
         };
+
+        console.log('Sending OTP template payload:', JSON.stringify(payload, null, 2));
 
         const response = await axios.post(url, payload, {
             headers: {
@@ -543,7 +545,7 @@ app.post('/api/otp/send', async (req, res) => {
             success: true,
             message: 'تم إرسال رمز التحقق',
             messageId: response.data.messages?.[0]?.id,
-            expiresIn: 300 // 5 minutes in seconds
+            expiresIn: 600 // 10 minutes in seconds
         });
 
     } catch (error) {
