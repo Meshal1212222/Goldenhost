@@ -521,7 +521,10 @@ app.post('/api/otp/send', async (req, res) => {
             {
                 type: 'button',
                 sub_type: 'COPY_CODE',
-                index: 0
+                index: 0,
+                parameters: [
+                    { type: 'text', text: otp }
+                ]
             }
         ];
 
