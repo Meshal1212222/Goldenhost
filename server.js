@@ -476,7 +476,7 @@ const otpStore = new Map();
 // Generate and send OTP
 app.post('/api/otp/send', async (req, res) => {
     try {
-        const { phone, templateName = 'code_otp', accountId, languageCode = 'en' } = req.body;
+        const { phone, templateName = 're', accountId, languageCode = 'en' } = req.body;
 
         if (!phone) {
             return res.status(400).json({ error: 'رقم الهاتف مطلوب' });
@@ -510,18 +510,10 @@ app.post('/api/otp/send', async (req, res) => {
             language: { code: languageCode }
         };
 
-        // Add body and button components for OTP with Copy Code
+        // Add body component with OTP code
         templateObj.components = [
             {
                 type: 'body',
-                parameters: [
-                    { type: 'text', text: otp }
-                ]
-            },
-            {
-                type: 'button',
-                sub_type: 'copy_code',
-                index: '0',
                 parameters: [
                     { type: 'text', text: otp }
                 ]
