@@ -1964,7 +1964,7 @@
         }
 
         function renderMediaContent(msg) {
-            const mediaUrl = msg.media_id ? `${BACKEND_CONFIG.apiUrl}/api/media/${msg.media_id}` : '';
+            const mediaUrl = msg.media_id ? `${BACKEND_CONFIG.apiUrl}/api/media/${msg.media_id}?accountId=${selectedAccountId}` : '';
 
             switch (msg.msgType) {
                 case 'image':
