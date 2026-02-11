@@ -197,6 +197,7 @@ initFirebase();
 // ==================== Message Processing ====================
 
 async function processIncomingMessage(message, contact, metadata) {
+    const mediaInfo = extractMediaInfo(message);
     const messageData = {
         id: message.id,
         from: message.from,
@@ -209,6 +210,13 @@ async function processIncomingMessage(message, contact, metadata) {
         status: 'received',
         channel: 'whatsapp_meta'
     };
+
+    // Add media metadata if present
+    if (mediaInfo) {
+        messageData.media_id = mediaInfo.media_id;
+        messageData.mime_type = mediaInfo.mime_type;
+        if (mediaInfo.filename) messageData.filename = mediaInfo.filename;
+    }
 
     console.log('Processing message:', messageData);
 
@@ -275,13 +283,13 @@ function extractMessageContent(message) {
         case 'text':
             return message.text?.body || '';
         case 'image':
-            return '[Image]' + (message.image?.caption || '');
+            return message.image?.caption || '';
         case 'video':
-            return '[Video]' + (message.video?.caption || '');
+            return message.video?.caption || '';
         case 'audio':
-            return '[Audio Message]';
+            return '';
         case 'document':
-            return '[Document: ' + (message.document?.filename || 'file') + ']';
+            return message.document?.filename || 'file';
         case 'location':
             return `[Location: ${message.location?.latitude}, ${message.location?.longitude}]`;
         case 'sticker':
@@ -294,6 +302,24 @@ function extractMessageContent(message) {
                    '[Interactive Response]';
         default:
             return '[Unsupported message type: ' + message.type + ']';
+    }
+}
+
+// Extract media metadata from WhatsApp message
+function extractMediaInfo(message) {
+    switch (message.type) {
+        case 'image':
+            return { media_id: message.image?.id, mime_type: message.image?.mime_type };
+        case 'video':
+            return { media_id: message.video?.id, mime_type: message.video?.mime_type };
+        case 'audio':
+            return { media_id: message.audio?.id, mime_type: message.audio?.mime_type };
+        case 'document':
+            return { media_id: message.document?.id, mime_type: message.document?.mime_type, filename: message.document?.filename };
+        case 'sticker':
+            return { media_id: message.sticker?.id, mime_type: message.sticker?.mime_type };
+        default:
+            return null;
     }
 }
 
@@ -952,6 +978,48 @@ app.post('/api/otp/verify', (req, res) => {
     } catch (error) {
         console.error('OTP verify error:', error);
         res.status(500).json({ error: 'Verification failed' });
+    }
+});
+
+// ==================== Media Download Proxy ====================
+
+// Download media from WhatsApp by media_id
+// This proxies the request through our server so the frontend doesn't need the token
+app.get('/api/media/:mediaId', async (req, res) => {
+    try {
+        const { mediaId } = req.params;
+        const { accountId } = req.query;
+        const account = getAccount(accountId);
+
+        if (!account.token) {
+            return res.status(400).json({ error: 'No token configured' });
+        }
+
+        // Step 1: Get the media URL from WhatsApp
+        const mediaInfoResponse = await axios.get(`${CONFIG.META_API_URL}/${mediaId}`, {
+            headers: { 'Authorization': `Bearer ${account.token}` }
+        });
+
+        const mediaUrl = mediaInfoResponse.data.url;
+        if (!mediaUrl) {
+            return res.status(404).json({ error: 'Media URL not found' });
+        }
+
+        // Step 2: Download the actual media file
+        const mediaResponse = await axios.get(mediaUrl, {
+            headers: { 'Authorization': `Bearer ${account.token}` },
+            responseType: 'arraybuffer'
+        });
+
+        // Set appropriate content type
+        const contentType = mediaResponse.headers['content-type'] || 'application/octet-stream';
+        res.set('Content-Type', contentType);
+        res.set('Cache-Control', 'public, max-age=86400'); // Cache for 24 hours
+        res.send(mediaResponse.data);
+
+    } catch (error) {
+        console.error('Media download error:', error.response?.data || error.message);
+        res.status(500).json({ error: 'Failed to download media' });
     }
 });
 
