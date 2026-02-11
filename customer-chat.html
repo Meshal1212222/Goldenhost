@@ -772,6 +772,27 @@
             padding: 0.3rem;
         }
 
+        /* Collapse chat button (mobile only) */
+        .collapse-chat-btn {
+            display: none;
+            align-items: center;
+            gap: 0.3rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 0.4rem 0.9rem;
+            font-size: 0.8rem;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+        .collapse-chat-btn:hover {
+            opacity: 0.9;
+            transform: scale(1.02);
+        }
+
         @media (max-width: 1200px) {
             .customer-panel {
                 display: none;
@@ -799,6 +820,9 @@
             }
             .mobile-back-btn {
                 display: inline-block;
+            }
+            .collapse-chat-btn {
+                display: inline-flex;
             }
             .panel-header {
                 padding: 1rem;
@@ -1883,6 +1907,7 @@
                         </div>
                     </div>
                     <div class="chat-actions">
+                        <button class="collapse-chat-btn" onclick="showConversationsMobile()">📂 طوي المحادثة</button>
                         ${currentChannel === 'whatsapp' ? renderAccountSelector() : ''}
                         ${currentChannel === 'whatsapp' ? renderTemplateButton() : ''}
                         <button class="chat-action-btn btn-assign" onclick="assignToEmployee()">📋 تعيين لموظف</button>
