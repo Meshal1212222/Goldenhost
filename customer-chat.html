@@ -1130,15 +1130,26 @@
         // ==================== Google Auth + Approval System ====================
         const ADMIN_EMAIL = 'meshal.hgz@gmail.com';
 
+        function isMobile() {
+            return /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+        }
+
         function signInWithGoogle() {
             document.getElementById('googleSignInBtn').disabled = true;
             document.getElementById('googleSignInBtn').textContent = 'جاري تسجيل الدخول...';
-            auth.signInWithPopup(googleProvider).catch(error => {
-                console.error('Sign-in error:', error);
-                document.getElementById('googleSignInBtn').disabled = false;
-                document.getElementById('googleSignInBtn').innerHTML = '<img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" width="20" height="20"> تسجيل الدخول بحساب Google';
-                showNotification('فشل تسجيل الدخول: ' + error.message);
-            });
+
+            if (isMobile()) {
+                // Mobile: use redirect (popup doesn't work well on mobile)
+                auth.signInWithRedirect(googleProvider);
+            } else {
+                // Desktop: use popup
+                auth.signInWithPopup(googleProvider).catch(error => {
+                    console.error('Sign-in error:', error);
+                    document.getElementById('googleSignInBtn').disabled = false;
+                    document.getElementById('googleSignInBtn').innerHTML = '<img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" width="20" height="20"> تسجيل الدخول بحساب Google';
+                    showNotification('فشل تسجيل الدخول: ' + error.message);
+                });
+            }
         }
 
         function signOutUser() {
