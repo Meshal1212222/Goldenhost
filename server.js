@@ -1098,6 +1098,41 @@ app.post('/api/notify-admin', async (req, res) => {
     }
 });
 
+// ==================== Firebase Auth Proxy (for iOS Safari) ====================
+// Proxies /__/auth/* requests to Firebase so auth works on same domain
+// This fixes iOS Safari blocking third-party cookies from firebaseapp.com
+
+app.all('/__/auth/*', async (req, res) => {
+    const firebaseAuthDomain = 'ticket-system-d693a.firebaseapp.com';
+    const targetUrl = `https://${firebaseAuthDomain}${req.originalUrl}`;
+
+    try {
+        const response = await axios({
+            method: req.method,
+            url: targetUrl,
+            headers: {
+                ...req.headers,
+                host: firebaseAuthDomain
+            },
+            data: req.method !== 'GET' ? req.body : undefined,
+            responseType: 'arraybuffer',
+            validateStatus: () => true
+        });
+
+        // Forward response headers
+        Object.entries(response.headers).forEach(([key, value]) => {
+            if (key !== 'transfer-encoding' && key !== 'connection') {
+                res.set(key, value);
+            }
+        });
+
+        res.status(response.status).send(response.data);
+    } catch (error) {
+        console.error('Auth proxy error:', error.message);
+        res.status(502).json({ error: 'Auth proxy failed' });
+    }
+});
+
 // ==================== Static Files (AFTER API routes) ====================
 
 app.use(express.static(__dirname));
