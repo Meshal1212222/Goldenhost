@@ -102,6 +102,49 @@
             box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
         }
 
+        .phone-selector {
+            padding: 0.8rem 1rem;
+            background: #e8f5e9;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .phone-selector select {
+            width: 100%;
+            padding: 0.7rem;
+            border: 2px solid var(--whatsapp-green);
+            border-radius: 8px;
+            font-family: 'Cairo', sans-serif;
+            font-size: 0.9rem;
+            background: white;
+            cursor: pointer;
+        }
+
+        .phone-selector select:focus {
+            outline: none;
+            border-color: var(--whatsapp-dark);
+        }
+
+        .not-connected-message {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            padding: 2rem;
+            text-align: center;
+            color: #666;
+        }
+
+        .not-connected-message .icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+
+        .not-connected-message h3 {
+            color: var(--app-purple);
+            margin-bottom: 0.5rem;
+        }
+
         .search-box {
             padding: 1rem;
             background: white;
@@ -648,6 +691,13 @@
                 </button>
             </div>
 
+            <!-- WhatsApp Number Selector -->
+            <div class="phone-selector" id="phoneSelector">
+                <select id="whatsappNumberSelect" onchange="changeWhatsAppNumber()">
+                    <option value="">🔄 جاري تحميل الأرقام...</option>
+                </select>
+            </div>
+
             <div class="search-box">
                 <input type="text" id="searchConversations" placeholder="🔍 البحث في المحادثات..." onkeyup="searchConversations()">
             </div>
@@ -786,6 +836,23 @@
                         selectedAccountId = whatsappAccounts[0].id;
                     }
                     console.log('WhatsApp accounts loaded:', whatsappAccounts);
+
+                    // Update phone selector dropdown
+                    const select = document.getElementById('whatsappNumberSelect');
+                    if (select) {
+                        select.innerHTML = '';
+                        if (whatsappAccounts.length === 0) {
+                            select.innerHTML = '<option value="">لا توجد أرقام متاحة</option>';
+                        } else {
+                            whatsappAccounts.forEach((acc, index) => {
+                                const option = document.createElement('option');
+                                option.value = acc.id;
+                                option.textContent = `📱 ${acc.name}`;
+                                if (index === 0) option.selected = true;
+                                select.appendChild(option);
+                            });
+                        }
+                    }
                 }
             } catch (error) {
                 console.error('Error loading WhatsApp accounts:', error);
@@ -794,6 +861,25 @@
                     { id: 'golden_ticket', name: 'Golden Ticket', phoneNumberId: '596898763496238' },
                     { id: 'golden_host', name: 'Golden Host', phoneNumberId: '529770810215816' }
                 ];
+
+                // Update dropdown with fallback
+                const select = document.getElementById('whatsappNumberSelect');
+                if (select) {
+                    select.innerHTML = whatsappAccounts.map((acc, i) =>
+                        `<option value="${acc.id}" ${i === 0 ? 'selected' : ''}>📱 ${acc.name}</option>`
+                    ).join('');
+                }
+            }
+        }
+
+        // Change WhatsApp number handler
+        function changeWhatsAppNumber() {
+            const select = document.getElementById('whatsappNumberSelect');
+            if (select) {
+                selectedAccountId = select.value;
+                const account = whatsappAccounts.find(a => a.id === selectedAccountId);
+                showNotification(`تم اختيار: ${account?.name || selectedAccountId}`);
+                loadBackendConversations();
             }
         }
 
@@ -1065,17 +1151,44 @@
             });
             document.querySelector(`.channel-tab.${channel}`).classList.add('active');
 
-            // Load conversations for this channel
-            conversations = sampleConversations[channel];
-            renderConversations();
+            // Show/hide phone selector based on channel
+            const phoneSelector = document.getElementById('phoneSelector');
+            if (channel === 'whatsapp') {
+                phoneSelector.style.display = 'block';
+                // Load conversations for WhatsApp
+                conversations = sampleConversations[channel];
+                renderConversations();
 
-            // Reset chat area
-            document.getElementById('chatArea').innerHTML = `
-                <div class="empty-chat">
-                    <div class="empty-chat-icon">💬</div>
-                    <div class="empty-chat-text">اختر محادثة لبدء الرد على العميل</div>
-                </div>
-            `;
+                // Reset chat area
+                document.getElementById('chatArea').innerHTML = `
+                    <div class="empty-chat">
+                        <div class="empty-chat-icon">💬</div>
+                        <div class="empty-chat-text">اختر محادثة لبدء الرد على العميل</div>
+                    </div>
+                `;
+            } else {
+                // App channel - show not connected message
+                phoneSelector.style.display = 'none';
+
+                // Show not connected message in conversations list
+                document.getElementById('conversationsList').innerHTML = `
+                    <div class="not-connected-message">
+                        <div class="icon">🔗</div>
+                        <h3>لم يتم الربط</h3>
+                        <p>محادثات التطبيق سوف تتوفر قريباً</p>
+                        <p style="font-size: 0.8rem; margin-top: 1rem; color: #999;">جاري العمل على ربط التطبيق</p>
+                    </div>
+                `;
+
+                // Reset chat area
+                document.getElementById('chatArea').innerHTML = `
+                    <div class="empty-chat">
+                        <div class="empty-chat-icon">🚧</div>
+                        <div class="empty-chat-text">محادثات التطبيق قيد التطوير</div>
+                    </div>
+                `;
+            }
+
             document.getElementById('customerPanel').style.display = 'none';
         }
 
