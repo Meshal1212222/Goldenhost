@@ -1169,7 +1169,7 @@
             const email = user.email;
 
             // Admin is always approved
-            if (email === ADMIN_EMAIL) {
+            if (email.toLowerCase() === ADMIN_EMAIL.toLowerCase()) {
                 await firestore.collection('approved_users').doc(email).set({
                     email: email,
                     name: user.displayName || email.split('@')[0],
@@ -1254,7 +1254,7 @@
                     }
                 } catch (error) {
                     console.error('Approval check failed:', error);
-                    if (user.email === ADMIN_EMAIL) {
+                    if (user.email.toLowerCase() === ADMIN_EMAIL.toLowerCase()) {
                         currentEmployee.role = 'admin';
                         showScreen('main');
                         document.getElementById('employeeNameBadge').textContent = currentEmployee.name;
