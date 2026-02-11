@@ -335,32 +335,77 @@ function botSubstitute(text, session) {
         .replace(/\{\{(\w+)\}\}/g, (m, v) => session.variables[v] !== undefined ? session.variables[v] : m);
 }
 
+// Save bot message to storage (Firebase/memory) so it shows in frontend
+async function saveBotMessage(phone, content, messageId) {
+    const account = getAccount(BOT_ACCOUNT);
+    if (db) {
+        try {
+            const conversationRef = db.collection('conversations').doc(phone);
+            await conversationRef.collection('messages').add({
+                id: messageId,
+                from: 'bot',
+                to: phone,
+                content: content,
+                type: 'text',
+                status: 'sent',
+                channel: 'whatsapp_meta',
+                accountId: BOT_ACCOUNT,
+                accountName: account.name,
+                createdAt: admin.firestore.FieldValue.serverTimestamp()
+            });
+            await conversationRef.update({
+                lastMessage: content,
+                lastMessageTime: admin.firestore.FieldValue.serverTimestamp(),
+                updatedAt: admin.firestore.FieldValue.serverTimestamp()
+            });
+        } catch (err) {
+            console.error('Error saving bot message:', err);
+        }
+    } else {
+        addMemoryMessage(phone, {
+            id: messageId,
+            from: 'bot',
+            to: phone,
+            content: content,
+            type: 'text',
+            status: 'sent',
+            channel: 'whatsapp_meta',
+            accountId: BOT_ACCOUNT,
+            accountName: account.name
+        });
+    }
+}
+
 // Send text message from bot
 async function botSendText(phone, text) {
     const account = getAccount(BOT_ACCOUNT);
-    await axios.post(`${CONFIG.META_API_URL}/${account.phoneNumberId}/messages`, {
+    const resp = await axios.post(`${CONFIG.META_API_URL}/${account.phoneNumberId}/messages`, {
         messaging_product: 'whatsapp', to: phone, type: 'text', text: { body: text }
     }, { headers: { 'Authorization': `Bearer ${account.token}`, 'Content-Type': 'application/json' } });
+    await saveBotMessage(phone, text, resp.data.messages?.[0]?.id);
 }
 
 // Send interactive buttons (max 3 options, max 20 chars each)
 async function botSendButtons(phone, text, options) {
     const account = getAccount(BOT_ACCOUNT);
-    await axios.post(`${CONFIG.META_API_URL}/${account.phoneNumberId}/messages`, {
+    const resp = await axios.post(`${CONFIG.META_API_URL}/${account.phoneNumberId}/messages`, {
         messaging_product: 'whatsapp', to: phone, type: 'interactive',
         interactive: {
             type: 'button', body: { text },
             action: { buttons: options.map((opt, i) => ({ type: 'reply', reply: { id: `opt_${i}`, title: opt.substring(0, 20) } })) }
         }
     }, { headers: { 'Authorization': `Bearer ${account.token}`, 'Content-Type': 'application/json' } });
+    await saveBotMessage(phone, text + '\n' + options.join(' | '), resp.data.messages?.[0]?.id);
 }
 
 // Send interactive list
 async function botSendList(phone, interactive) {
     const account = getAccount(BOT_ACCOUNT);
-    await axios.post(`${CONFIG.META_API_URL}/${account.phoneNumberId}/messages`, {
+    const resp = await axios.post(`${CONFIG.META_API_URL}/${account.phoneNumberId}/messages`, {
         messaging_product: 'whatsapp', to: phone, type: 'interactive', interactive
     }, { headers: { 'Authorization': `Bearer ${account.token}`, 'Content-Type': 'application/json' } });
+    const bodyText = interactive.body?.text || '[Interactive List]';
+    await saveBotMessage(phone, bodyText, resp.data.messages?.[0]?.id);
 }
 
 // Evaluate workflow conditions

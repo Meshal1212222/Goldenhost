@@ -1055,7 +1055,7 @@
                     snapshot.forEach(doc => {
                         const data = doc.data();
                         messages.push({
-                            sender: data.from === 'employee' ? 'employee' : 'customer',
+                            sender: (data.from === 'employee' || data.from === 'bot') ? 'employee' : 'customer',
                             text: data.content || data.text || '',
                             time: formatTime(data.createdAt?.toDate()),
                             status: data.status || 'delivered'
@@ -1186,7 +1186,7 @@
 
                     if (currentConversation && (currentConversation.customerPhone === phone || currentConversation.id === phone)) {
                         currentConversation.messages = messages.map(msg => ({
-                            sender: msg.from === 'employee' ? 'employee' : 'customer',
+                            sender: (msg.from === 'employee' || msg.from === 'bot') ? 'employee' : 'customer',
                             text: msg.content || msg.text || '',
                             time: formatTime(new Date(msg.createdAt || msg.timestamp)),
                             status: msg.status || 'delivered'
