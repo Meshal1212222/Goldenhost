@@ -1125,7 +1125,8 @@
             conversations.forEach(conv => {
                 const unreadBadge = conv.unread > 0 ? `<span class="conversation-badge badge-unread">${conv.unread}</span>` : '';
                 const priorityBadge = conv.priority ? `<span class="conversation-badge badge-priority">عاجل</span>` : '';
-                const channelBadge = `<span class="conversation-badge badge-${conv.channel}">${conv.channel === 'whatsapp' ? 'WhatsApp' : 'التطبيق'}</span>`;
+                const isWhatsApp = conv.channel === 'whatsapp' || conv.channel === 'whatsapp_meta';
+                const channelBadge = `<span class="conversation-badge badge-${conv.channel}">${isWhatsApp ? 'WhatsApp' : 'التطبيق'}</span>`;
 
                 const item = document.createElement('div');
                 item.className = 'conversation-item';
@@ -1136,6 +1137,7 @@
                             <span class="conversation-name">${conv.customerName}</span>
                             <span class="conversation-time">${conv.time}</span>
                         </div>
+                        <div class="conversation-preview" style="direction: ltr; text-align: left; font-size: 0.8rem; color: #aaa;">${conv.customerPhone || ''}</div>
                         <div class="conversation-preview">${conv.lastMessage}</div>
                         <div class="conversation-meta">
                             ${channelBadge}
@@ -1210,7 +1212,7 @@
                         <div class="chat-customer-avatar">${conv.customerName.charAt(0)}</div>
                         <div class="chat-customer-details">
                             <h3>${conv.customerName}</h3>
-                            <div class="chat-customer-status">${conv.customerPhone} • ${conv.channel === 'whatsapp' ? 'WhatsApp' : 'التطبيق'}</div>
+                            <div class="chat-customer-status">${conv.customerPhone} • ${(conv.channel === 'whatsapp' || conv.channel === 'whatsapp_meta') ? 'WhatsApp' : 'التطبيق'}</div>
                         </div>
                     </div>
                     <div class="chat-actions">
@@ -1292,7 +1294,7 @@
                     </div>
                     <div class="info-item">
                         <span class="info-label">القناة:</span>
-                        <span class="info-value">${conv.channel === 'whatsapp' ? '📱 WhatsApp' : '📲 التطبيق'}</span>
+                        <span class="info-value">${(conv.channel === 'whatsapp' || conv.channel === 'whatsapp_meta') ? '📱 WhatsApp' : '📲 التطبيق'}</span>
                     </div>
                 </div>
 
