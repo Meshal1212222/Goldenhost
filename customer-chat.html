@@ -688,6 +688,79 @@
             white-space: nowrap;
         }
 
+        /* Admin Panel */
+        .admin-panel-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .admin-panel-overlay.hidden { display: none; }
+        .admin-panel-card {
+            background: white;
+            border-radius: 16px;
+            padding: 1.5rem;
+            width: 90%;
+            max-width: 500px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        .admin-panel-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .pending-user-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.8rem;
+            background: #f8f9fa;
+            border-radius: 10px;
+            margin-bottom: 0.5rem;
+        }
+        .pending-user-info {
+            flex: 1;
+        }
+        .pending-user-name {
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+        .pending-user-email {
+            font-size: 0.8rem;
+            color: #666;
+        }
+        .approve-btn {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 0.4rem 0.8rem;
+            border-radius: 8px;
+            font-family: 'Cairo', sans-serif;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 0.8rem;
+            margin-right: 0.3rem;
+        }
+        .reject-btn {
+            background: #f44336;
+            color: white;
+            border: none;
+            padding: 0.4rem 0.8rem;
+            border-radius: 8px;
+            font-family: 'Cairo', sans-serif;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+
         /* Mobile back button */
         .mobile-back-btn {
             display: none;
@@ -885,6 +958,32 @@
         </div>
     </div>
 
+    <!-- Pending Approval Screen -->
+    <div class="login-overlay hidden" id="pendingOverlay">
+        <div class="login-card">
+            <div class="login-logo">⏳</div>
+            <h1 class="login-title" style="font-size:1.5rem;">بانتظار الموافقة</h1>
+            <p class="login-subtitle">تم إرسال طلبك للمسؤول. ستصلك الموافقة قريباً إن شاء الله</p>
+            <div id="pendingUserEmail" style="background:#f0f2f5;padding:0.8rem;border-radius:8px;margin:1rem 0;font-weight:600;color:#333;"></div>
+            <button class="google-signin-btn" onclick="signOutUser()" style="margin-top:1rem;">
+                تسجيل خروج
+            </button>
+        </div>
+    </div>
+
+    <!-- Admin Panel Overlay -->
+    <div class="admin-panel-overlay hidden" id="adminPanelOverlay" onclick="if(event.target===this)toggleAdminPanel()">
+        <div class="admin-panel-card">
+            <div class="admin-panel-title">
+                <span>طلبات الوصول</span>
+                <button onclick="toggleAdminPanel()" style="background:none;border:none;font-size:1.3rem;cursor:pointer;">✕</button>
+            </div>
+            <div id="pendingUsersList">
+                <p style="text-align:center;color:#999;">جاري التحميل...</p>
+            </div>
+        </div>
+    </div>
+
     <div class="container" id="mainContainer" style="display:none;">
         <!-- Left Panel: Conversations List -->
         <div class="conversations-panel" id="conversationsPanel">
@@ -893,6 +992,7 @@
                     <h2>💬 المحادثات</h2>
                     <div class="header-actions">
                         <span class="employee-name-badge" id="employeeNameBadge"></span>
+                        <button id="adminPanelBtn" onclick="toggleAdminPanel()" style="display:none; background: rgba(255,255,255,0.2); color: white; border: none; padding: 0.4rem 0.8rem; border-radius: 8px; cursor: pointer; font-family: 'Cairo', sans-serif; font-weight: 600; font-size: 0.75rem;">طلبات</button>
                         <button onclick="signOutUser()" style="background: rgba(255,255,255,0.2); color: white; border: none; padding: 0.4rem 0.8rem; border-radius: 8px; cursor: pointer; font-family: 'Cairo', sans-serif; font-weight: 600; font-size: 0.75rem;">خروج</button>
                     </div>
                 </div>
@@ -1027,7 +1127,9 @@
             ]
         };
 
-        // ==================== Google Auth ====================
+        // ==================== Google Auth + Approval System ====================
+        const ADMIN_EMAIL = 'meshal.hgz@gmail.com';
+
         function signInWithGoogle() {
             document.getElementById('googleSignInBtn').disabled = true;
             document.getElementById('googleSignInBtn').textContent = 'جاري تسجيل الدخول...';
@@ -1043,27 +1145,165 @@
             auth.signOut().then(() => {
                 currentEmployee = null;
                 document.getElementById('mainContainer').style.display = 'none';
+                document.getElementById('pendingOverlay').classList.add('hidden');
                 document.getElementById('loginOverlay').classList.remove('hidden');
             });
         }
 
+        // Check if user is approved
+        async function checkUserApproval(user) {
+            const email = user.email;
+
+            // Admin is always approved
+            if (email === ADMIN_EMAIL) {
+                await firestore.collection('approved_users').doc(email).set({
+                    email: email,
+                    name: user.displayName || email.split('@')[0],
+                    photo: user.photoURL || '',
+                    role: 'admin',
+                    approvedAt: firebase.firestore.FieldValue.serverTimestamp()
+                }, { merge: true });
+                return { approved: true, role: 'admin' };
+            }
+
+            // Check approved_users collection
+            const doc = await firestore.collection('approved_users').doc(email).get();
+            if (doc.exists && doc.data().approved !== false) {
+                return { approved: true, role: doc.data().role || 'employee' };
+            }
+
+            // Not approved - save to pending_users
+            await firestore.collection('pending_users').doc(email).set({
+                email: email,
+                name: user.displayName || email.split('@')[0],
+                photo: user.photoURL || '',
+                requestedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                status: 'pending'
+            }, { merge: true });
+
+            // Notify admin via backend
+            try {
+                await fetch(`${BACKEND_CONFIG.apiUrl}/api/notify-admin`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        type: 'access_request',
+                        userEmail: email,
+                        userName: user.displayName || email.split('@')[0],
+                        adminEmail: ADMIN_EMAIL
+                    })
+                });
+            } catch (e) {
+                console.log('Admin notification failed:', e);
+            }
+
+            return { approved: false };
+        }
+
         // Listen for auth state changes
-        auth.onAuthStateChanged(user => {
+        auth.onAuthStateChanged(async user => {
             if (user) {
                 currentEmployee = {
                     name: user.displayName || user.email.split('@')[0],
                     email: user.email,
                     photo: user.photoURL
                 };
-                document.getElementById('loginOverlay').classList.add('hidden');
-                document.getElementById('mainContainer').style.display = 'flex';
-                document.getElementById('employeeNameBadge').textContent = currentEmployee.name;
-                init();
+
+                // Check approval
+                const approval = await checkUserApproval(user);
+
+                if (approval.approved) {
+                    currentEmployee.role = approval.role;
+                    document.getElementById('loginOverlay').classList.add('hidden');
+                    document.getElementById('pendingOverlay').classList.add('hidden');
+                    document.getElementById('mainContainer').style.display = 'flex';
+                    document.getElementById('employeeNameBadge').textContent = currentEmployee.name;
+                    init();
+                } else {
+                    // Show pending screen
+                    document.getElementById('loginOverlay').classList.add('hidden');
+                    document.getElementById('mainContainer').style.display = 'none';
+                    document.getElementById('pendingOverlay').classList.remove('hidden');
+                    document.getElementById('pendingUserEmail').textContent = user.email;
+                }
             } else {
                 document.getElementById('loginOverlay').classList.remove('hidden');
+                document.getElementById('pendingOverlay').classList.add('hidden');
                 document.getElementById('mainContainer').style.display = 'none';
             }
         });
+
+        // ==================== Admin Panel ====================
+        function toggleAdminPanel() {
+            const overlay = document.getElementById('adminPanelOverlay');
+            if (overlay.classList.contains('hidden')) {
+                overlay.classList.remove('hidden');
+                loadPendingUsers();
+            } else {
+                overlay.classList.add('hidden');
+            }
+        }
+
+        async function loadPendingUsers() {
+            const list = document.getElementById('pendingUsersList');
+            try {
+                const snapshot = await firestore.collection('pending_users').where('status', '==', 'pending').get();
+                if (snapshot.empty) {
+                    list.innerHTML = '<p style="text-align:center;color:#999;padding:1rem;">لا توجد طلبات معلقة</p>';
+                    return;
+                }
+                list.innerHTML = '';
+                snapshot.forEach(doc => {
+                    const user = doc.data();
+                    const div = document.createElement('div');
+                    div.className = 'pending-user-item';
+                    div.innerHTML = `
+                        <div class="pending-user-info">
+                            <div class="pending-user-name">${user.name || 'بدون اسم'}</div>
+                            <div class="pending-user-email">${user.email}</div>
+                        </div>
+                        <div>
+                            <button class="approve-btn" onclick="approveUser('${user.email}', '${user.name || ''}')">قبول</button>
+                            <button class="reject-btn" onclick="rejectUser('${user.email}')">رفض</button>
+                        </div>
+                    `;
+                    list.appendChild(div);
+                });
+            } catch (error) {
+                console.error('Load pending users error:', error);
+                list.innerHTML = '<p style="text-align:center;color:#e53935;">خطأ في تحميل الطلبات</p>';
+            }
+        }
+
+        async function approveUser(email, name) {
+            try {
+                await firestore.collection('approved_users').doc(email).set({
+                    email: email,
+                    name: name,
+                    role: 'employee',
+                    approved: true,
+                    approvedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    approvedBy: currentEmployee.email
+                });
+                await firestore.collection('pending_users').doc(email).update({ status: 'approved' });
+                showNotification('تم قبول ' + (name || email));
+                loadPendingUsers();
+            } catch (error) {
+                console.error('Approve error:', error);
+                showNotification('خطأ في القبول');
+            }
+        }
+
+        async function rejectUser(email) {
+            try {
+                await firestore.collection('pending_users').doc(email).update({ status: 'rejected' });
+                showNotification('تم رفض الطلب');
+                loadPendingUsers();
+            } catch (error) {
+                console.error('Reject error:', error);
+                showNotification('خطأ في الرفض');
+            }
+        }
 
         // Mobile navigation
         function showChatMobile() {
@@ -1074,6 +1314,11 @@
         }
 
         function init() {
+            // Show admin button if admin
+            if (currentEmployee && currentEmployee.role === 'admin') {
+                document.getElementById('adminPanelBtn').style.display = 'inline-block';
+            }
+
             // Load available WhatsApp accounts
             loadWhatsAppAccounts();
 

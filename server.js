@@ -13,6 +13,7 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 const axios = require('axios');
 const admin = require('firebase-admin');
+const nodemailer = require('nodemailer');
 const path = require('path');
 
 const app = express();
@@ -1039,6 +1040,62 @@ app.get('/', (req, res) => {
 
 app.get('/health', (req, res) => {
     res.json({ status: 'healthy', timestamp: new Date().toISOString() });
+});
+
+// ==================== Admin Email Notification ====================
+
+app.post('/api/notify-admin', async (req, res) => {
+    try {
+        const { type, userEmail, userName, adminEmail } = req.body;
+
+        if (!userEmail || !adminEmail) {
+            return res.status(400).json({ error: 'Missing required fields' });
+        }
+
+        // Try sending email via nodemailer (Gmail SMTP)
+        const gmailUser = process.env.GMAIL_USER;
+        const gmailPass = process.env.GMAIL_APP_PASSWORD;
+
+        if (gmailUser && gmailPass) {
+            const transporter = nodemailer.createTransport({
+                service: 'gmail',
+                auth: {
+                    user: gmailUser,
+                    pass: gmailPass
+                }
+            });
+
+            const platformUrl = req.headers.origin || req.headers.referer || 'https://goldenhost-production-c79d.up.railway.app/customer-chat.html';
+
+            await transporter.sendMail({
+                from: `"Golden cov" <${gmailUser}>`,
+                to: adminEmail,
+                subject: `طلب وصول جديد - ${userName || userEmail}`,
+                html: `
+                    <div dir="rtl" style="font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; border-radius: 10px;">
+                        <h2 style="color: #667eea;">طلب وصول جديد للمنصة</h2>
+                        <div style="background: white; padding: 15px; border-radius: 8px; margin: 15px 0;">
+                            <p><strong>الاسم:</strong> ${userName || 'غير معروف'}</p>
+                            <p><strong>الإيميل:</strong> ${userEmail}</p>
+                            <p><strong>التاريخ:</strong> ${new Date().toLocaleString('ar-SA')}</p>
+                        </div>
+                        <p>لقبول أو رفض الطلب، ادخل المنصة واضغط على زر "طلبات":</p>
+                        <a href="${platformUrl}" style="display:inline-block; background: #667eea; color: white; padding: 10px 25px; border-radius: 8px; text-decoration: none; font-weight: bold;">فتح المنصة</a>
+                    </div>
+                `
+            });
+
+            console.log(`Admin notification email sent to ${adminEmail} about ${userEmail}`);
+            res.json({ success: true, method: 'email' });
+        } else {
+            // No email config - just log it
+            console.log(`ACCESS REQUEST: ${userName} (${userEmail}) - Admin: ${adminEmail} - Email not configured`);
+            res.json({ success: true, method: 'log_only', note: 'GMAIL_USER and GMAIL_APP_PASSWORD not set' });
+        }
+    } catch (error) {
+        console.error('Notify admin error:', error);
+        res.status(500).json({ error: error.message });
+    }
 });
 
 // ==================== Static Files (AFTER API routes) ====================
