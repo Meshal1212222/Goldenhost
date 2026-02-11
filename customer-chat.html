@@ -800,21 +800,33 @@
         function renderAccountSelector() {
             if (whatsappAccounts.length === 0) return '';
             return `
-                <select id="whatsappAccountSelector" onchange="changeWhatsAppAccount(this.value)"
-                    style="padding: 0.5rem 1rem; border-radius: 8px; border: 2px solid #25D366;
-                    font-family: 'Cairo', sans-serif; font-weight: 600; background: #e8f5e9;
-                    color: #128C7E; cursor: pointer; margin-left: 1rem;">
-                    ${whatsappAccounts.map(acc =>
-                        `<option value="${acc.id}" ${acc.id === selectedAccountId ? 'selected' : ''}>${acc.name}</option>`
-                    ).join('')}
-                </select>
+                <div style="display: flex; gap: 0.5rem; margin-left: 1rem;">
+                    ${whatsappAccounts.map(acc => `
+                        <button onclick="changeWhatsAppAccount('${acc.id}')"
+                            id="acc-btn-${acc.id}"
+                            style="padding: 0.4rem 0.8rem; border-radius: 8px;
+                            border: 2px solid ${acc.id === selectedAccountId ? '#25D366' : '#ddd'};
+                            font-family: 'Cairo', sans-serif; font-weight: 600; font-size: 0.8rem;
+                            background: ${acc.id === selectedAccountId ? '#25D366' : '#f5f5f5'};
+                            color: ${acc.id === selectedAccountId ? 'white' : '#666'};
+                            cursor: pointer; transition: all 0.3s;">
+                            ${acc.name}
+                        </button>
+                    `).join('')}
+                </div>
             `;
         }
 
         function changeWhatsAppAccount(accountId) {
             selectedAccountId = accountId;
             const account = whatsappAccounts.find(a => a.id === accountId);
-            showNotification(`تم اختيار: ${account?.name || accountId}`);
+            showNotification(`${account?.name || accountId}`);
+            // Reload conversations for this account
+            loadBackendConversations();
+            // Re-render to update button styles
+            if (currentConversation) {
+                openConversation(currentConversation);
+            }
         }
 
         // WhatsApp Message Templates
@@ -1010,13 +1022,20 @@
             const now = new Date();
             const diff = now - date;
             const hours = diff / (1000 * 60 * 60);
+            const time = date.toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit', hour12: true });
 
             if (hours < 1) {
-                return Math.floor(diff / (1000 * 60)) + ' دقيقة';
+                const mins = Math.floor(diff / (1000 * 60));
+                return mins <= 0 ? 'الآن' : `منذ ${mins} د`;
             } else if (hours < 24) {
-                return date.toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' });
+                return `اليوم ${time}`;
+            } else if (hours < 48) {
+                return `أمس ${time}`;
             } else {
-                return 'أمس';
+                const day = date.getDate().toString().padStart(2, '0');
+                const month = (date.getMonth() + 1).toString().padStart(2, '0');
+                const year = date.getFullYear();
+                return `${day}/${month}/${year} - ${time}`;
             }
         }
 
@@ -1065,9 +1084,29 @@
             });
             document.querySelector(`.channel-tab.${channel}`).classList.add('active');
 
+            // App channel is not active yet
+            if (channel === 'app') {
+                document.getElementById('conversationsList').innerHTML = `
+                    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 60vh; text-align: center; color: #999; padding: 2rem;">
+                        <div style="font-size: 4rem; margin-bottom: 1rem;">📲</div>
+                        <div style="font-size: 1.3rem; font-weight: 700; color: #667eea; margin-bottom: 0.5rem;">سيتوفر قريباً</div>
+                        <div style="font-size: 0.9rem; color: #aaa;">محادثات التطبيق قيد التطوير</div>
+                    </div>
+                `;
+                document.getElementById('chatArea').innerHTML = `
+                    <div class="empty-chat">
+                        <div class="empty-chat-icon">📲</div>
+                        <div class="empty-chat-text">محادثات التطبيق ستتوفر قريباً</div>
+                    </div>
+                `;
+                document.getElementById('customerPanel').style.display = 'none';
+                return;
+            }
+
             // Load conversations for this channel
             conversations = sampleConversations[channel];
             renderConversations();
+            loadBackendConversations();
 
             // Reset chat area
             document.getElementById('chatArea').innerHTML = `
