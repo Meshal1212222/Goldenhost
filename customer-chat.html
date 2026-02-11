@@ -1130,27 +1130,31 @@
         // ==================== Google Auth + Approval System ====================
         const ADMIN_EMAIL = 'meshal.hgz@gmail.com';
 
-        function isMobile() {
-            return /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-        }
-
         function signInWithGoogle() {
             document.getElementById('googleSignInBtn').disabled = true;
             document.getElementById('googleSignInBtn').textContent = 'جاري تسجيل الدخول...';
 
-            if (isMobile()) {
-                // Mobile: use redirect (popup doesn't work well on mobile)
-                auth.signInWithRedirect(googleProvider);
-            } else {
-                // Desktop: use popup
-                auth.signInWithPopup(googleProvider).catch(error => {
-                    console.error('Sign-in error:', error);
+            // Try popup first, fallback to redirect if it fails
+            auth.signInWithPopup(googleProvider).catch(error => {
+                console.error('Popup sign-in failed, trying redirect:', error.code);
+                // If popup blocked or failed, use redirect
+                if (error.code === 'auth/popup-blocked' ||
+                    error.code === 'auth/popup-closed-by-user' ||
+                    error.code === 'auth/cancelled-popup-request' ||
+                    error.code === 'auth/internal-error') {
+                    auth.signInWithRedirect(googleProvider);
+                } else {
                     document.getElementById('googleSignInBtn').disabled = false;
                     document.getElementById('googleSignInBtn').innerHTML = '<img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" width="20" height="20"> تسجيل الدخول بحساب Google';
                     showNotification('فشل تسجيل الدخول: ' + error.message);
-                });
-            }
+                }
+            });
         }
+
+        // Handle redirect result (for mobile fallback)
+        auth.getRedirectResult().catch(error => {
+            console.error('Redirect sign-in error:', error);
+        });
 
         function signOutUser() {
             auth.signOut().then(() => {
