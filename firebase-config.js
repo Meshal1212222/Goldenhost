@@ -1,15 +1,15 @@
-// Firebase Configuration for Sunday & Golden Host Platform
-// =========================================================
+// Firebase Configuration for Golden Host Platform (ticket-system-d693a)
+// =====================================================================
 
 const firebaseConfig = {
-    apiKey: "AIzaSyACk3UhHouKfGsOu3ZJfaOhqLqucumn2UQ",
-    authDomain: "sunday-fb28c.firebaseapp.com",
-    databaseURL: "https://sunday-fb28c-default-rtdb.firebaseio.com",
-    projectId: "sunday-fb28c",
-    storageBucket: "sunday-fb28c.firebasestorage.app",
-    messagingSenderId: "24752239756",
-    appId: "1:24752239756:web:386c2c72624eb67ba337a9",
-    measurementId: "G-R50TBPQFJL"
+    apiKey: "AIzaSyAsiUvWn0mctv3R9hMbY6keXK49MlB_9wM",
+    authDomain: "ticket-system-d693a.firebaseapp.com",
+    databaseURL: "https://ticket-system-d693a-default-rtdb.firebaseio.com",
+    projectId: "ticket-system-d693a",
+    storageBucket: "ticket-system-d693a.firebasestorage.app",
+    messagingSenderId: "256713951148",
+    appId: "1:256713951148:web:df1edfd310fdb89abd5c09",
+    measurementId: "G-256969E6SW"
 };
 
 // Initialize Firebase

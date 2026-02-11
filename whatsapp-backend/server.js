@@ -47,7 +47,7 @@ function initFirebase() {
 
         admin.initializeApp({
             credential: admin.credential.cert(serviceAccount),
-            databaseURL: 'https://sunday-fb28c-default-rtdb.firebaseio.com'
+            databaseURL: 'https://ticket-system-d693a-default-rtdb.firebaseio.com'
         });
 
         db = admin.firestore();
