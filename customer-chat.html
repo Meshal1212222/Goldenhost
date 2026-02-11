@@ -1145,13 +1145,10 @@
         function signInWithGoogle() {
             document.getElementById('googleSignInBtn').disabled = true;
             document.getElementById('googleSignInBtn').textContent = 'جاري تسجيل الدخول...';
-
-            // Use redirect - works on all devices including iOS Safari
-            // Auth proxy on server makes this work on same domain (no cookie issues)
             auth.signInWithRedirect(googleProvider);
         }
 
-        // Handle redirect result when page reloads after auth
+        // Handle redirect result when page reloads after Google auth
         auth.getRedirectResult().then(result => {
             if (result && result.user) {
                 console.log('Sign-in successful:', result.user.email);
@@ -1172,7 +1169,7 @@
             const email = user.email;
 
             // Admin is always approved
-            if (email === ADMIN_EMAIL) {
+            if (email.toLowerCase() === ADMIN_EMAIL.toLowerCase()) {
                 await firestore.collection('approved_users').doc(email).set({
                     email: email,
                     name: user.displayName || email.split('@')[0],
@@ -1257,7 +1254,7 @@
                     }
                 } catch (error) {
                     console.error('Approval check failed:', error);
-                    if (user.email === ADMIN_EMAIL) {
+                    if (user.email.toLowerCase() === ADMIN_EMAIL.toLowerCase()) {
                         currentEmployee.role = 'admin';
                         showScreen('main');
                         document.getElementById('employeeNameBadge').textContent = currentEmployee.name;
@@ -1368,10 +1365,17 @@
             // Then try Firestore as backup
             loadFirestoreConversations();
 
-            // Auto-refresh every 5 seconds
+            // Auto-refresh conversations every 2 seconds
             setInterval(() => {
                 loadBackendConversations();
-            }, 5000);
+            }, 2000);
+
+            // Auto-refresh messages every 1 second if a conversation is open
+            setInterval(() => {
+                if (currentConversation && currentConversation.isBackend) {
+                    loadBackendMessages(currentConversation.customerPhone || currentConversation.id);
+                }
+            }, 1000);
         }
 
         // Load available WhatsApp accounts from backend
