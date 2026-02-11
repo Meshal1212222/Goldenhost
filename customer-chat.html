@@ -944,8 +944,17 @@
     </style>
 </head>
 <body>
+    <!-- Loading Screen (shown while checking auth) -->
+    <div class="login-overlay" id="loadingOverlay">
+        <div class="login-card">
+            <div class="login-logo">💬</div>
+            <h1 class="login-title">Golden conv</h1>
+            <p class="login-subtitle">جاري التحميل...</p>
+        </div>
+    </div>
+
     <!-- Login Screen -->
-    <div class="login-overlay" id="loginOverlay">
+    <div class="login-overlay hidden" id="loginOverlay">
         <div class="login-card">
             <div class="login-logo">💬</div>
             <h1 class="login-title">Golden conv</h1>
@@ -1129,39 +1138,34 @@
 
         // ==================== Google Auth + Approval System ====================
         const ADMIN_EMAIL = 'meshal.hgz@gmail.com';
+        let redirectChecked = false;
+
+        // Set auth persistence to LOCAL (survives page reload)
+        auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
 
         function signInWithGoogle() {
             document.getElementById('googleSignInBtn').disabled = true;
             document.getElementById('googleSignInBtn').textContent = 'جاري تسجيل الدخول...';
 
-            // Try popup first, fallback to redirect if it fails
-            auth.signInWithPopup(googleProvider).catch(error => {
-                console.error('Popup sign-in failed, trying redirect:', error.code);
-                // If popup blocked or failed, use redirect
-                if (error.code === 'auth/popup-blocked' ||
-                    error.code === 'auth/popup-closed-by-user' ||
-                    error.code === 'auth/cancelled-popup-request' ||
-                    error.code === 'auth/internal-error') {
-                    auth.signInWithRedirect(googleProvider);
-                } else {
-                    document.getElementById('googleSignInBtn').disabled = false;
-                    document.getElementById('googleSignInBtn').innerHTML = '<img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" width="20" height="20"> تسجيل الدخول بحساب Google';
-                    showNotification('فشل تسجيل الدخول: ' + error.message);
-                }
-            });
+            // Always use redirect on mobile for reliability
+            auth.signInWithRedirect(googleProvider);
         }
 
-        // Handle redirect result (for mobile fallback)
-        auth.getRedirectResult().catch(error => {
+        // Handle redirect result FIRST before showing any UI
+        auth.getRedirectResult().then(result => {
+            redirectChecked = true;
+            if (result && result.user) {
+                console.log('Redirect sign-in successful:', result.user.email);
+            }
+        }).catch(error => {
+            redirectChecked = true;
             console.error('Redirect sign-in error:', error);
         });
 
         function signOutUser() {
             auth.signOut().then(() => {
                 currentEmployee = null;
-                document.getElementById('mainContainer').style.display = 'none';
-                document.getElementById('pendingOverlay').classList.add('hidden');
-                document.getElementById('loginOverlay').classList.remove('hidden');
+                showScreen('loginOverlay');
             });
         }
 
@@ -1215,6 +1219,23 @@
             return { approved: false };
         }
 
+        // Hide all screens helper
+        function hideAllScreens() {
+            document.getElementById('loadingOverlay').classList.add('hidden');
+            document.getElementById('loginOverlay').classList.add('hidden');
+            document.getElementById('pendingOverlay').classList.add('hidden');
+            document.getElementById('mainContainer').style.display = 'none';
+        }
+
+        function showScreen(screenId) {
+            hideAllScreens();
+            if (screenId === 'main') {
+                document.getElementById('mainContainer').style.display = 'flex';
+            } else {
+                document.getElementById(screenId).classList.remove('hidden');
+            }
+        }
+
         // Listen for auth state changes
         auth.onAuthStateChanged(async user => {
             if (user) {
@@ -1225,42 +1246,32 @@
                 };
 
                 try {
-                    // Check approval
                     const approval = await checkUserApproval(user);
 
                     if (approval.approved) {
                         currentEmployee.role = approval.role;
-                        document.getElementById('loginOverlay').classList.add('hidden');
-                        document.getElementById('pendingOverlay').classList.add('hidden');
-                        document.getElementById('mainContainer').style.display = 'flex';
+                        showScreen('main');
                         document.getElementById('employeeNameBadge').textContent = currentEmployee.name;
                         init();
                     } else {
-                        // Show pending screen
-                        document.getElementById('loginOverlay').classList.add('hidden');
-                        document.getElementById('mainContainer').style.display = 'none';
-                        document.getElementById('pendingOverlay').classList.remove('hidden');
+                        showScreen('pendingOverlay');
                         document.getElementById('pendingUserEmail').textContent = user.email;
                     }
                 } catch (error) {
                     console.error('Approval check failed:', error);
-                    // If Firestore fails, let admin in anyway, block others
                     if (user.email === ADMIN_EMAIL) {
                         currentEmployee.role = 'admin';
-                        document.getElementById('loginOverlay').classList.add('hidden');
-                        document.getElementById('mainContainer').style.display = 'flex';
+                        showScreen('main');
                         document.getElementById('employeeNameBadge').textContent = currentEmployee.name;
                         init();
                     } else {
-                        document.getElementById('loginOverlay').classList.add('hidden');
-                        document.getElementById('pendingOverlay').classList.remove('hidden');
+                        showScreen('pendingOverlay');
                         document.getElementById('pendingUserEmail').textContent = user.email + ' (خطأ في التحقق)';
                     }
                 }
             } else {
-                document.getElementById('loginOverlay').classList.remove('hidden');
-                document.getElementById('pendingOverlay').classList.add('hidden');
-                document.getElementById('mainContainer').style.display = 'none';
+                // Only show login after redirect check is done
+                showScreen('loginOverlay');
             }
         });
 
