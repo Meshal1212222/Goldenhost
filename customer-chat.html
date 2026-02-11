@@ -1655,6 +1655,7 @@
                         const data = doc.data();
                         messages.push({
                             sender: (data.from === 'employee' || data.from === 'bot') ? 'employee' : 'customer',
+                            isBot: data.from === 'bot',
                             text: data.content || data.text || '',
                             time: formatTime(data.createdAt?.toDate()),
                             status: data.status || 'delivered'
@@ -1806,6 +1807,7 @@
                     if (currentConversation && (currentConversation.customerPhone === phone || currentConversation.id === phone)) {
                         currentConversation.messages = messages.map(msg => ({
                             sender: (msg.from === 'employee' || msg.from === 'bot') ? 'employee' : 'customer',
+                            isBot: msg.from === 'bot',
                             text: msg.content || msg.text || '',
                             time: formatTime(msg.createdAt || msg.timestamp),
                             status: msg.status || 'delivered'
@@ -1865,8 +1867,8 @@
         function renderMessages(messages) {
             return messages.map(msg => {
                 const messageType = msg.sender === 'customer' ? 'sent' : 'received';
-                const senderName = msg.sender === 'customer' ? currentConversation.customerName : (currentEmployee ? currentEmployee.name : 'أنت');
-                const statusIcon = msg.status === 'read' ? '✓✓' : msg.status === 'delivered' ? '✓' : '🕐';
+                const senderName = msg.sender === 'customer' ? currentConversation.customerName : (msg.isBot ? 'Golden Ticket Bot' : (currentEmployee ? currentEmployee.name : 'أنت'));
+                const statusIcon = msg.status === 'read' ? '✓✓' : (msg.status === 'delivered' || msg.status === 'sent') ? '✓' : '🕐';
 
                 return `
                     <div class="message ${messageType}">
