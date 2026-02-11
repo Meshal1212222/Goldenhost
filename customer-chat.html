@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>منصة المحادثات الذهبية | Golden cov</title>
+    <title>منصة المحادثات الذهبية | Golden conv</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
     <style>
         * {
@@ -948,7 +948,7 @@
     <div class="login-overlay" id="loginOverlay">
         <div class="login-card">
             <div class="login-logo">💬</div>
-            <h1 class="login-title">Golden cov</h1>
+            <h1 class="login-title">Golden conv</h1>
             <p class="login-subtitle">منصة المحادثات الذهبية</p>
             <button class="google-signin-btn" id="googleSignInBtn" onclick="signInWithGoogle()">
                 <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" width="20" height="20">
@@ -1130,15 +1130,26 @@
         // ==================== Google Auth + Approval System ====================
         const ADMIN_EMAIL = 'meshal.hgz@gmail.com';
 
+        function isMobile() {
+            return /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+        }
+
         function signInWithGoogle() {
             document.getElementById('googleSignInBtn').disabled = true;
             document.getElementById('googleSignInBtn').textContent = 'جاري تسجيل الدخول...';
-            auth.signInWithPopup(googleProvider).catch(error => {
-                console.error('Sign-in error:', error);
-                document.getElementById('googleSignInBtn').disabled = false;
-                document.getElementById('googleSignInBtn').innerHTML = '<img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" width="20" height="20"> تسجيل الدخول بحساب Google';
-                showNotification('فشل تسجيل الدخول: ' + error.message);
-            });
+
+            if (isMobile()) {
+                // Mobile: use redirect (popup doesn't work well on mobile)
+                auth.signInWithRedirect(googleProvider);
+            } else {
+                // Desktop: use popup
+                auth.signInWithPopup(googleProvider).catch(error => {
+                    console.error('Sign-in error:', error);
+                    document.getElementById('googleSignInBtn').disabled = false;
+                    document.getElementById('googleSignInBtn').innerHTML = '<img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" width="20" height="20"> تسجيل الدخول بحساب Google';
+                    showNotification('فشل تسجيل الدخول: ' + error.message);
+                });
+            }
         }
 
         function signOutUser() {
@@ -1209,22 +1220,38 @@
                     photo: user.photoURL
                 };
 
-                // Check approval
-                const approval = await checkUserApproval(user);
+                try {
+                    // Check approval
+                    const approval = await checkUserApproval(user);
 
-                if (approval.approved) {
-                    currentEmployee.role = approval.role;
-                    document.getElementById('loginOverlay').classList.add('hidden');
-                    document.getElementById('pendingOverlay').classList.add('hidden');
-                    document.getElementById('mainContainer').style.display = 'flex';
-                    document.getElementById('employeeNameBadge').textContent = currentEmployee.name;
-                    init();
-                } else {
-                    // Show pending screen
-                    document.getElementById('loginOverlay').classList.add('hidden');
-                    document.getElementById('mainContainer').style.display = 'none';
-                    document.getElementById('pendingOverlay').classList.remove('hidden');
-                    document.getElementById('pendingUserEmail').textContent = user.email;
+                    if (approval.approved) {
+                        currentEmployee.role = approval.role;
+                        document.getElementById('loginOverlay').classList.add('hidden');
+                        document.getElementById('pendingOverlay').classList.add('hidden');
+                        document.getElementById('mainContainer').style.display = 'flex';
+                        document.getElementById('employeeNameBadge').textContent = currentEmployee.name;
+                        init();
+                    } else {
+                        // Show pending screen
+                        document.getElementById('loginOverlay').classList.add('hidden');
+                        document.getElementById('mainContainer').style.display = 'none';
+                        document.getElementById('pendingOverlay').classList.remove('hidden');
+                        document.getElementById('pendingUserEmail').textContent = user.email;
+                    }
+                } catch (error) {
+                    console.error('Approval check failed:', error);
+                    // If Firestore fails, let admin in anyway, block others
+                    if (user.email === ADMIN_EMAIL) {
+                        currentEmployee.role = 'admin';
+                        document.getElementById('loginOverlay').classList.add('hidden');
+                        document.getElementById('mainContainer').style.display = 'flex';
+                        document.getElementById('employeeNameBadge').textContent = currentEmployee.name;
+                        init();
+                    } else {
+                        document.getElementById('loginOverlay').classList.add('hidden');
+                        document.getElementById('pendingOverlay').classList.remove('hidden');
+                        document.getElementById('pendingUserEmail').textContent = user.email + ' (خطأ في التحقق)';
+                    }
                 }
             } else {
                 document.getElementById('loginOverlay').classList.remove('hidden');
@@ -1639,6 +1666,7 @@
                         const data = doc.data();
                         messages.push({
                             sender: (data.from === 'employee' || data.from === 'bot') ? 'employee' : 'customer',
+                            isBot: data.from === 'bot',
                             text: data.content || data.text || '',
                             time: formatTime(data.createdAt?.toDate()),
                             status: data.status || 'delivered'
@@ -1790,6 +1818,7 @@
                     if (currentConversation && (currentConversation.customerPhone === phone || currentConversation.id === phone)) {
                         currentConversation.messages = messages.map(msg => ({
                             sender: (msg.from === 'employee' || msg.from === 'bot') ? 'employee' : 'customer',
+                            isBot: msg.from === 'bot',
                             text: msg.content || msg.text || '',
                             time: formatTime(msg.createdAt || msg.timestamp),
                             status: msg.status || 'delivered'
@@ -1849,8 +1878,8 @@
         function renderMessages(messages) {
             return messages.map(msg => {
                 const messageType = msg.sender === 'customer' ? 'sent' : 'received';
-                const senderName = msg.sender === 'customer' ? currentConversation.customerName : (currentEmployee ? currentEmployee.name : 'أنت');
-                const statusIcon = msg.status === 'read' ? '✓✓' : msg.status === 'delivered' ? '✓' : '🕐';
+                const senderName = msg.sender === 'customer' ? currentConversation.customerName : (msg.isBot ? 'Golden Ticket Bot' : (currentEmployee ? currentEmployee.name : 'أنت'));
+                const statusIcon = msg.status === 'read' ? '✓✓' : (msg.status === 'delivered' || msg.status === 'sent') ? '✓' : '🕐';
 
                 return `
                     <div class="message ${messageType}">

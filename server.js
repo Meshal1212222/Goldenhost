@@ -1068,7 +1068,7 @@ app.post('/api/notify-admin', async (req, res) => {
             const platformUrl = req.headers.origin || req.headers.referer || 'https://goldenhost-production-c79d.up.railway.app/customer-chat.html';
 
             await transporter.sendMail({
-                from: `"Golden cov" <${gmailUser}>`,
+                from: `"Golden conv" <${gmailUser}>`,
                 to: adminEmail,
                 subject: `طلب وصول جديد - ${userName || userEmail}`,
                 html: `
