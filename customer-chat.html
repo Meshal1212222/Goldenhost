@@ -391,6 +391,25 @@
             font-size: 0.95rem;
         }
 
+        .message-media {
+            margin-bottom: 4px;
+        }
+
+        .message-media img {
+            max-width: 300px;
+            max-height: 300px;
+            object-fit: contain;
+        }
+
+        .message-media video {
+            max-width: 300px;
+            max-height: 300px;
+        }
+
+        .message-media audio {
+            min-width: 200px;
+        }
+
         .message-time {
             font-size: 0.7rem;
             color: #999;
@@ -1710,7 +1729,11 @@
                             isBot: data.from === 'bot',
                             text: data.content || data.text || '',
                             time: formatTime(data.createdAt?.toDate()),
-                            status: data.status || 'delivered'
+                            status: data.status || 'delivered',
+                            msgType: data.type || 'text',
+                            media_id: data.media_id || null,
+                            mime_type: data.mime_type || null,
+                            filename: data.filename || null
                         });
                     });
 
@@ -1864,7 +1887,11 @@
                             isBot: msg.from === 'bot',
                             text: msg.content || msg.text || '',
                             time: formatTime(msg.createdAt || msg.timestamp),
-                            status: msg.status || 'delivered'
+                            status: msg.status || 'delivered',
+                            msgType: msg.type || 'text',
+                            media_id: msg.media_id || null,
+                            mime_type: msg.mime_type || null,
+                            filename: msg.filename || null
                         }));
 
                         // Only re-render if messages actually changed
@@ -1936,17 +1963,66 @@
             }, 100);
         }
 
+        function renderMediaContent(msg) {
+            const mediaUrl = msg.media_id ? `${BACKEND_CONFIG.apiUrl}/api/media/${msg.media_id}` : '';
+
+            switch (msg.msgType) {
+                case 'image':
+                    if (!mediaUrl) return msg.text ? `<div class="message-text">${msg.text}</div>` : '';
+                    return `
+                        <div class="message-media">
+                            <img src="${mediaUrl}" alt="صورة" style="max-width:100%;border-radius:8px;cursor:pointer;" onclick="window.open('${mediaUrl}','_blank')" onerror="this.outerHTML='<div class=\\'message-text\\'>لم يتم تحميل الصورة</div>'">
+                        </div>
+                        ${msg.text ? `<div class="message-text">${msg.text}</div>` : ''}
+                    `;
+                case 'video':
+                    if (!mediaUrl) return msg.text ? `<div class="message-text">${msg.text}</div>` : '';
+                    return `
+                        <div class="message-media">
+                            <video controls style="max-width:100%;border-radius:8px;" preload="metadata" onerror="this.outerHTML='<div class=\\'message-text\\'>لم يتم تحميل الفيديو</div>'">
+                                <source src="${mediaUrl}" type="${msg.mime_type || 'video/mp4'}">
+                            </video>
+                        </div>
+                        ${msg.text ? `<div class="message-text">${msg.text}</div>` : ''}
+                    `;
+                case 'audio':
+                    if (!mediaUrl) return '<div class="message-text">رسالة صوتية</div>';
+                    return `
+                        <div class="message-media">
+                            <audio controls style="width:100%;" preload="metadata" onerror="this.outerHTML='<div class=\\'message-text\\'>لم يتم تحميل الصوت</div>'">
+                                <source src="${mediaUrl}" type="${msg.mime_type || 'audio/ogg'}">
+                            </audio>
+                        </div>
+                    `;
+                case 'document':
+                    if (!mediaUrl) return `<div class="message-text">${msg.text || 'مستند'}</div>`;
+                    return `
+                        <div class="message-media">
+                            <a href="${mediaUrl}" target="_blank" download="${msg.filename || 'document'}" style="display:flex;align-items:center;gap:8px;padding:10px;background:#f0f2f5;border-radius:8px;text-decoration:none;color:#333;">
+                                <span style="font-size:1.5rem;">📎</span>
+                                <span>${msg.filename || msg.text || 'مستند'}</span>
+                            </a>
+                        </div>
+                    `;
+                default:
+                    return msg.text ? `<div class="message-text">${msg.text}</div>` : '';
+            }
+        }
+
         function renderMessages(messages) {
             return messages.map(msg => {
                 const messageType = msg.sender === 'customer' ? 'sent' : 'received';
                 const senderName = msg.sender === 'customer' ? currentConversation.customerName : (msg.isBot ? 'Golden Ticket Bot' : (currentEmployee ? currentEmployee.name : 'أنت'));
                 const statusIcon = msg.status === 'read' ? '✓✓' : (msg.status === 'delivered' || msg.status === 'sent') ? '✓' : '🕐';
 
+                const hasMedia = msg.media_id && ['image', 'video', 'audio', 'document'].includes(msg.msgType);
+                const contentHtml = hasMedia ? renderMediaContent(msg) : `<div class="message-text">${msg.text}</div>`;
+
                 return `
                     <div class="message ${messageType}">
                         <div class="message-bubble">
                             <div class="message-sender">${senderName}</div>
-                            <div class="message-text">${msg.text}</div>
+                            ${contentHtml}
                             <div class="message-time">
                                 ${msg.time}
                                 ${messageType === 'received' ? `<span class="message-status">${statusIcon}</span>` : ''}
