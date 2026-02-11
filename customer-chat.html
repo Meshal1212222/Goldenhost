@@ -989,6 +989,13 @@
                             isBackend: true
                         }));
 
+                        // Check for new unread messages and play sound
+                        const newUnread = formattedConversations.reduce((s, c) => s + (c.unread || 0), 0);
+                        const oldUnread = conversations.reduce((s, c) => s + (c.unread || 0), 0);
+                        if (newUnread > oldUnread) {
+                            playNotificationSound();
+                        }
+
                         // Show backend conversations (real messages)
                         if (currentChannel === 'whatsapp') {
                             conversations = formattedConversations;
@@ -1034,6 +1041,13 @@
                                 isFirestore: true
                             });
                         });
+
+                        // Check for new unread messages and play sound
+                        const totalUnread = firestoreConversations.reduce((sum, c) => sum + (c.unread || 0), 0);
+                        const prevUnread = conversations.reduce((sum, c) => sum + (c.unread || 0), 0);
+                        if (totalUnread > prevUnread) {
+                            playNotificationSound();
+                        }
 
                         // Merge with backend data if we have Firestore data
                         if (currentChannel === 'whatsapp' && firestoreConversations.length > 0) {
@@ -1604,6 +1618,36 @@
 
             conversations = filtered;
             renderConversations();
+        }
+
+        // Notification sound using Web Audio API
+        function playNotificationSound() {
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.frequency.value = 880;
+                osc.type = 'sine';
+                gain.gain.setValueAtTime(0.3, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
+                osc.start(ctx.currentTime);
+                osc.stop(ctx.currentTime + 0.5);
+                // Second tone
+                const osc2 = ctx.createOscillator();
+                const gain2 = ctx.createGain();
+                osc2.connect(gain2);
+                gain2.connect(ctx.destination);
+                osc2.frequency.value = 1200;
+                osc2.type = 'sine';
+                gain2.gain.setValueAtTime(0.3, ctx.currentTime + 0.15);
+                gain2.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.6);
+                osc2.start(ctx.currentTime + 0.15);
+                osc2.stop(ctx.currentTime + 0.6);
+            } catch (e) {
+                console.log('Sound not supported');
+            }
         }
 
         function showNotification(message) {
