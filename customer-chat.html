@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>محادثات العملاء | Golden Host</title>
+    <title>منصة المحادثات الذهبية | Golden cov</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
     <style>
         * {
@@ -101,6 +101,36 @@
             color: white;
             box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
         }
+
+        .channel-tab.tickets {
+            background: #fff3e0;
+            color: #e65100;
+        }
+
+        .channel-tab.tickets.active {
+            background: linear-gradient(135deg, #ff9800, #e65100);
+            color: white;
+            box-shadow: 0 2px 8px rgba(255, 152, 0, 0.3);
+        }
+
+        .ticket-card {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-color);
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .ticket-card:hover { background: #f5f5f5; }
+        .ticket-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; }
+        .ticket-id { font-size: 0.75rem; color: #999; font-family: monospace; }
+        .ticket-status { padding: 2px 8px; border-radius: 12px; font-size: 0.7rem; font-weight: 700; }
+        .ticket-status.open { background: #e8f5e9; color: #2e7d32; }
+        .ticket-status.closed { background: #ffebee; color: #c62828; }
+        .ticket-status.pending { background: #fff3e0; color: #e65100; }
+        .ticket-subject { font-weight: 600; font-size: 0.95rem; margin-bottom: 0.3rem; }
+        .ticket-info { font-size: 0.8rem; color: #777; }
+        .ticket-detail-row { display: flex; justify-content: space-between; padding: 0.75rem 0; border-bottom: 1px solid #f0f0f0; }
+        .ticket-detail-label { font-weight: 600; color: #555; }
+        .ticket-detail-value { color: #333; }
 
         .search-box {
             padding: 1rem;
@@ -215,7 +245,7 @@
             color: white;
         }
 
-        .badge-whatsapp {
+        .badge-whatsapp, .badge-whatsapp_meta {
             background: #e8f5e9;
             color: var(--whatsapp-dark);
         }
@@ -589,6 +619,159 @@
             font-weight: 600;
         }
 
+        /* Login Screen */
+        .login-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(135deg, var(--app-blue), var(--app-purple));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 99999;
+        }
+        .login-overlay.hidden { display: none; }
+        .login-card {
+            background: white;
+            border-radius: 20px;
+            padding: 3rem 2.5rem;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 400px;
+            width: 90%;
+        }
+        .login-logo { font-size: 4rem; margin-bottom: 1rem; }
+        .login-title { font-size: 2rem; font-weight: 900; color: var(--app-purple); margin-bottom: 0.3rem; }
+        .login-subtitle { color: #666; font-size: 1rem; margin-bottom: 2rem; }
+        .google-signin-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.8rem;
+            width: 100%;
+            padding: 0.9rem 1.5rem;
+            background: white;
+            border: 2px solid #ddd;
+            border-radius: 12px;
+            font-family: 'Cairo', sans-serif;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: #333;
+        }
+        .google-signin-btn:hover {
+            border-color: var(--app-blue);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.2);
+            transform: translateY(-2px);
+        }
+        .login-note { color: #999; font-size: 0.8rem; margin-top: 1.5rem; }
+
+        .panel-header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+        }
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .employee-name-badge {
+            font-size: 0.75rem;
+            background: rgba(255,255,255,0.2);
+            padding: 0.3rem 0.6rem;
+            border-radius: 8px;
+            max-width: 120px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        /* Admin Panel */
+        .admin-panel-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .admin-panel-overlay.hidden { display: none; }
+        .admin-panel-card {
+            background: white;
+            border-radius: 16px;
+            padding: 1.5rem;
+            width: 90%;
+            max-width: 500px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        .admin-panel-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .pending-user-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.8rem;
+            background: #f8f9fa;
+            border-radius: 10px;
+            margin-bottom: 0.5rem;
+        }
+        .pending-user-info {
+            flex: 1;
+        }
+        .pending-user-name {
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+        .pending-user-email {
+            font-size: 0.8rem;
+            color: #666;
+        }
+        .approve-btn {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 0.4rem 0.8rem;
+            border-radius: 8px;
+            font-family: 'Cairo', sans-serif;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 0.8rem;
+            margin-right: 0.3rem;
+        }
+        .reject-btn {
+            background: #f44336;
+            color: white;
+            border: none;
+            padding: 0.4rem 0.8rem;
+            border-radius: 8px;
+            font-family: 'Cairo', sans-serif;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+
+        /* Mobile back button */
+        .mobile-back-btn {
+            display: none;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.3rem;
+            cursor: pointer;
+            padding: 0.3rem;
+        }
+
         @media (max-width: 1200px) {
             .customer-panel {
                 display: none;
@@ -596,18 +779,148 @@
         }
 
         @media (max-width: 768px) {
+            .container {
+                position: relative;
+            }
             .conversations-panel {
                 width: 100%;
                 position: absolute;
+                top: 0; left: 0; right: 0; bottom: 0;
                 z-index: 100;
             }
-
             .conversations-panel.hidden {
                 display: none;
             }
-
             .chat-area {
                 width: 100%;
+            }
+            .chat-area.hidden-mobile {
+                display: none;
+            }
+            .mobile-back-btn {
+                display: inline-block;
+            }
+            .panel-header {
+                padding: 1rem;
+            }
+            .panel-header h2 {
+                font-size: 1.1rem;
+            }
+            .channel-tabs {
+                padding: 0.6rem;
+                gap: 0.3rem;
+            }
+            .channel-tab {
+                padding: 0.5rem;
+                font-size: 0.75rem;
+            }
+            .search-box {
+                padding: 0.6rem;
+            }
+            .search-box input {
+                padding: 0.6rem;
+                font-size: 0.85rem;
+            }
+            .conversation-item {
+                padding: 0.8rem;
+                gap: 0.7rem;
+            }
+            .conversation-avatar {
+                width: 42px;
+                height: 42px;
+                font-size: 1rem;
+            }
+            .conversation-name {
+                font-size: 0.9rem;
+            }
+            .conversation-preview {
+                font-size: 0.8rem;
+            }
+            .conversation-badge {
+                font-size: 0.65rem;
+                padding: 0.15rem 0.4rem;
+            }
+            .chat-header {
+                padding: 0.7rem 1rem;
+                flex-wrap: wrap;
+                gap: 0.5rem;
+            }
+            .chat-customer-avatar {
+                width: 36px;
+                height: 36px;
+                font-size: 0.9rem;
+            }
+            .chat-customer-details h3 {
+                font-size: 0.95rem;
+            }
+            .chat-customer-status {
+                font-size: 0.75rem;
+            }
+            .chat-actions {
+                flex-wrap: wrap;
+                gap: 0.3rem;
+            }
+            .chat-action-btn {
+                padding: 0.4rem 0.7rem;
+                font-size: 0.75rem;
+            }
+            .chat-messages {
+                padding: 1rem;
+            }
+            .message-bubble {
+                max-width: 85%;
+            }
+            .message-text {
+                font-size: 0.9rem;
+            }
+            .quick-replies {
+                padding: 0.5rem;
+                gap: 0.3rem;
+            }
+            .quick-reply-btn {
+                padding: 0.4rem 0.8rem;
+                font-size: 0.75rem;
+            }
+            .chat-input-area {
+                padding: 0.7rem 1rem;
+                gap: 0.5rem;
+            }
+            .chat-input {
+                padding: 0.6rem 0.8rem;
+                font-size: 0.85rem;
+            }
+            .send-btn {
+                width: 42px;
+                height: 42px;
+                font-size: 1.2rem;
+            }
+            .customer-panel {
+                display: none !important;
+            }
+            .empty-chat-icon {
+                font-size: 3rem;
+            }
+            .empty-chat-text {
+                font-size: 1rem;
+            }
+            .header-actions {
+                gap: 0.3rem;
+            }
+            .employee-name-badge {
+                max-width: 80px;
+                font-size: 0.65rem;
+            }
+        }
+
+        /* Small phones */
+        @media (max-width: 390px) {
+            .channel-tab {
+                font-size: 0.7rem;
+                padding: 0.4rem;
+            }
+            .chat-action-btn {
+                font-size: 0.7rem;
+                padding: 0.3rem 0.5rem;
             }
         }
 
@@ -631,12 +944,58 @@
     </style>
 </head>
 <body>
-    <div class="container">
+    <!-- Login Screen -->
+    <div class="login-overlay" id="loginOverlay">
+        <div class="login-card">
+            <div class="login-logo">💬</div>
+            <h1 class="login-title">Golden cov</h1>
+            <p class="login-subtitle">منصة المحادثات الذهبية</p>
+            <button class="google-signin-btn" id="googleSignInBtn" onclick="signInWithGoogle()">
+                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" width="20" height="20">
+                تسجيل الدخول بحساب Google
+            </button>
+            <p class="login-note">يجب تسجيل الدخول للوصول إلى المنصة</p>
+        </div>
+    </div>
+
+    <!-- Pending Approval Screen -->
+    <div class="login-overlay hidden" id="pendingOverlay">
+        <div class="login-card">
+            <div class="login-logo">⏳</div>
+            <h1 class="login-title" style="font-size:1.5rem;">بانتظار الموافقة</h1>
+            <p class="login-subtitle">تم إرسال طلبك للمسؤول. ستصلك الموافقة قريباً إن شاء الله</p>
+            <div id="pendingUserEmail" style="background:#f0f2f5;padding:0.8rem;border-radius:8px;margin:1rem 0;font-weight:600;color:#333;"></div>
+            <button class="google-signin-btn" onclick="signOutUser()" style="margin-top:1rem;">
+                تسجيل خروج
+            </button>
+        </div>
+    </div>
+
+    <!-- Admin Panel Overlay -->
+    <div class="admin-panel-overlay hidden" id="adminPanelOverlay" onclick="if(event.target===this)toggleAdminPanel()">
+        <div class="admin-panel-card">
+            <div class="admin-panel-title">
+                <span>طلبات الوصول</span>
+                <button onclick="toggleAdminPanel()" style="background:none;border:none;font-size:1.3rem;cursor:pointer;">✕</button>
+            </div>
+            <div id="pendingUsersList">
+                <p style="text-align:center;color:#999;">جاري التحميل...</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="container" id="mainContainer" style="display:none;">
         <!-- Left Panel: Conversations List -->
-        <div class="conversations-panel">
+        <div class="conversations-panel" id="conversationsPanel">
             <div class="panel-header">
-                <h2>💬 المحادثات</h2>
-                <button onclick="window.location.href='dashboard.html'" style="background: white; color: var(--app-purple); border: none; padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer; font-family: 'Cairo', sans-serif; font-weight: 600;">← العودة</button>
+                <div class="panel-header-top">
+                    <h2>💬 المحادثات</h2>
+                    <div class="header-actions">
+                        <span class="employee-name-badge" id="employeeNameBadge"></span>
+                        <button id="adminPanelBtn" onclick="toggleAdminPanel()" style="display:none; background: rgba(255,255,255,0.2); color: white; border: none; padding: 0.4rem 0.8rem; border-radius: 8px; cursor: pointer; font-family: 'Cairo', sans-serif; font-weight: 600; font-size: 0.75rem;">طلبات</button>
+                        <button onclick="signOutUser()" style="background: rgba(255,255,255,0.2); color: white; border: none; padding: 0.4rem 0.8rem; border-radius: 8px; cursor: pointer; font-family: 'Cairo', sans-serif; font-weight: 600; font-size: 0.75rem;">خروج</button>
+                    </div>
+                </div>
             </div>
 
             <div class="channel-tabs">
@@ -645,6 +1004,9 @@
                 </button>
                 <button class="channel-tab app" onclick="switchChannel('app')">
                     📲 التطبيق
+                </button>
+                <button class="channel-tab tickets" onclick="switchChannel('tickets')">
+                    🎫 البلاغات
                 </button>
             </div>
 
@@ -673,6 +1035,7 @@
 
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
     <script>
@@ -686,12 +1049,13 @@
 
         // Firebase Config
         const firebaseConfig = {
-            apiKey: "AIzaSyACk3UhHouKfGsOu3ZJfaOhqLqucumn2UQ",
-            authDomain: "sunday-fb28c.firebaseapp.com",
-            projectId: "sunday-fb28c",
-            storageBucket: "sunday-fb28c.firebasestorage.app",
-            messagingSenderId: "24752239756",
-            appId: "1:24752239756:web:386c2c72624eb67ba337a9"
+            apiKey: "AIzaSyAsiUvWn0mctv3R9hMbY6keXK49MlB_9wM",
+            authDomain: "ticket-system-d693a.firebaseapp.com",
+            projectId: "ticket-system-d693a",
+            storageBucket: "ticket-system-d693a.firebasestorage.app",
+            messagingSenderId: "256713951148",
+            appId: "1:256713951148:web:df1edfd310fdb89abd5c09",
+            measurementId: "G-256969E6SW"
         };
 
         // Initialize Firebase
@@ -699,6 +1063,8 @@
             firebase.initializeApp(firebaseConfig);
         }
         const firestore = firebase.firestore();
+        const auth = firebase.auth();
+        const googleProvider = new firebase.auth.GoogleAuthProvider();
 
         let currentChannel = 'whatsapp';
         let currentConversation = null;
@@ -707,6 +1073,7 @@
         let unsubscribeMessages = null;
         let whatsappAccounts = [];
         let selectedAccountId = 'golden_ticket'; // Default account
+        let currentEmployee = null; // Logged-in employee info
 
         // Conversations data (loaded from backend/Firestore)
         const sampleConversations = {
@@ -760,7 +1127,198 @@
             ]
         };
 
+        // ==================== Google Auth + Approval System ====================
+        const ADMIN_EMAIL = 'meshal.hgz@gmail.com';
+
+        function signInWithGoogle() {
+            document.getElementById('googleSignInBtn').disabled = true;
+            document.getElementById('googleSignInBtn').textContent = 'جاري تسجيل الدخول...';
+            auth.signInWithPopup(googleProvider).catch(error => {
+                console.error('Sign-in error:', error);
+                document.getElementById('googleSignInBtn').disabled = false;
+                document.getElementById('googleSignInBtn').innerHTML = '<img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" width="20" height="20"> تسجيل الدخول بحساب Google';
+                showNotification('فشل تسجيل الدخول: ' + error.message);
+            });
+        }
+
+        function signOutUser() {
+            auth.signOut().then(() => {
+                currentEmployee = null;
+                document.getElementById('mainContainer').style.display = 'none';
+                document.getElementById('pendingOverlay').classList.add('hidden');
+                document.getElementById('loginOverlay').classList.remove('hidden');
+            });
+        }
+
+        // Check if user is approved
+        async function checkUserApproval(user) {
+            const email = user.email;
+
+            // Admin is always approved
+            if (email === ADMIN_EMAIL) {
+                await firestore.collection('approved_users').doc(email).set({
+                    email: email,
+                    name: user.displayName || email.split('@')[0],
+                    photo: user.photoURL || '',
+                    role: 'admin',
+                    approvedAt: firebase.firestore.FieldValue.serverTimestamp()
+                }, { merge: true });
+                return { approved: true, role: 'admin' };
+            }
+
+            // Check approved_users collection
+            const doc = await firestore.collection('approved_users').doc(email).get();
+            if (doc.exists && doc.data().approved !== false) {
+                return { approved: true, role: doc.data().role || 'employee' };
+            }
+
+            // Not approved - save to pending_users
+            await firestore.collection('pending_users').doc(email).set({
+                email: email,
+                name: user.displayName || email.split('@')[0],
+                photo: user.photoURL || '',
+                requestedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                status: 'pending'
+            }, { merge: true });
+
+            // Notify admin via backend
+            try {
+                await fetch(`${BACKEND_CONFIG.apiUrl}/api/notify-admin`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        type: 'access_request',
+                        userEmail: email,
+                        userName: user.displayName || email.split('@')[0],
+                        adminEmail: ADMIN_EMAIL
+                    })
+                });
+            } catch (e) {
+                console.log('Admin notification failed:', e);
+            }
+
+            return { approved: false };
+        }
+
+        // Listen for auth state changes
+        auth.onAuthStateChanged(async user => {
+            if (user) {
+                currentEmployee = {
+                    name: user.displayName || user.email.split('@')[0],
+                    email: user.email,
+                    photo: user.photoURL
+                };
+
+                // Check approval
+                const approval = await checkUserApproval(user);
+
+                if (approval.approved) {
+                    currentEmployee.role = approval.role;
+                    document.getElementById('loginOverlay').classList.add('hidden');
+                    document.getElementById('pendingOverlay').classList.add('hidden');
+                    document.getElementById('mainContainer').style.display = 'flex';
+                    document.getElementById('employeeNameBadge').textContent = currentEmployee.name;
+                    init();
+                } else {
+                    // Show pending screen
+                    document.getElementById('loginOverlay').classList.add('hidden');
+                    document.getElementById('mainContainer').style.display = 'none';
+                    document.getElementById('pendingOverlay').classList.remove('hidden');
+                    document.getElementById('pendingUserEmail').textContent = user.email;
+                }
+            } else {
+                document.getElementById('loginOverlay').classList.remove('hidden');
+                document.getElementById('pendingOverlay').classList.add('hidden');
+                document.getElementById('mainContainer').style.display = 'none';
+            }
+        });
+
+        // ==================== Admin Panel ====================
+        function toggleAdminPanel() {
+            const overlay = document.getElementById('adminPanelOverlay');
+            if (overlay.classList.contains('hidden')) {
+                overlay.classList.remove('hidden');
+                loadPendingUsers();
+            } else {
+                overlay.classList.add('hidden');
+            }
+        }
+
+        async function loadPendingUsers() {
+            const list = document.getElementById('pendingUsersList');
+            try {
+                const snapshot = await firestore.collection('pending_users').where('status', '==', 'pending').get();
+                if (snapshot.empty) {
+                    list.innerHTML = '<p style="text-align:center;color:#999;padding:1rem;">لا توجد طلبات معلقة</p>';
+                    return;
+                }
+                list.innerHTML = '';
+                snapshot.forEach(doc => {
+                    const user = doc.data();
+                    const div = document.createElement('div');
+                    div.className = 'pending-user-item';
+                    div.innerHTML = `
+                        <div class="pending-user-info">
+                            <div class="pending-user-name">${user.name || 'بدون اسم'}</div>
+                            <div class="pending-user-email">${user.email}</div>
+                        </div>
+                        <div>
+                            <button class="approve-btn" onclick="approveUser('${user.email}', '${user.name || ''}')">قبول</button>
+                            <button class="reject-btn" onclick="rejectUser('${user.email}')">رفض</button>
+                        </div>
+                    `;
+                    list.appendChild(div);
+                });
+            } catch (error) {
+                console.error('Load pending users error:', error);
+                list.innerHTML = '<p style="text-align:center;color:#e53935;">خطأ في تحميل الطلبات</p>';
+            }
+        }
+
+        async function approveUser(email, name) {
+            try {
+                await firestore.collection('approved_users').doc(email).set({
+                    email: email,
+                    name: name,
+                    role: 'employee',
+                    approved: true,
+                    approvedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    approvedBy: currentEmployee.email
+                });
+                await firestore.collection('pending_users').doc(email).update({ status: 'approved' });
+                showNotification('تم قبول ' + (name || email));
+                loadPendingUsers();
+            } catch (error) {
+                console.error('Approve error:', error);
+                showNotification('خطأ في القبول');
+            }
+        }
+
+        async function rejectUser(email) {
+            try {
+                await firestore.collection('pending_users').doc(email).update({ status: 'rejected' });
+                showNotification('تم رفض الطلب');
+                loadPendingUsers();
+            } catch (error) {
+                console.error('Reject error:', error);
+                showNotification('خطأ في الرفض');
+            }
+        }
+
+        // Mobile navigation
+        function showChatMobile() {
+            document.getElementById('conversationsPanel').classList.add('hidden');
+        }
+        function showConversationsMobile() {
+            document.getElementById('conversationsPanel').classList.remove('hidden');
+        }
+
         function init() {
+            // Show admin button if admin
+            if (currentEmployee && currentEmployee.role === 'admin') {
+                document.getElementById('adminPanelBtn').style.display = 'inline-block';
+            }
+
             // Load available WhatsApp accounts
             loadWhatsAppAccounts();
 
@@ -945,7 +1503,7 @@
                             customerName: conv.customerName || 'عميل واتساب',
                             customerPhone: conv.customerPhone || conv.id,
                             lastMessage: conv.lastMessage || '',
-                            time: formatTime(new Date(conv.updatedAt)),
+                            time: formatTime(conv.updatedAt),
                             unread: conv.unreadCount || 0,
                             priority: false,
                             status: conv.status || 'open',
@@ -955,6 +1513,13 @@
                             history: [],
                             isBackend: true
                         }));
+
+                        // Check for new unread messages and play sound
+                        const newUnread = formattedConversations.reduce((s, c) => s + (c.unread || 0), 0);
+                        const oldUnread = conversations.reduce((s, c) => s + (c.unread || 0), 0);
+                        if (newUnread > oldUnread) {
+                            playNotificationSound();
+                        }
 
                         // Show backend conversations (real messages)
                         if (currentChannel === 'whatsapp') {
@@ -1002,6 +1567,13 @@
                             });
                         });
 
+                        // Check for new unread messages and play sound
+                        const totalUnread = firestoreConversations.reduce((sum, c) => sum + (c.unread || 0), 0);
+                        const prevUnread = conversations.reduce((sum, c) => sum + (c.unread || 0), 0);
+                        if (totalUnread > prevUnread) {
+                            playNotificationSound();
+                        }
+
                         // Merge with backend data if we have Firestore data
                         if (currentChannel === 'whatsapp' && firestoreConversations.length > 0) {
                             conversations = firestoreConversations;
@@ -1017,7 +1589,18 @@
             }
         }
 
+        function parseDate(val) {
+            if (!val) return null;
+            if (val instanceof Date) return val;
+            if (val.toDate) return val.toDate();
+            if (val._seconds) return new Date(val._seconds * 1000);
+            const d = new Date(val);
+            return isNaN(d.getTime()) ? null : d;
+        }
+
         function formatTime(date) {
+            if (!date) return '';
+            date = parseDate(date);
             if (!date) return '';
             const now = new Date();
             const diff = now - date;
@@ -1055,7 +1638,7 @@
                     snapshot.forEach(doc => {
                         const data = doc.data();
                         messages.push({
-                            sender: data.from === 'employee' ? 'employee' : 'customer',
+                            sender: (data.from === 'employee' || data.from === 'bot') ? 'employee' : 'customer',
                             text: data.content || data.text || '',
                             time: formatTime(data.createdAt?.toDate()),
                             status: data.status || 'delivered'
@@ -1083,6 +1666,19 @@
                 tab.classList.remove('active');
             });
             document.querySelector(`.channel-tab.${channel}`).classList.add('active');
+
+            // Tickets channel
+            if (channel === 'tickets') {
+                loadTickets();
+                document.getElementById('chatArea').innerHTML = `
+                    <div class="empty-chat">
+                        <div class="empty-chat-icon">🎫</div>
+                        <div class="empty-chat-text">اختر بلاغ لعرض التفاصيل</div>
+                    </div>
+                `;
+                document.getElementById('customerPanel').style.display = 'none';
+                return;
+            }
 
             // App channel is not active yet
             if (channel === 'app') {
@@ -1125,7 +1721,8 @@
             conversations.forEach(conv => {
                 const unreadBadge = conv.unread > 0 ? `<span class="conversation-badge badge-unread">${conv.unread}</span>` : '';
                 const priorityBadge = conv.priority ? `<span class="conversation-badge badge-priority">عاجل</span>` : '';
-                const channelBadge = `<span class="conversation-badge badge-${conv.channel}">${conv.channel === 'whatsapp' ? 'WhatsApp' : 'التطبيق'}</span>`;
+                const isWhatsApp = conv.channel === 'whatsapp' || conv.channel === 'whatsapp_meta';
+                const channelBadge = `<span class="conversation-badge badge-${conv.channel}">${isWhatsApp ? 'WhatsApp' : 'التطبيق'}</span>`;
 
                 const item = document.createElement('div');
                 item.className = 'conversation-item';
@@ -1136,6 +1733,7 @@
                             <span class="conversation-name">${conv.customerName}</span>
                             <span class="conversation-time">${conv.time}</span>
                         </div>
+                        <div class="conversation-preview" style="direction: ltr; text-align: left; font-size: 0.8rem; color: #aaa;">${conv.customerPhone || ''}</div>
                         <div class="conversation-preview">${conv.lastMessage}</div>
                         <div class="conversation-meta">
                             ${channelBadge}
@@ -1174,6 +1772,11 @@
             // Render chat
             renderChat(conv);
             renderCustomerPanel(conv);
+
+            // Mobile: show chat, hide conversations
+            if (window.innerWidth <= 768) {
+                showChatMobile();
+            }
         }
 
         // Load messages from Backend API
@@ -1186,9 +1789,9 @@
 
                     if (currentConversation && (currentConversation.customerPhone === phone || currentConversation.id === phone)) {
                         currentConversation.messages = messages.map(msg => ({
-                            sender: msg.from === 'employee' ? 'employee' : 'customer',
+                            sender: (msg.from === 'employee' || msg.from === 'bot') ? 'employee' : 'customer',
                             text: msg.content || msg.text || '',
-                            time: formatTime(new Date(msg.createdAt || msg.timestamp)),
+                            time: formatTime(msg.createdAt || msg.timestamp),
                             status: msg.status || 'delivered'
                         }));
 
@@ -1207,10 +1810,11 @@
             chatArea.innerHTML = `
                 <div class="chat-header">
                     <div class="chat-customer-info">
+                        <button class="mobile-back-btn" onclick="showConversationsMobile()">→</button>
                         <div class="chat-customer-avatar">${conv.customerName.charAt(0)}</div>
                         <div class="chat-customer-details">
                             <h3>${conv.customerName}</h3>
-                            <div class="chat-customer-status">${conv.customerPhone} • ${conv.channel === 'whatsapp' ? 'WhatsApp' : 'التطبيق'}</div>
+                            <div class="chat-customer-status">${conv.customerPhone} • ${(conv.channel === 'whatsapp' || conv.channel === 'whatsapp_meta') ? 'WhatsApp' : 'التطبيق'}</div>
                         </div>
                     </div>
                     <div class="chat-actions">
@@ -1245,7 +1849,7 @@
         function renderMessages(messages) {
             return messages.map(msg => {
                 const messageType = msg.sender === 'customer' ? 'sent' : 'received';
-                const senderName = msg.sender === 'customer' ? currentConversation.customerName : 'أنت';
+                const senderName = msg.sender === 'customer' ? currentConversation.customerName : (currentEmployee ? currentEmployee.name : 'أنت');
                 const statusIcon = msg.status === 'read' ? '✓✓' : msg.status === 'delivered' ? '✓' : '🕐';
 
                 return `
@@ -1284,7 +1888,7 @@
                     <div class="info-section-title">معلومات الحجز</div>
                     <div class="info-item">
                         <span class="info-label">رقم الحجز:</span>
-                        <span class="info-value">#${conv.bookingNumber}</span>
+                        <span class="info-value">${conv.bookingNumber ? '#' + conv.bookingNumber : '<span style="color:#999;font-weight:400">يتوفر قريباً</span>'}</span>
                     </div>
                     <div class="info-item">
                         <span class="info-label">الحالة:</span>
@@ -1292,7 +1896,7 @@
                     </div>
                     <div class="info-item">
                         <span class="info-label">القناة:</span>
-                        <span class="info-value">${conv.channel === 'whatsapp' ? '📱 WhatsApp' : '📲 التطبيق'}</span>
+                        <span class="info-value">${(conv.channel === 'whatsapp' || conv.channel === 'whatsapp_meta') ? '📱 WhatsApp' : '📲 التطبيق'}</span>
                     </div>
                 </div>
 
@@ -1313,14 +1917,14 @@
 
                 <div class="customer-info-section">
                     <div class="info-section-title">ملاحظات داخلية</div>
-                    <textarea class="notes-area" id="customerNotes" placeholder="أضف ملاحظات عن هذا العميل...">${conv.notes}</textarea>
+                    <textarea class="notes-area" id="customerNotes" placeholder="أضف ملاحظات عن هذا العميل...">${conv.notes || ''}</textarea>
                     <button class="save-notes-btn" onclick="saveNotes()">💾 حفظ الملاحظات</button>
                 </div>
 
                 <div class="customer-info-section">
                     <div class="info-section-title">السجل السابق</div>
                     <ul class="customer-history">
-                        ${conv.history.map(h => `
+                        ${(conv.history || []).map(h => `
                             <li class="history-item">
                                 ${h.action}
                                 <div class="history-date">${h.date}</div>
@@ -1398,6 +2002,106 @@
             renderConversations();
         }
 
+        // ==================== Tickets ====================
+        let ticketsList = [];
+
+        async function loadTickets() {
+            const list = document.getElementById('conversationsList');
+            list.innerHTML = '<div style="text-align:center;padding:2rem;color:#999;">جاري تحميل البلاغات...</div>';
+            try {
+                const response = await fetch(`${BACKEND_CONFIG.apiUrl}/api/tickets`);
+                if (response.ok) {
+                    const data = await response.json();
+                    ticketsList = Array.isArray(data) ? data : (data.tickets || data.data || []);
+                    renderTickets();
+                } else {
+                    list.innerHTML = '<div style="text-align:center;padding:2rem;color:#e53935;">فشل تحميل البلاغات</div>';
+                }
+            } catch (error) {
+                console.error('Load tickets error:', error);
+                list.innerHTML = '<div style="text-align:center;padding:2rem;color:#e53935;">خطأ في الاتصال بالسيرفر</div>';
+            }
+        }
+
+        function renderTickets() {
+            const list = document.getElementById('conversationsList');
+            list.innerHTML = '';
+
+            if (ticketsList.length === 0) {
+                list.innerHTML = '<div style="text-align:center;padding:2rem;color:#999;">لا توجد بلاغات</div>';
+                return;
+            }
+
+            ticketsList.forEach(ticket => {
+                const status = ticket.status || 'open';
+                const statusText = status === 'open' ? 'مفتوح' : status === 'closed' ? 'مغلق' : 'معلق';
+                const date = ticket.createdAt ? new Date(ticket.createdAt._seconds ? ticket.createdAt._seconds * 1000 : ticket.createdAt).toLocaleDateString('ar-SA') : '';
+
+                const card = document.createElement('div');
+                card.className = 'ticket-card';
+                card.innerHTML = `
+                    <div class="ticket-header">
+                        <span class="ticket-id">#${ticket.ticketId || ticket.id || ''}</span>
+                        <span class="ticket-status ${status}">${statusText}</span>
+                    </div>
+                    <div class="ticket-subject">${ticket.subject || ticket.name || 'بدون عنوان'}</div>
+                    <div class="ticket-info">${ticket.name || ''} • ${ticket.phone || ''} • ${date}</div>
+                `;
+                card.onclick = () => showTicketDetail(ticket);
+                list.appendChild(card);
+            });
+        }
+
+        function showTicketDetail(ticket) {
+            const date = ticket.createdAt ? new Date(ticket.createdAt._seconds ? ticket.createdAt._seconds * 1000 : ticket.createdAt).toLocaleString('ar-SA') : '';
+            const status = ticket.status || 'open';
+            const statusText = status === 'open' ? 'مفتوح' : status === 'closed' ? 'مغلق' : 'معلق';
+
+            document.getElementById('chatArea').innerHTML = `
+                <div style="padding: 2rem; max-width: 600px; margin: 0 auto;">
+                    <div style="background: white; border-radius: 16px; padding: 2rem; box-shadow: 0 2px 12px rgba(0,0,0,0.08);">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                            <h2 style="margin: 0; font-size: 1.3rem;">🎫 تفاصيل البلاغ</h2>
+                            <span class="ticket-status ${status}" style="font-size: 0.85rem; padding: 4px 12px;">${statusText}</span>
+                        </div>
+                        <div class="ticket-detail-row">
+                            <span class="ticket-detail-label">رقم البلاغ</span>
+                            <span class="ticket-detail-value">#${ticket.ticketId || ticket.id || '-'}</span>
+                        </div>
+                        <div class="ticket-detail-row">
+                            <span class="ticket-detail-label">الاسم</span>
+                            <span class="ticket-detail-value">${ticket.name || '-'}</span>
+                        </div>
+                        <div class="ticket-detail-row">
+                            <span class="ticket-detail-label">الجوال</span>
+                            <span class="ticket-detail-value" style="direction:ltr">${ticket.phone || '-'}</span>
+                        </div>
+                        <div class="ticket-detail-row">
+                            <span class="ticket-detail-label">الايميل</span>
+                            <span class="ticket-detail-value">${ticket.email || '-'}</span>
+                        </div>
+                        <div class="ticket-detail-row">
+                            <span class="ticket-detail-label">الموضوع</span>
+                            <span class="ticket-detail-value">${ticket.subject || '-'}</span>
+                        </div>
+                        <div class="ticket-detail-row">
+                            <span class="ticket-detail-label">التصنيف</span>
+                            <span class="ticket-detail-value">${ticket.category || '-'}</span>
+                        </div>
+                        <div class="ticket-detail-row">
+                            <span class="ticket-detail-label">التاريخ</span>
+                            <span class="ticket-detail-value">${date || '-'}</span>
+                        </div>
+                        <div class="ticket-detail-row" style="border-bottom: none;">
+                            <span class="ticket-detail-label">الوصف</span>
+                            <span class="ticket-detail-value">${ticket.description || '-'}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.getElementById('customerPanel').style.display = 'none';
+        }
+
         function handleEnter(event) {
             if (event.key === 'Enter' && !event.shiftKey) {
                 event.preventDefault();
@@ -1458,6 +2162,36 @@
             renderConversations();
         }
 
+        // Notification sound using Web Audio API
+        function playNotificationSound() {
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.frequency.value = 880;
+                osc.type = 'sine';
+                gain.gain.setValueAtTime(0.3, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
+                osc.start(ctx.currentTime);
+                osc.stop(ctx.currentTime + 0.5);
+                // Second tone
+                const osc2 = ctx.createOscillator();
+                const gain2 = ctx.createGain();
+                osc2.connect(gain2);
+                gain2.connect(ctx.destination);
+                osc2.frequency.value = 1200;
+                osc2.type = 'sine';
+                gain2.gain.setValueAtTime(0.3, ctx.currentTime + 0.15);
+                gain2.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.6);
+                osc2.start(ctx.currentTime + 0.15);
+                osc2.stop(ctx.currentTime + 0.6);
+            } catch (e) {
+                console.log('Sound not supported');
+            }
+        }
+
         function showNotification(message) {
             const notification = document.createElement('div');
             notification.style.cssText = `
@@ -1484,8 +2218,8 @@
             }, 3000);
         }
 
-        // Initialize on page load
-        document.addEventListener('DOMContentLoaded', init);
+        // Auth state listener handles initialization
+        // No need for DOMContentLoaded - Firebase auth listener calls init()
     </script>
 </body>
 </html>
