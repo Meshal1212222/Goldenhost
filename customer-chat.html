@@ -1825,15 +1825,17 @@
         }
 
         // Load messages from Backend API
+        let lastMessageCount = 0;
+        let lastMessageText = '';
+
         async function loadBackendMessages(phone) {
             try {
                 const response = await fetch(`${BACKEND_CONFIG.apiUrl}/api/conversations/${phone}/messages`);
                 if (response.ok) {
                     const messages = await response.json();
-                    console.log('Backend messages loaded:', messages.length);
 
                     if (currentConversation && (currentConversation.customerPhone === phone || currentConversation.id === phone)) {
-                        currentConversation.messages = messages.map(msg => ({
+                        const newMessages = messages.map(msg => ({
                             sender: (msg.from === 'employee' || msg.from === 'bot') ? 'employee' : 'customer',
                             isBot: msg.from === 'bot',
                             text: msg.content || msg.text || '',
@@ -1841,7 +1843,24 @@
                             status: msg.status || 'delivered'
                         }));
 
-                        renderChat(currentConversation);
+                        // Only re-render if messages actually changed
+                        const newCount = newMessages.length;
+                        const newLastText = newMessages.length > 0 ? newMessages[newMessages.length - 1].text : '';
+
+                        if (newCount !== lastMessageCount || newLastText !== lastMessageText) {
+                            lastMessageCount = newCount;
+                            lastMessageText = newLastText;
+                            currentConversation.messages = newMessages;
+
+                            // Only update messages area, preserve input
+                            const messagesDiv = document.getElementById('chatMessages');
+                            if (messagesDiv) {
+                                messagesDiv.innerHTML = renderMessages(newMessages);
+                                messagesDiv.scrollTop = messagesDiv.scrollHeight;
+                            } else {
+                                renderChat(currentConversation);
+                            }
+                        }
                     }
                 }
             } catch (error) {
