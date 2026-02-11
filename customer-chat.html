@@ -1138,7 +1138,6 @@
 
         // ==================== Google Auth + Approval System ====================
         const ADMIN_EMAIL = 'meshal.hgz@gmail.com';
-        let redirectChecked = false;
 
         // Set auth persistence to LOCAL (survives page reload)
         auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
@@ -1147,20 +1146,12 @@
             document.getElementById('googleSignInBtn').disabled = true;
             document.getElementById('googleSignInBtn').textContent = 'جاري تسجيل الدخول...';
 
-            // Always use redirect on mobile for reliability
-            auth.signInWithRedirect(googleProvider);
+            auth.signInWithPopup(googleProvider).catch(error => {
+                console.error('Sign-in error:', error);
+                document.getElementById('googleSignInBtn').disabled = false;
+                document.getElementById('googleSignInBtn').innerHTML = '<img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" width="20" height="20"> تسجيل الدخول بحساب Google';
+            });
         }
-
-        // Handle redirect result FIRST before showing any UI
-        auth.getRedirectResult().then(result => {
-            redirectChecked = true;
-            if (result && result.user) {
-                console.log('Redirect sign-in successful:', result.user.email);
-            }
-        }).catch(error => {
-            redirectChecked = true;
-            console.error('Redirect sign-in error:', error);
-        });
 
         function signOutUser() {
             auth.signOut().then(() => {
