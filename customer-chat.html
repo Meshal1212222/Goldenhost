@@ -1059,7 +1059,7 @@
         // Firebase Config
         const firebaseConfig = {
             apiKey: "AIzaSyAsiUvWn0mctv3R9hMbY6keXK49MlB_9wM",
-            authDomain: "ticket-system-d693a.firebaseapp.com",
+            authDomain: "goldenhost-production-c79d.up.railway.app",
             projectId: "ticket-system-d693a",
             storageBucket: "ticket-system-d693a.firebasestorage.app",
             messagingSenderId: "256713951148",
@@ -1138,7 +1138,6 @@
 
         // ==================== Google Auth + Approval System ====================
         const ADMIN_EMAIL = 'meshal.hgz@gmail.com';
-        let redirectChecked = false;
 
         // Set auth persistence to LOCAL (survives page reload)
         auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
@@ -1147,19 +1146,18 @@
             document.getElementById('googleSignInBtn').disabled = true;
             document.getElementById('googleSignInBtn').textContent = 'جاري تسجيل الدخول...';
 
-            // Always use redirect on mobile for reliability
+            // Use redirect - works on all devices including iOS Safari
+            // Auth proxy on server makes this work on same domain (no cookie issues)
             auth.signInWithRedirect(googleProvider);
         }
 
-        // Handle redirect result FIRST before showing any UI
+        // Handle redirect result when page reloads after auth
         auth.getRedirectResult().then(result => {
-            redirectChecked = true;
             if (result && result.user) {
-                console.log('Redirect sign-in successful:', result.user.email);
+                console.log('Sign-in successful:', result.user.email);
             }
         }).catch(error => {
-            redirectChecked = true;
-            console.error('Redirect sign-in error:', error);
+            console.error('Redirect error:', error);
         });
 
         function signOutUser() {
