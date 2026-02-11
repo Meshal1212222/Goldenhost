@@ -770,6 +770,45 @@ app.get('/api/templates', async (req, res) => {
     }
 });
 
+// ==================== Tickets API ====================
+
+const TICKET_API = {
+    url: 'https://ticket-ticket-production.up.railway.app/api/ticket',
+    apiKey: 'bevatel_ticket_2024_secure_key_x7k9m2'
+};
+
+// Get all tickets
+app.get('/api/tickets', async (req, res) => {
+    try {
+        const response = await axios.get(TICKET_API.url, {
+            headers: {
+                'X-API-Key': TICKET_API.apiKey,
+                'Content-Type': 'application/json'
+            }
+        });
+        res.json(response.data);
+    } catch (error) {
+        console.error('Get tickets error:', error.response?.data || error.message);
+        res.status(500).json({ error: error.response?.data || error.message });
+    }
+});
+
+// Get single ticket
+app.get('/api/tickets/:id', async (req, res) => {
+    try {
+        const response = await axios.get(`${TICKET_API.url}/${req.params.id}`, {
+            headers: {
+                'X-API-Key': TICKET_API.apiKey,
+                'Content-Type': 'application/json'
+            }
+        });
+        res.json(response.data);
+    } catch (error) {
+        console.error('Get ticket error:', error.response?.data || error.message);
+        res.status(500).json({ error: error.response?.data || error.message });
+    }
+});
+
 // ==================== OTP System ====================
 
 // OTP Storage (in memory - for production use Redis or database)

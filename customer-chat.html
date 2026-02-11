@@ -102,6 +102,36 @@
             box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
         }
 
+        .channel-tab.tickets {
+            background: #fff3e0;
+            color: #e65100;
+        }
+
+        .channel-tab.tickets.active {
+            background: linear-gradient(135deg, #ff9800, #e65100);
+            color: white;
+            box-shadow: 0 2px 8px rgba(255, 152, 0, 0.3);
+        }
+
+        .ticket-card {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-color);
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .ticket-card:hover { background: #f5f5f5; }
+        .ticket-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; }
+        .ticket-id { font-size: 0.75rem; color: #999; font-family: monospace; }
+        .ticket-status { padding: 2px 8px; border-radius: 12px; font-size: 0.7rem; font-weight: 700; }
+        .ticket-status.open { background: #e8f5e9; color: #2e7d32; }
+        .ticket-status.closed { background: #ffebee; color: #c62828; }
+        .ticket-status.pending { background: #fff3e0; color: #e65100; }
+        .ticket-subject { font-weight: 600; font-size: 0.95rem; margin-bottom: 0.3rem; }
+        .ticket-info { font-size: 0.8rem; color: #777; }
+        .ticket-detail-row { display: flex; justify-content: space-between; padding: 0.75rem 0; border-bottom: 1px solid #f0f0f0; }
+        .ticket-detail-label { font-weight: 600; color: #555; }
+        .ticket-detail-value { color: #333; }
+
         .search-box {
             padding: 1rem;
             background: white;
@@ -646,6 +676,9 @@
                 <button class="channel-tab app" onclick="switchChannel('app')">
                     📲 التطبيق
                 </button>
+                <button class="channel-tab tickets" onclick="switchChannel('tickets')">
+                    🎫 البلاغات
+                </button>
             </div>
 
             <div class="search-box">
@@ -1084,6 +1117,19 @@
             });
             document.querySelector(`.channel-tab.${channel}`).classList.add('active');
 
+            // Tickets channel
+            if (channel === 'tickets') {
+                loadTickets();
+                document.getElementById('chatArea').innerHTML = `
+                    <div class="empty-chat">
+                        <div class="empty-chat-icon">🎫</div>
+                        <div class="empty-chat-text">اختر بلاغ لعرض التفاصيل</div>
+                    </div>
+                `;
+                document.getElementById('customerPanel').style.display = 'none';
+                return;
+            }
+
             // App channel is not active yet
             if (channel === 'app') {
                 document.getElementById('conversationsList').innerHTML = `
@@ -1398,6 +1444,106 @@
 
             renderChat(currentConversation);
             renderConversations();
+        }
+
+        // ==================== Tickets ====================
+        let ticketsList = [];
+
+        async function loadTickets() {
+            const list = document.getElementById('conversationsList');
+            list.innerHTML = '<div style="text-align:center;padding:2rem;color:#999;">جاري تحميل البلاغات...</div>';
+            try {
+                const response = await fetch(`${BACKEND_CONFIG.apiUrl}/api/tickets`);
+                if (response.ok) {
+                    const data = await response.json();
+                    ticketsList = Array.isArray(data) ? data : (data.tickets || data.data || []);
+                    renderTickets();
+                } else {
+                    list.innerHTML = '<div style="text-align:center;padding:2rem;color:#e53935;">فشل تحميل البلاغات</div>';
+                }
+            } catch (error) {
+                console.error('Load tickets error:', error);
+                list.innerHTML = '<div style="text-align:center;padding:2rem;color:#e53935;">خطأ في الاتصال بالسيرفر</div>';
+            }
+        }
+
+        function renderTickets() {
+            const list = document.getElementById('conversationsList');
+            list.innerHTML = '';
+
+            if (ticketsList.length === 0) {
+                list.innerHTML = '<div style="text-align:center;padding:2rem;color:#999;">لا توجد بلاغات</div>';
+                return;
+            }
+
+            ticketsList.forEach(ticket => {
+                const status = ticket.status || 'open';
+                const statusText = status === 'open' ? 'مفتوح' : status === 'closed' ? 'مغلق' : 'معلق';
+                const date = ticket.createdAt ? new Date(ticket.createdAt._seconds ? ticket.createdAt._seconds * 1000 : ticket.createdAt).toLocaleDateString('ar-SA') : '';
+
+                const card = document.createElement('div');
+                card.className = 'ticket-card';
+                card.innerHTML = `
+                    <div class="ticket-header">
+                        <span class="ticket-id">#${ticket.ticketId || ticket.id || ''}</span>
+                        <span class="ticket-status ${status}">${statusText}</span>
+                    </div>
+                    <div class="ticket-subject">${ticket.subject || ticket.name || 'بدون عنوان'}</div>
+                    <div class="ticket-info">${ticket.name || ''} • ${ticket.phone || ''} • ${date}</div>
+                `;
+                card.onclick = () => showTicketDetail(ticket);
+                list.appendChild(card);
+            });
+        }
+
+        function showTicketDetail(ticket) {
+            const date = ticket.createdAt ? new Date(ticket.createdAt._seconds ? ticket.createdAt._seconds * 1000 : ticket.createdAt).toLocaleString('ar-SA') : '';
+            const status = ticket.status || 'open';
+            const statusText = status === 'open' ? 'مفتوح' : status === 'closed' ? 'مغلق' : 'معلق';
+
+            document.getElementById('chatArea').innerHTML = `
+                <div style="padding: 2rem; max-width: 600px; margin: 0 auto;">
+                    <div style="background: white; border-radius: 16px; padding: 2rem; box-shadow: 0 2px 12px rgba(0,0,0,0.08);">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                            <h2 style="margin: 0; font-size: 1.3rem;">🎫 تفاصيل البلاغ</h2>
+                            <span class="ticket-status ${status}" style="font-size: 0.85rem; padding: 4px 12px;">${statusText}</span>
+                        </div>
+                        <div class="ticket-detail-row">
+                            <span class="ticket-detail-label">رقم البلاغ</span>
+                            <span class="ticket-detail-value">#${ticket.ticketId || ticket.id || '-'}</span>
+                        </div>
+                        <div class="ticket-detail-row">
+                            <span class="ticket-detail-label">الاسم</span>
+                            <span class="ticket-detail-value">${ticket.name || '-'}</span>
+                        </div>
+                        <div class="ticket-detail-row">
+                            <span class="ticket-detail-label">الجوال</span>
+                            <span class="ticket-detail-value" style="direction:ltr">${ticket.phone || '-'}</span>
+                        </div>
+                        <div class="ticket-detail-row">
+                            <span class="ticket-detail-label">الايميل</span>
+                            <span class="ticket-detail-value">${ticket.email || '-'}</span>
+                        </div>
+                        <div class="ticket-detail-row">
+                            <span class="ticket-detail-label">الموضوع</span>
+                            <span class="ticket-detail-value">${ticket.subject || '-'}</span>
+                        </div>
+                        <div class="ticket-detail-row">
+                            <span class="ticket-detail-label">التصنيف</span>
+                            <span class="ticket-detail-value">${ticket.category || '-'}</span>
+                        </div>
+                        <div class="ticket-detail-row">
+                            <span class="ticket-detail-label">التاريخ</span>
+                            <span class="ticket-detail-value">${date || '-'}</span>
+                        </div>
+                        <div class="ticket-detail-row" style="border-bottom: none;">
+                            <span class="ticket-detail-label">الوصف</span>
+                            <span class="ticket-detail-value">${ticket.description || '-'}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.getElementById('customerPanel').style.display = 'none';
         }
 
         function handleEnter(event) {
