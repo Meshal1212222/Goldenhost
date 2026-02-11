@@ -1209,22 +1209,38 @@
                     photo: user.photoURL
                 };
 
-                // Check approval
-                const approval = await checkUserApproval(user);
+                try {
+                    // Check approval
+                    const approval = await checkUserApproval(user);
 
-                if (approval.approved) {
-                    currentEmployee.role = approval.role;
-                    document.getElementById('loginOverlay').classList.add('hidden');
-                    document.getElementById('pendingOverlay').classList.add('hidden');
-                    document.getElementById('mainContainer').style.display = 'flex';
-                    document.getElementById('employeeNameBadge').textContent = currentEmployee.name;
-                    init();
-                } else {
-                    // Show pending screen
-                    document.getElementById('loginOverlay').classList.add('hidden');
-                    document.getElementById('mainContainer').style.display = 'none';
-                    document.getElementById('pendingOverlay').classList.remove('hidden');
-                    document.getElementById('pendingUserEmail').textContent = user.email;
+                    if (approval.approved) {
+                        currentEmployee.role = approval.role;
+                        document.getElementById('loginOverlay').classList.add('hidden');
+                        document.getElementById('pendingOverlay').classList.add('hidden');
+                        document.getElementById('mainContainer').style.display = 'flex';
+                        document.getElementById('employeeNameBadge').textContent = currentEmployee.name;
+                        init();
+                    } else {
+                        // Show pending screen
+                        document.getElementById('loginOverlay').classList.add('hidden');
+                        document.getElementById('mainContainer').style.display = 'none';
+                        document.getElementById('pendingOverlay').classList.remove('hidden');
+                        document.getElementById('pendingUserEmail').textContent = user.email;
+                    }
+                } catch (error) {
+                    console.error('Approval check failed:', error);
+                    // If Firestore fails, let admin in anyway, block others
+                    if (user.email === ADMIN_EMAIL) {
+                        currentEmployee.role = 'admin';
+                        document.getElementById('loginOverlay').classList.add('hidden');
+                        document.getElementById('mainContainer').style.display = 'flex';
+                        document.getElementById('employeeNameBadge').textContent = currentEmployee.name;
+                        init();
+                    } else {
+                        document.getElementById('loginOverlay').classList.add('hidden');
+                        document.getElementById('pendingOverlay').classList.remove('hidden');
+                        document.getElementById('pendingUserEmail').textContent = user.email + ' (خطأ في التحقق)';
+                    }
                 }
             } else {
                 document.getElementById('loginOverlay').classList.remove('hidden');
