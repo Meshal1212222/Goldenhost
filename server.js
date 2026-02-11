@@ -257,6 +257,15 @@ async function processIncomingMessage(message, contact, metadata) {
         console.log('Message saved to memory (temporary)');
     }
 
+    // Run chatbot for Golden Ticket incoming messages
+    if (metadata.phone_number_id === WHATSAPP_ACCOUNTS.golden_ticket.phoneNumberId) {
+        try {
+            await handleChatbot(message.from, messageData.content, contact.profile?.name || 'Unknown');
+        } catch (error) {
+            console.error('Chatbot error:', error);
+        }
+    }
+
     return messageData;
 }
 
@@ -287,6 +296,249 @@ function extractMessageContent(message) {
     }
 }
 
+// ==================== Chatbot Engine ====================
+
+// Load Golden Ticket chatbot workflow
+const chatbotWorkflow = require('./workflows/golden-ticket-chatbot.json');
+
+// Build step index for quick lookup by ID
+const stepIndex = new Map();
+(function buildIndex(node) {
+    if (!node) return;
+    if (node.id != null) stepIndex.set(String(node.id), node);
+    if (Array.isArray(node.childs)) node.childs.forEach(buildIndex);
+})(chatbotWorkflow.tree);
+
+// Chatbot sessions: phone → { variables, contact, waitingForStep, lastActivity, jumpCounts }
+const chatbotSessions = new Map();
+const BOT_SESSION_TIMEOUT = 30 * 60 * 1000; // 30 minutes
+const BOT_ACCOUNT = 'golden_ticket';
+
+function getBotSession(phone) {
+    const s = chatbotSessions.get(phone);
+    if (!s) return null;
+    if (Date.now() - s.lastActivity > BOT_SESSION_TIMEOUT) {
+        chatbotSessions.delete(phone);
+        return null;
+    }
+    s.lastActivity = Date.now();
+    return s;
+}
+
+// Substitute {{variable}} templates
+function botSubstitute(text, session) {
+    if (!text) return '';
+    return text
+        .replace(/\{\{contact\.name\}\}/g, session.contact.name || '')
+        .replace(/\{\{contact\.phone_number\}\}/g, session.contact.phone_number || '')
+        .replace(/\{\{contact\.email\}\}/g, session.contact.email || '')
+        .replace(/\{\{(\w+)\}\}/g, (m, v) => session.variables[v] !== undefined ? session.variables[v] : m);
+}
+
+// Send text message from bot
+async function botSendText(phone, text) {
+    const account = getAccount(BOT_ACCOUNT);
+    await axios.post(`${CONFIG.META_API_URL}/${account.phoneNumberId}/messages`, {
+        messaging_product: 'whatsapp', to: phone, type: 'text', text: { body: text }
+    }, { headers: { 'Authorization': `Bearer ${account.token}`, 'Content-Type': 'application/json' } });
+}
+
+// Send interactive buttons (max 3 options, max 20 chars each)
+async function botSendButtons(phone, text, options) {
+    const account = getAccount(BOT_ACCOUNT);
+    await axios.post(`${CONFIG.META_API_URL}/${account.phoneNumberId}/messages`, {
+        messaging_product: 'whatsapp', to: phone, type: 'interactive',
+        interactive: {
+            type: 'button', body: { text },
+            action: { buttons: options.map((opt, i) => ({ type: 'reply', reply: { id: `opt_${i}`, title: opt.substring(0, 20) } })) }
+        }
+    }, { headers: { 'Authorization': `Bearer ${account.token}`, 'Content-Type': 'application/json' } });
+}
+
+// Send interactive list
+async function botSendList(phone, interactive) {
+    const account = getAccount(BOT_ACCOUNT);
+    await axios.post(`${CONFIG.META_API_URL}/${account.phoneNumberId}/messages`, {
+        messaging_product: 'whatsapp', to: phone, type: 'interactive', interactive
+    }, { headers: { 'Authorization': `Bearer ${account.token}`, 'Content-Type': 'application/json' } });
+}
+
+// Evaluate workflow conditions
+function botEvalConditions(conditions, session) {
+    if (!conditions || conditions.length === 0) return false;
+    for (const c of conditions) {
+        const val = c.hasVariable ? (session.variables[c.variable] || '') : '';
+        if (c.filter_operator === 'equal_to' && val !== c.values) return false;
+    }
+    return true;
+}
+
+// Execute a workflow step
+async function botExecStep(step, session, phone) {
+    if (!step) return;
+    try {
+        switch (step.type) {
+            case 'QuestionStep': {
+                const q = step.data.question;
+                if (q.type === 'whatsapp_list' && q.interactive) {
+                    await botSendList(phone, q.interactive);
+                } else if (q.type === 'multiple' && q.options && q.options.length > 0) {
+                    if (q.options.length <= 3 && q.options.every(o => o.length <= 20)) {
+                        await botSendButtons(phone, q.text, q.options);
+                    } else {
+                        await botSendList(phone, {
+                            type: 'list', body: { text: q.text },
+                            action: { button: 'اختر', sections: [{ rows: q.options.map((o, i) => ({ id: `opt_${i}`, title: o.substring(0, 24) })) }] }
+                        });
+                    }
+                } else {
+                    await botSendText(phone, q.text);
+                }
+                session.waitingForStep = String(step.id);
+                break;
+            }
+            case 'BranchStep': {
+                let matched = false;
+                for (const child of (step.childs || [])) {
+                    if (child.type === 'IfCondition' && !matched) {
+                        if (botEvalConditions(child.data?.conditions, session)) {
+                            matched = true;
+                            if (child.childs?.[0]) await botExecStep(child.childs[0], session, phone);
+                        }
+                    } else if (child.type === 'ElseCondition' && !matched) {
+                        if (child.childs?.[0]) await botExecStep(child.childs[0], session, phone);
+                        matched = true;
+                    }
+                }
+                break;
+            }
+            case 'ActionStep': {
+                if (step.data?.type === 'send_message') {
+                    for (const p of (step.data.payload || [])) {
+                        if (p.message?.text) await botSendText(phone, botSubstitute(p.message.text, session));
+                    }
+                } else if (step.data?.type === 'add_comment') {
+                    console.log('[Bot Comment]', botSubstitute(step.data.comment || '', session));
+                }
+                if (step.childs?.[0]) await botExecStep(step.childs[0], session, phone);
+                else chatbotSessions.delete(phone);
+                break;
+            }
+            case 'HttpRequestStep': {
+                try {
+                    const body = JSON.parse(botSubstitute(step.data.body, session));
+                    const headers = {};
+                    (step.data.headers || []).forEach(h => { headers[h.key] = h.value; });
+                    const resp = await axios.post(step.data.url, body, { headers });
+                    if (step.data.saveResponse?.hasVariable) session.variables[step.data.saveResponse.variable] = JSON.stringify(resp.data);
+                    (step.data.responseMap || []).forEach(m => { session.variables[m.variable] = resp.data[m.key] || ''; });
+                    const ok = (step.childs || []).find(c => c.type === 'ValidAnswer');
+                    if (ok?.childs?.[0]) await botExecStep(ok.childs[0], session, phone);
+                } catch (err) {
+                    console.error('[Bot HTTP Error]', err.message);
+                    const fail = (step.childs || []).find(c => c.type === 'InvalidAnswer');
+                    if (fail?.childs?.[0]) await botExecStep(fail.childs[0], session, phone);
+                }
+                break;
+            }
+            case 'DateTimeStep': {
+                // 24/7 - always succeed
+                const ok = (step.childs || []).find(c => c.type === 'ValidDateTime');
+                if (ok?.childs?.[0]) await botExecStep(ok.childs[0], session, phone);
+                break;
+            }
+            case 'AssignToStep': {
+                console.log('[Bot] Assigning conversation to workspace');
+                const ok = (step.childs || []).find(c => c.type === 'ValidAssignTo');
+                if (ok?.childs?.[0]) await botExecStep(ok.childs[0], session, phone);
+                break;
+            }
+            case 'JumpStep': {
+                const key = `jump_${step.id}`;
+                session.jumpCounts = session.jumpCounts || {};
+                session.jumpCounts[key] = (session.jumpCounts[key] || 0) + 1;
+                if (session.jumpCounts[key] <= (step.data?.maxJumps || 10)) {
+                    const target = stepIndex.get(String(step.data?.stepId));
+                    if (target) await botExecStep(target, session, phone);
+                }
+                break;
+            }
+            default: {
+                // Structural nodes (ValidAnswer, InvalidAnswer, etc.)
+                if (step.childs?.[0]) await botExecStep(step.childs[0], session, phone);
+                break;
+            }
+        }
+    } catch (error) {
+        console.error(`[Bot Error] ${step.type} (${step.id}):`, error.message);
+    }
+}
+
+// Process user's response to a question
+async function botProcessResponse(step, session, phone, text) {
+    const q = step.data.question;
+    let valid = false;
+    let value = text;
+
+    if (q.type === 'multiple') {
+        valid = q.options.includes(text);
+    } else if (q.type === 'whatsapp_list') {
+        const sections = q.interactive?.action?.sections || [];
+        for (const s of sections) {
+            for (const r of (s.rows || [])) {
+                if (r.title === text) { valid = true; value = r.title; break; }
+            }
+            if (valid) break;
+        }
+    } else if (q.type === 'text') {
+        valid = text.trim().length > 0;
+    }
+
+    // Save response
+    if (valid && step.data.saveResponse) {
+        if (step.data.saveResponse.hasVariable && step.data.saveResponse.variable)
+            session.variables[step.data.saveResponse.variable] = value;
+        if (step.data.saveResponse.hasField && step.data.saveResponse.field)
+            session.contact[step.data.saveResponse.field] = value;
+    }
+
+    session.waitingForStep = null;
+    const childType = valid ? 'ValidAnswer' : 'InvalidAnswer';
+    const child = (step.childs || []).find(c => c.type === childType);
+    if (child?.childs?.[0]) {
+        await botExecStep(child.childs[0], session, phone);
+    } else if (!valid) {
+        await botExecStep(step, session, phone); // Retry
+    }
+}
+
+// Main chatbot handler
+async function handleChatbot(phone, content, contactName) {
+    let session = getBotSession(phone);
+
+    if (!session) {
+        // New conversation - start chatbot
+        session = {
+            variables: {},
+            contact: { name: contactName, phone_number: phone, email: '' },
+            waitingForStep: null,
+            lastActivity: Date.now(),
+            jumpCounts: {}
+        };
+        chatbotSessions.set(phone, session);
+        const trigger = chatbotWorkflow.tree;
+        if (trigger.childs?.[0]) await botExecStep(trigger.childs[0], session, phone);
+        return;
+    }
+
+    if (session.waitingForStep) {
+        const step = stepIndex.get(session.waitingForStep);
+        if (step?.type === 'QuestionStep') {
+            await botProcessResponse(step, session, phone, content);
+        }
+    }
+}
+
 // ==================== Send Messages API ====================
 
 // Get available WhatsApp accounts
@@ -313,8 +565,13 @@ app.post('/api/send-message', async (req, res) => {
         const result = await sendWhatsAppMessage(to, message, type, accountId);
         res.json(result);
     } catch (error) {
-        console.error('Send message error:', error);
-        res.status(500).json({ error: error.message });
+        console.error('Send message error:', error.response?.data || error);
+        const whatsappError = error.response?.data?.error;
+        res.status(500).json({
+            error: whatsappError?.message || error.message,
+            error_code: whatsappError?.code,
+            details: whatsappError?.error_data?.details || ''
+        });
     }
 });
 

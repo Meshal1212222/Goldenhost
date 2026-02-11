@@ -1355,7 +1355,7 @@
             input.value = '';
 
             // Send via Meta WhatsApp API if it's a real conversation
-            if (currentConversation.isFirestore && BACKEND_CONFIG.useMetaAPI) {
+            if ((currentConversation.isFirestore || currentConversation.isBackend) && BACKEND_CONFIG.useMetaAPI) {
                 try {
                     const account = whatsappAccounts.find(a => a.id === selectedAccountId);
                     const response = await fetch(`${BACKEND_CONFIG.apiUrl}/api/send-message`, {
@@ -1373,14 +1373,17 @@
                         newMessage.status = 'delivered';
                         showNotification(`تم إرسال الرسالة عبر ${result.account || account?.name || 'WhatsApp'}`);
                     } else {
-                        const error = await response.json();
+                        const errData = await response.json();
                         newMessage.status = 'failed';
-                        showNotification('فشل إرسال الرسالة: ' + (error.error || 'خطأ غير معروف'));
+                        const errMsg = errData.details || errData.error || 'خطأ غير معروف';
+                        const errCode = errData.error_code ? ` (${errData.error_code})` : '';
+                        showNotification(`فشل الإرسال${errCode}: ${errMsg}`);
+                        console.error('Send failed:', errData);
                     }
                 } catch (error) {
                     console.error('Send error:', error);
                     newMessage.status = 'failed';
-                    showNotification('خطأ في الإرسال');
+                    showNotification('خطأ في الاتصال بالسيرفر: ' + error.message);
                 }
             } else {
                 // Local/demo mode
