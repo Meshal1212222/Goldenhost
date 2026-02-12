@@ -1465,13 +1465,33 @@
         function changeWhatsAppAccount(accountId) {
             selectedAccountId = accountId;
             const account = whatsappAccounts.find(a => a.id === accountId);
-            showNotification(`${account?.name || accountId}`);
-            // Reload conversations for this account
-            loadBackendConversations();
-            // Re-render to update button styles
-            if (currentConversation) {
-                openConversation(currentConversation);
+            showNotification(`تم التبديل إلى ${account?.name || accountId}`);
+
+            // Clear current conversation (it belongs to different account)
+            currentConversation = null;
+            const chatArea = document.getElementById('chatArea');
+            if (chatArea) {
+                chatArea.innerHTML = `
+                    <div style="display:flex; align-items:center; justify-content:center; height:100%; flex-direction:column; color:#999;">
+                        <div style="font-size:3rem; margin-bottom:1rem;">💬</div>
+                        <div style="font-family:Cairo,sans-serif; font-size:1.1rem;">${account?.name || accountId}</div>
+                        <div style="font-family:Cairo,sans-serif; font-size:0.9rem; margin-top:0.5rem;">اختر محادثة من القائمة</div>
+                    </div>
+                `;
             }
+
+            // Re-render conversations filtered by this account
+            renderConversations();
+
+            // Update account selector button styles
+            whatsappAccounts.forEach(acc => {
+                const btn = document.getElementById(`acc-btn-${acc.id}`);
+                if (btn) {
+                    btn.style.border = `2px solid ${acc.id === selectedAccountId ? '#25D366' : '#ddd'}`;
+                    btn.style.background = acc.id === selectedAccountId ? '#25D366' : '#f5f5f5';
+                    btn.style.color = acc.id === selectedAccountId ? 'white' : '#666';
+                }
+            });
         }
 
         // WhatsApp Message Templates
@@ -1814,7 +1834,18 @@
             const list = document.getElementById('conversationsList');
             list.innerHTML = '';
 
-            conversations.forEach(conv => {
+            // Filter conversations by selected account
+            const filtered = conversations.filter(conv => {
+                if (!conv.accountId) return true; // Show conversations without accountId (legacy)
+                return conv.accountId === selectedAccountId;
+            });
+
+            if (filtered.length === 0) {
+                list.innerHTML = '<div style="text-align:center; padding:2rem; color:#999; font-family:Cairo,sans-serif;">لا توجد محادثات لهذا الحساب</div>';
+                return;
+            }
+
+            filtered.forEach(conv => {
                 const unreadBadge = conv.unread > 0 ? `<span class="conversation-badge badge-unread">${conv.unread}</span>` : '';
                 const priorityBadge = conv.priority ? `<span class="conversation-badge badge-priority">عاجل</span>` : '';
                 const isWhatsApp = conv.channel === 'whatsapp' || conv.channel === 'whatsapp_meta';
