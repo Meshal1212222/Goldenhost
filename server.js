@@ -39,7 +39,7 @@ const WHATSAPP_ACCOUNTS = {
 
 const CONFIG = {
     VERIFY_TOKEN: process.env.VERIFY_TOKEN || 'goldenhost_webhook_2024',
-    META_API_URL: 'https://graph.facebook.com/v18.0',
+    META_API_URL: 'https://graph.facebook.com/v22.0',
     DEFAULT_ACCOUNT: 'golden_ticket' // Default account to use
 };
 
