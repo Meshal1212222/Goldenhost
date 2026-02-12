@@ -1043,14 +1043,24 @@ app.get('/api/media/:mediaId', async (req, res) => {
 
 // ==================== Conversations API ====================
 
-// Get all conversations
+// Get all conversations (with optional accountId filter)
 app.get('/api/conversations', async (req, res) => {
     try {
+        const { accountId } = req.query;
+
         if (db) {
-            const snapshot = await db.collection('conversations')
+            let query = db.collection('conversations')
                 .orderBy('updatedAt', 'desc')
-                .limit(50)
-                .get();
+                .limit(50);
+
+            if (accountId) {
+                query = db.collection('conversations')
+                    .where('accountId', '==', accountId)
+                    .orderBy('updatedAt', 'desc')
+                    .limit(50);
+            }
+
+            const snapshot = await query.get();
 
             const conversations = [];
             snapshot.forEach(doc => {
@@ -1059,8 +1069,12 @@ app.get('/api/conversations', async (req, res) => {
             return res.json(conversations);
         } else {
             // Return from memory
-            const conversations = Array.from(memoryStore.conversations.values())
+            let conversations = Array.from(memoryStore.conversations.values())
                 .sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
+
+            if (accountId) {
+                conversations = conversations.filter(c => c.accountId === accountId);
+            }
             return res.json(conversations);
         }
     } catch (error) {
