@@ -1025,13 +1025,27 @@
 
     <!-- Admin Panel Overlay -->
     <div class="admin-panel-overlay hidden" id="adminPanelOverlay" onclick="if(event.target===this)toggleAdminPanel()">
-        <div class="admin-panel-card">
+        <div class="admin-panel-card" style="max-width:600px; max-height:85vh; overflow-y:auto;">
             <div class="admin-panel-title">
-                <span>طلبات الوصول</span>
+                <span>لوحة الإدارة</span>
                 <button onclick="toggleAdminPanel()" style="background:none;border:none;font-size:1.3rem;cursor:pointer;">✕</button>
             </div>
-            <div id="pendingUsersList">
-                <p style="text-align:center;color:#999;">جاري التحميل...</p>
+            <!-- Tabs -->
+            <div style="display:flex; gap:0; margin-bottom:1rem; border-bottom:2px solid #eee;">
+                <button id="adminTab-requests" onclick="switchAdminTab('requests')" style="flex:1; padding:0.7rem; border:none; background:none; font-family:'Cairo',sans-serif; font-weight:700; font-size:0.9rem; cursor:pointer; border-bottom:3px solid #667eea; color:#667eea;">طلبات الوصول</button>
+                <button id="adminTab-users" onclick="switchAdminTab('users')" style="flex:1; padding:0.7rem; border:none; background:none; font-family:'Cairo',sans-serif; font-weight:700; font-size:0.9rem; cursor:pointer; border-bottom:3px solid transparent; color:#999;">إدارة المستخدمين</button>
+            </div>
+            <!-- Tab: Pending Requests -->
+            <div id="adminTabContent-requests">
+                <div id="pendingUsersList">
+                    <p style="text-align:center;color:#999;">جاري التحميل...</p>
+                </div>
+            </div>
+            <!-- Tab: User Management -->
+            <div id="adminTabContent-users" style="display:none;">
+                <div id="approvedUsersList">
+                    <p style="text-align:center;color:#999;">جاري التحميل...</p>
+                </div>
             </div>
         </div>
     </div>
@@ -1211,22 +1225,27 @@
         async function checkUserApproval(user) {
             const email = user.email;
 
-            // Admin is always approved
+            // Admin is always approved with all accounts
             if (email.toLowerCase() === ADMIN_EMAIL.toLowerCase()) {
                 await firestore.collection('approved_users').doc(email).set({
                     email: email,
                     name: user.displayName || email.split('@')[0],
                     photo: user.photoURL || '',
                     role: 'admin',
+                    allowedAccounts: ['golden_ticket', 'golden_host'],
                     approvedAt: firebase.firestore.FieldValue.serverTimestamp()
                 }, { merge: true });
-                return { approved: true, role: 'admin' };
+                return { approved: true, role: 'admin', allowedAccounts: ['golden_ticket', 'golden_host'] };
             }
 
             // Check approved_users collection
             const doc = await firestore.collection('approved_users').doc(email).get();
             if (doc.exists && doc.data().approved !== false) {
-                return { approved: true, role: doc.data().role || 'employee' };
+                return {
+                    approved: true,
+                    role: doc.data().role || 'employee',
+                    allowedAccounts: doc.data().allowedAccounts || ['golden_ticket', 'golden_host']
+                };
             }
 
             // Not approved - save to pending_users
@@ -1288,6 +1307,7 @@
 
                     if (approval.approved) {
                         currentEmployee.role = approval.role;
+                        currentEmployee.allowedAccounts = approval.allowedAccounts || ['golden_ticket', 'golden_host'];
                         showScreen('main');
                         document.getElementById('employeeNameBadge').textContent = currentEmployee.name;
                         init();
@@ -1321,6 +1341,108 @@
                 loadPendingUsers();
             } else {
                 overlay.classList.add('hidden');
+            }
+        }
+
+        function switchAdminTab(tab) {
+            // Update tab styles
+            document.getElementById('adminTab-requests').style.borderBottom = tab === 'requests' ? '3px solid #667eea' : '3px solid transparent';
+            document.getElementById('adminTab-requests').style.color = tab === 'requests' ? '#667eea' : '#999';
+            document.getElementById('adminTab-users').style.borderBottom = tab === 'users' ? '3px solid #667eea' : '3px solid transparent';
+            document.getElementById('adminTab-users').style.color = tab === 'users' ? '#667eea' : '#999';
+            // Show/hide content
+            document.getElementById('adminTabContent-requests').style.display = tab === 'requests' ? 'block' : 'none';
+            document.getElementById('adminTabContent-users').style.display = tab === 'users' ? 'block' : 'none';
+            if (tab === 'users') loadApprovedUsers();
+            if (tab === 'requests') loadPendingUsers();
+        }
+
+        async function loadApprovedUsers() {
+            const list = document.getElementById('approvedUsersList');
+            try {
+                const snapshot = await firestore.collection('approved_users').get();
+                if (snapshot.empty) {
+                    list.innerHTML = '<p style="text-align:center;color:#999;padding:1rem;">لا يوجد مستخدمين</p>';
+                    return;
+                }
+                list.innerHTML = '';
+                snapshot.forEach(doc => {
+                    const user = doc.data();
+                    const email = doc.id;
+                    const accounts = user.allowedAccounts || ['golden_ticket', 'golden_host']; // Default: all
+                    const isAdmin = user.role === 'admin';
+
+                    const div = document.createElement('div');
+                    div.style.cssText = 'padding:1rem; border:1px solid #eee; border-radius:10px; margin-bottom:0.8rem; background:#fafafa;';
+                    div.innerHTML = `
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.7rem;">
+                            <div>
+                                <div style="font-weight:700; color:#333; font-size:0.95rem;">${user.name || email.split('@')[0]}</div>
+                                <div style="font-size:0.8rem; color:#888; direction:ltr; text-align:left;">${email}</div>
+                            </div>
+                            <span style="background:${isAdmin ? '#667eea' : '#4CAF50'}; color:white; padding:3px 10px; border-radius:12px; font-size:0.7rem; font-weight:700;">${isAdmin ? 'مدير' : 'موظف'}</span>
+                        </div>
+                        <div style="font-size:0.85rem; color:#555; margin-bottom:0.5rem; font-weight:600;">الأرقام المسموحة:</div>
+                        <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+                            <label style="display:flex; align-items:center; gap:0.3rem; padding:0.4rem 0.8rem; border-radius:8px; border:2px solid ${accounts.includes('golden_ticket') ? '#FF9800' : '#ddd'}; background:${accounts.includes('golden_ticket') ? '#FFF3E0' : '#f5f5f5'}; cursor:${isAdmin ? 'not-allowed' : 'pointer'}; font-size:0.8rem; font-weight:600;">
+                                <input type="checkbox" ${accounts.includes('golden_ticket') ? 'checked' : ''} ${isAdmin ? 'disabled' : ''}
+                                    onchange="updateUserAccounts('${email}', 'golden_ticket', this.checked)"
+                                    style="accent-color:#FF9800;">
+                                Golden Ticket
+                            </label>
+                            <label style="display:flex; align-items:center; gap:0.3rem; padding:0.4rem 0.8rem; border-radius:8px; border:2px solid ${accounts.includes('golden_host') ? '#667eea' : '#ddd'}; background:${accounts.includes('golden_host') ? '#EDE7F6' : '#f5f5f5'}; cursor:${isAdmin ? 'not-allowed' : 'pointer'}; font-size:0.8rem; font-weight:600;">
+                                <input type="checkbox" ${accounts.includes('golden_host') ? 'checked' : ''} ${isAdmin ? 'disabled' : ''}
+                                    onchange="updateUserAccounts('${email}', 'golden_host', this.checked)"
+                                    style="accent-color:#667eea;">
+                                Golden Host
+                            </label>
+                        </div>
+                        ${!isAdmin ? `<button onclick="removeUser('${email}')" style="margin-top:0.7rem; background:#ffebee; color:#e53935; border:1px solid #e53935; padding:0.3rem 0.8rem; border-radius:6px; cursor:pointer; font-family:'Cairo',sans-serif; font-size:0.75rem; font-weight:600;">إزالة المستخدم</button>` : ''}
+                    `;
+                    list.appendChild(div);
+                });
+            } catch (error) {
+                console.error('Load approved users error:', error);
+                list.innerHTML = '<p style="text-align:center;color:#e53935;">خطأ في تحميل المستخدمين</p>';
+            }
+        }
+
+        async function updateUserAccounts(email, accountId, checked) {
+            try {
+                const doc = await firestore.collection('approved_users').doc(email).get();
+                let accounts = doc.data()?.allowedAccounts || ['golden_ticket', 'golden_host'];
+
+                if (checked && !accounts.includes(accountId)) {
+                    accounts.push(accountId);
+                } else if (!checked) {
+                    accounts = accounts.filter(a => a !== accountId);
+                    if (accounts.length === 0) {
+                        showNotification('يجب اختيار رقم واحد على الأقل');
+                        loadApprovedUsers();
+                        return;
+                    }
+                }
+
+                await firestore.collection('approved_users').doc(email).update({
+                    allowedAccounts: accounts
+                });
+                showNotification('تم تحديث الصلاحيات');
+                loadApprovedUsers();
+            } catch (error) {
+                console.error('Update accounts error:', error);
+                showNotification('خطأ في التحديث');
+            }
+        }
+
+        async function removeUser(email) {
+            if (!confirm(`هل تريد إزالة ${email}؟`)) return;
+            try {
+                await firestore.collection('approved_users').doc(email).delete();
+                showNotification('تم إزالة المستخدم');
+                loadApprovedUsers();
+            } catch (error) {
+                console.error('Remove user error:', error);
+                showNotification('خطأ في الإزالة');
             }
         }
 
@@ -1362,11 +1484,12 @@
                     name: name,
                     role: 'employee',
                     approved: true,
+                    allowedAccounts: ['golden_ticket'], // Default: only Golden Ticket
                     approvedAt: firebase.firestore.FieldValue.serverTimestamp(),
                     approvedBy: currentEmployee.email
                 });
                 await firestore.collection('pending_users').doc(email).update({ status: 'approved' });
-                showNotification('تم قبول ' + (name || email));
+                showNotification('تم قبول ' + (name || email) + ' - يمكنك تعديل صلاحياته من إدارة المستخدمين');
                 loadPendingUsers();
             } catch (error) {
                 console.error('Approve error:', error);
@@ -1399,8 +1522,13 @@
                 document.getElementById('adminPanelBtn').style.display = 'inline-block';
             }
 
-            // Load available WhatsApp accounts
+            // Load available WhatsApp accounts (filtered by user permissions)
             loadWhatsAppAccounts();
+
+            // Set default account to first allowed account
+            if (currentEmployee && currentEmployee.allowedAccounts && currentEmployee.allowedAccounts.length > 0) {
+                selectedAccountId = currentEmployee.allowedAccounts[0];
+            }
 
             // Load from Backend API first (real WhatsApp messages)
             loadBackendConversations();
@@ -1421,24 +1549,35 @@
             }, 1000);
         }
 
-        // Load available WhatsApp accounts from backend
+        // Load available WhatsApp accounts from backend (filtered by user permissions)
         async function loadWhatsAppAccounts() {
             try {
                 const response = await fetch(`${BACKEND_CONFIG.apiUrl}/api/whatsapp-accounts`);
                 if (response.ok) {
-                    whatsappAccounts = await response.json();
-                    if (whatsappAccounts.length > 0) {
+                    let allAccounts = await response.json();
+                    // Filter by user's allowed accounts
+                    const allowed = currentEmployee?.allowedAccounts;
+                    if (allowed && allowed.length > 0 && currentEmployee.role !== 'admin') {
+                        allAccounts = allAccounts.filter(acc => allowed.includes(acc.id));
+                    }
+                    whatsappAccounts = allAccounts;
+                    if (whatsappAccounts.length > 0 && !whatsappAccounts.find(a => a.id === selectedAccountId)) {
                         selectedAccountId = whatsappAccounts[0].id;
                     }
-                    console.log('WhatsApp accounts loaded:', whatsappAccounts);
+                    console.log('WhatsApp accounts loaded (filtered):', whatsappAccounts);
                 }
             } catch (error) {
                 console.error('Error loading WhatsApp accounts:', error);
-                // Fallback accounts
-                whatsappAccounts = [
+                // Fallback accounts (filtered by permissions)
+                let fallback = [
                     { id: 'golden_ticket', name: 'Golden Ticket', phoneNumberId: '596898763496238' },
                     { id: 'golden_host', name: 'Golden Host', phoneNumberId: '529770810215816' }
                 ];
+                const allowed = currentEmployee?.allowedAccounts;
+                if (allowed && allowed.length > 0 && currentEmployee.role !== 'admin') {
+                    fallback = fallback.filter(acc => allowed.includes(acc.id));
+                }
+                whatsappAccounts = fallback;
             }
         }
 
