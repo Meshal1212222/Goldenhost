@@ -1109,19 +1109,7 @@ app.get('/api/conversations/:phone/messages', async (req, res) => {
 // ==================== Health Check ====================
 
 app.get('/', (req, res) => {
-    res.json({
-        status: 'running',
-        service: 'Golden Host WhatsApp Backend',
-        version: '1.0.0',
-        timestamp: new Date().toISOString(),
-        endpoints: {
-            webhook: '/webhook',
-            sendMessage: 'POST /api/send-message',
-            sendTemplate: 'POST /api/send-template',
-            conversations: 'GET /api/conversations',
-            messages: 'GET /api/conversations/:phone/messages'
-        }
-    });
+    res.sendFile(path.join(__dirname, 'index.html'));
 });
 
 app.get('/health', (req, res) => {
