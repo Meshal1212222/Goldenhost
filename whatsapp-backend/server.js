@@ -25,7 +25,7 @@ app.use(express.static(path.join(__dirname, '..')));
 
 const CONFIG = {
     // Meta WhatsApp API
-    WHATSAPP_TOKEN: process.env.WHATSAPP_TOKEN || 'EAAa4f8LAgtEBQnZALzh4gPMK8Kj6JWavI0dE6ClIqqkdAmWzyfgiLsQPFS891oPmpoJonZAF4HfStUi7s6UEnx3CgfvO4O44SeGPQODrBZBpINCBjuM2KubXWIpVpkkqsZAMNqm2YoFZA0hllZAJqKetSzKE0cdsRjeOJIiJInWcZCQ93ZB48WEXZC6hTW9woUZBiZBe4lyscnVGjJOeajHo0X4zq02okmL70ERd2Lj',
+    WHATSAPP_TOKEN: process.env.WHATSAPP_TOKEN || 'EAAa4f8LAgtEBQlWsCbUTZBimZAOPik3XeQ8gDD0yogZBxv5PzNbQiuXjOnDG0hrlhf8qyi8VERyocOpd2HIdaakB76YYevjR83VO2bITXKZA39NITbscT9lRBumEdgYUHDvPIZC4c4ksfv25WFkhuZAWJZBlGZBfqfznW9WCdrrA7zzcdq4bfhyDjhtrZBZB60jMAD4ibZBm8nD9vdsvdqnnV0bMRxxNnUOYp7zDh8VNamAcwbQUsszbcpfdoZBXdXno9nT49zOKiTZBqTr4gH6PZC25v95NW0',
     PHONE_NUMBER_ID: process.env.PHONE_NUMBER_ID || '529770810215816',
     WABA_ID: process.env.WABA_ID || '435381729669619',
     VERIFY_TOKEN: process.env.VERIFY_TOKEN || 'goldenhost_webhook_2024',
