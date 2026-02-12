@@ -1616,7 +1616,9 @@
                 `;
             }
 
-            // Re-render conversations filtered by this account
+            // Reload conversations filtered by new account
+            loadBackendConversations();
+            loadFirestoreConversations();
             renderConversations();
 
             // Update account selector button styles
@@ -1791,9 +1793,18 @@
             }
 
             try {
-                unsubscribeConversations = firestore
+                let firestoreQuery = firestore
                     .collection('conversations')
-                    .orderBy('updatedAt', 'desc')
+                    .orderBy('updatedAt', 'desc');
+
+                if (selectedAccountId) {
+                    firestoreQuery = firestore
+                        .collection('conversations')
+                        .where('accountId', '==', selectedAccountId)
+                        .orderBy('updatedAt', 'desc');
+                }
+
+                unsubscribeConversations = firestoreQuery
                     .onSnapshot((snapshot) => {
                         const firestoreConversations = [];
                         snapshot.forEach(doc => {
