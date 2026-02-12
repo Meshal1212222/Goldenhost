@@ -33,7 +33,7 @@ const WHATSAPP_ACCOUNTS = {
         name: 'Golden Host',
         phoneNumberId: '529770810215816',
         wabaId: '435381729669619',
-        token: process.env.GOLDEN_HOST_TOKEN || '' // Waiting for admin approval
+        token: process.env.GOLDEN_HOST_TOKEN || 'EAAa4f8LAgtEBQp8w03BiZARzFAsh08ZB2MymaRnQcryJvAcrVyU8EFp7dvGVRh4xNkOUu4Mc6yxzb9vOYC3oZCnHCTnZCWsnXkVZAKhRZC9Hl9vHpXt611E9GRkbqM4zBMHUZAPVln5rgt5XODLwn9VBmR4jKJxyUMYzd7T96BAnZBzYK5pZClUSoOZCYzLhx6DgZDZD'
     }
 };
 
