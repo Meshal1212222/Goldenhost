@@ -1595,6 +1595,8 @@
                             priority: false,
                             status: conv.status || 'open',
                             channel: 'whatsapp_meta',
+                            accountId: conv.accountId || '',
+                            accountName: conv.accountName || '',
                             messages: [],
                             notes: conv.notes || '',
                             history: [],
@@ -1647,6 +1649,8 @@
                                 priority: false,
                                 status: data.status || 'open',
                                 channel: 'whatsapp_meta',
+                                accountId: data.accountId || '',
+                                accountName: data.accountName || '',
                                 messages: [],
                                 notes: data.notes || '',
                                 history: [],
@@ -1815,6 +1819,7 @@
                 const priorityBadge = conv.priority ? `<span class="conversation-badge badge-priority">عاجل</span>` : '';
                 const isWhatsApp = conv.channel === 'whatsapp' || conv.channel === 'whatsapp_meta';
                 const channelBadge = `<span class="conversation-badge badge-${conv.channel}">${isWhatsApp ? 'WhatsApp' : 'التطبيق'}</span>`;
+                const accountBadge = conv.accountName ? `<span class="conversation-badge" style="background:${conv.accountId === 'golden_host' ? '#667eea' : '#FF9800'}; color:white; font-size:0.65rem; padding:2px 6px;">${conv.accountName}</span>` : '';
 
                 const item = document.createElement('div');
                 item.className = 'conversation-item';
@@ -1829,6 +1834,7 @@
                         <div class="conversation-preview">${conv.lastMessage}</div>
                         <div class="conversation-meta">
                             ${channelBadge}
+                            ${accountBadge}
                             ${priorityBadge}
                             ${unreadBadge}
                         </div>
@@ -1841,6 +1847,20 @@
 
         function openConversation(conv) {
             currentConversation = conv;
+
+            // Auto-select the correct WhatsApp account for this conversation
+            if (conv.accountId && conv.accountId !== selectedAccountId) {
+                selectedAccountId = conv.accountId;
+                // Update account selector buttons
+                whatsappAccounts.forEach(acc => {
+                    const btn = document.getElementById(`acc-btn-${acc.id}`);
+                    if (btn) {
+                        btn.style.border = `2px solid ${acc.id === selectedAccountId ? '#25D366' : '#ddd'}`;
+                        btn.style.background = acc.id === selectedAccountId ? '#25D366' : '#f5f5f5';
+                        btn.style.color = acc.id === selectedAccountId ? 'white' : '#666';
+                    }
+                });
+            }
 
             // Update active state
             document.querySelectorAll('.conversation-item').forEach(item => {
@@ -1964,7 +1984,8 @@
         }
 
         function renderMediaContent(msg) {
-            const mediaUrl = msg.media_id ? `${BACKEND_CONFIG.apiUrl}/api/media/${msg.media_id}?accountId=${selectedAccountId}` : '';
+            const mediaAccountId = (currentConversation && currentConversation.accountId) ? currentConversation.accountId : selectedAccountId;
+            const mediaUrl = msg.media_id ? `${BACKEND_CONFIG.apiUrl}/api/media/${msg.media_id}?accountId=${mediaAccountId}` : '';
 
             switch (msg.msgType) {
                 case 'image':

@@ -48,6 +48,14 @@ function getAccount(accountId) {
     return WHATSAPP_ACCOUNTS[accountId] || WHATSAPP_ACCOUNTS[CONFIG.DEFAULT_ACCOUNT];
 }
 
+// Resolve phone_number_id to accountId
+function resolveAccountByPhoneNumberId(phoneNumberId) {
+    for (const [id, acc] of Object.entries(WHATSAPP_ACCOUNTS)) {
+        if (acc.phoneNumberId === phoneNumberId) return id;
+    }
+    return CONFIG.DEFAULT_ACCOUNT;
+}
+
 // ==================== Middleware ====================
 
 app.use(cors({
@@ -197,6 +205,10 @@ initFirebase();
 // ==================== Message Processing ====================
 
 async function processIncomingMessage(message, contact, metadata) {
+    // Determine which account this message belongs to
+    const accountId = resolveAccountByPhoneNumberId(metadata.phone_number_id);
+    const account = getAccount(accountId);
+
     const mediaInfo = extractMediaInfo(message);
     const messageData = {
         id: message.id,
@@ -206,6 +218,8 @@ async function processIncomingMessage(message, contact, metadata) {
         customerName: contact.profile?.name || 'Unknown',
         customerPhone: message.from,
         phoneNumberId: metadata.phone_number_id,
+        accountId: accountId,
+        accountName: account.name,
         content: extractMessageContent(message),
         status: 'received',
         channel: 'whatsapp_meta'
@@ -218,7 +232,7 @@ async function processIncomingMessage(message, contact, metadata) {
         if (mediaInfo.filename) messageData.filename = mediaInfo.filename;
     }
 
-    console.log('Processing message:', messageData);
+    console.log('Processing message:', { from: message.from, account: accountId, type: message.type });
 
     // Save to Firebase
     if (db) {
@@ -228,19 +242,23 @@ async function processIncomingMessage(message, contact, metadata) {
             const conversationDoc = await conversationRef.get();
 
             if (!conversationDoc.exists) {
-                // Create new conversation
+                // Create new conversation - tag with accountId
                 await conversationRef.set({
                     customerPhone: message.from,
                     customerName: contact.profile?.name || 'Unknown',
                     channel: 'whatsapp_meta',
+                    accountId: accountId,
+                    accountName: account.name,
                     status: 'open',
                     createdAt: admin.firestore.FieldValue.serverTimestamp(),
                     updatedAt: admin.firestore.FieldValue.serverTimestamp(),
                     unreadCount: 1
                 });
             } else {
-                // Update existing conversation
+                // Update existing conversation - also update accountId (in case customer messages different number)
                 await conversationRef.update({
+                    accountId: accountId,
+                    accountName: account.name,
                     updatedAt: admin.firestore.FieldValue.serverTimestamp(),
                     unreadCount: admin.firestore.FieldValue.increment(1),
                     lastMessage: messageData.content,
@@ -1208,6 +1226,9 @@ app.use(express.static(__dirname));
 // ==================== Start Server ====================
 
 app.listen(PORT, () => {
+    const accountsInfo = Object.entries(WHATSAPP_ACCOUNTS).map(([id, acc]) =>
+        `    - ${acc.name} (${id}): Phone ${acc.phoneNumberId} | Token: ${acc.token ? 'Set' : 'NOT SET'}`
+    ).join('\n');
     console.log(`
     ========================================
     Golden Host WhatsApp Backend
@@ -1215,10 +1236,8 @@ app.listen(PORT, () => {
     Server running on port ${PORT}
     Webhook URL: https://your-railway-url.up.railway.app/webhook
 
-    Configuration:
-    - Phone Number ID: ${CONFIG.PHONE_NUMBER_ID}
-    - WABA ID: ${CONFIG.WABA_ID}
-    - Token: ${CONFIG.WHATSAPP_TOKEN ? 'Set' : 'NOT SET'}
+    WhatsApp Accounts:
+${accountsInfo}
     ========================================
     `);
 });
