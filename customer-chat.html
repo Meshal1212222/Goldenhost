@@ -1533,17 +1533,17 @@
             // Then try Firestore as backup
             loadFirestoreConversations();
 
-            // Auto-refresh conversations every 2 seconds
+            // Auto-refresh conversations every 10 seconds (server caches to save Firestore quota)
             setInterval(() => {
                 loadBackendConversations();
-            }, 2000);
+            }, 10000);
 
-            // Auto-refresh messages every 1 second if a conversation is open
+            // Auto-refresh messages every 5 seconds if a conversation is open
             setInterval(() => {
                 if (currentConversation && currentConversation.isBackend) {
                     loadBackendMessages(currentConversation.customerPhone || currentConversation.id);
                 }
-            }, 1000);
+            }, 5000);
         }
 
         // Load available WhatsApp accounts from backend (filtered by user permissions)

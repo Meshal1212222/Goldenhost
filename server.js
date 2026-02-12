@@ -144,6 +144,45 @@ const memoryStore = {
     messages: new Map()
 };
 
+// Cache to reduce Firestore reads and avoid quota exhaustion
+const cache = {
+    conversations: { data: null, timestamp: 0 },
+    byAccount: new Map(),
+    messages: new Map(),
+    TTL: 10000 // 10 seconds cache
+};
+
+function getCachedConversations(accountId) {
+    const key = accountId || '_all';
+    const cached = accountId ? cache.byAccount.get(key) : cache.conversations;
+    if (cached && cached.data && (Date.now() - cached.timestamp) < cache.TTL) {
+        return cached.data;
+    }
+    return null;
+}
+
+function setCachedConversations(accountId, data) {
+    const key = accountId || '_all';
+    const entry = { data, timestamp: Date.now() };
+    if (accountId) {
+        cache.byAccount.set(key, entry);
+    } else {
+        cache.conversations = entry;
+    }
+}
+
+function getCachedMessages(phone) {
+    const cached = cache.messages.get(phone);
+    if (cached && (Date.now() - cached.timestamp) < cache.TTL) {
+        return cached.data;
+    }
+    return null;
+}
+
+function setCachedMessages(phone, data) {
+    cache.messages.set(phone, { data, timestamp: Date.now() });
+}
+
 function getMemoryConversation(phone) {
     if (!memoryStore.conversations.has(phone)) {
         memoryStore.conversations.set(phone, {
@@ -271,6 +310,11 @@ async function processIncomingMessage(message, contact, metadata) {
                 ...messageData,
                 createdAt: admin.firestore.FieldValue.serverTimestamp()
             });
+
+            // Clear cache so new messages appear immediately
+            cache.conversations = { data: null, timestamp: 0 };
+            cache.byAccount.clear();
+            cache.messages.delete(messageData.customerPhone);
 
             console.log('Message saved to Firebase');
         } catch (error) {
@@ -1043,10 +1087,16 @@ app.get('/api/media/:mediaId', async (req, res) => {
 
 // ==================== Conversations API ====================
 
-// Get all conversations (with optional accountId filter)
+// Get all conversations (with optional accountId filter + caching)
 app.get('/api/conversations', async (req, res) => {
     try {
         const { accountId } = req.query;
+
+        // Check cache first to reduce Firestore reads
+        const cached = getCachedConversations(accountId);
+        if (cached) {
+            return res.json(cached);
+        }
 
         if (db) {
             let query = db.collection('conversations')
@@ -1066,6 +1116,7 @@ app.get('/api/conversations', async (req, res) => {
             snapshot.forEach(doc => {
                 conversations.push({ id: doc.id, ...doc.data() });
             });
+            setCachedConversations(accountId, conversations);
             return res.json(conversations);
         } else {
             // Return from memory
@@ -1079,14 +1130,26 @@ app.get('/api/conversations', async (req, res) => {
         }
     } catch (error) {
         console.error('Get conversations error:', error);
-        res.status(500).json({ error: error.message });
+        // On Firestore error, try memory store as fallback
+        let conversations = Array.from(memoryStore.conversations.values())
+            .sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
+        if (req.query.accountId) {
+            conversations = conversations.filter(c => c.accountId === req.query.accountId);
+        }
+        return res.json(conversations);
     }
 });
 
-// Get messages for a conversation
+// Get messages for a conversation (with caching)
 app.get('/api/conversations/:phone/messages', async (req, res) => {
     try {
         const { phone } = req.params;
+
+        // Check cache first
+        const cached = getCachedMessages(phone);
+        if (cached) {
+            return res.json(cached);
+        }
 
         if (db) {
             const snapshot = await db.collection('conversations')
@@ -1106,6 +1169,7 @@ app.get('/api/conversations/:phone/messages', async (req, res) => {
                 unreadCount: 0
             });
 
+            setCachedMessages(phone, messages);
             return res.json(messages);
         } else {
             // Return from memory
