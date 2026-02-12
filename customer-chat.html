@@ -1735,7 +1735,10 @@
         // Load conversations from Backend API (in-memory storage)
         async function loadBackendConversations() {
             try {
-                const response = await fetch(`${BACKEND_CONFIG.apiUrl}/api/conversations`);
+                const url = selectedAccountId
+                    ? `${BACKEND_CONFIG.apiUrl}/api/conversations?accountId=${selectedAccountId}`
+                    : `${BACKEND_CONFIG.apiUrl}/api/conversations`;
+                const response = await fetch(url);
                 if (response.ok) {
                     const backendConversations = await response.json();
                     console.log('Backend conversations loaded:', backendConversations.length);
@@ -1843,6 +1846,15 @@
             if (val._seconds) return new Date(val._seconds * 1000);
             const d = new Date(val);
             return isNaN(d.getTime()) ? null : d;
+        }
+
+        function formatPhoneNumber(phone) {
+            if (!phone) return '';
+            const cleaned = phone.replace(/\D/g, '');
+            if (cleaned.startsWith('966') && cleaned.length === 12) {
+                return `+${cleaned.slice(0,3)} ${cleaned.slice(3,5)} ${cleaned.slice(5,8)} ${cleaned.slice(8)}`;
+            }
+            return `+${cleaned}`;
         }
 
         function formatTime(date) {
@@ -1997,7 +2009,7 @@
                             <span class="conversation-name">${conv.customerName}</span>
                             <span class="conversation-time">${conv.time}</span>
                         </div>
-                        <div class="conversation-preview" style="direction: ltr; text-align: left; font-size: 0.8rem; color: #aaa;">${conv.customerPhone || ''}</div>
+                        <div class="conversation-preview" style="direction: ltr; text-align: left; font-size: 0.8rem; color: #aaa;">${formatPhoneNumber(conv.customerPhone)}</div>
                         <div class="conversation-preview">${conv.lastMessage}</div>
                         <div class="conversation-meta">
                             ${channelBadge}
