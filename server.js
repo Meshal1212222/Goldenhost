@@ -33,13 +33,13 @@ const WHATSAPP_ACCOUNTS = {
         name: 'Golden Host',
         phoneNumberId: '529770810215816',
         wabaId: '435381729669619',
-        token: process.env.GOLDEN_HOST_TOKEN || 'EAAa4f8LAgtEBQnZALzh4gPMK8Kj6JWavI0dE6ClIqqkdAmWzyfgiLsQPFS891oPmpoJonZAF4HfStUi7s6UEnx3CgfvO4O44SeGPQODrBZBpINCBjuM2KubXWIpVpkkqsZAMNqm2YoFZA0hllZAJqKetSzKE0cdsRjeOJIiJInWcZCQ93ZB48WEXZC6hTW9woUZBiZBe4lyscnVGjJOeajHo0X4zq02okmL70ERd2Lj'
+        token: process.env.GOLDEN_HOST_TOKEN || 'EAAa4f8LAgtEBQrkIZAZBzcb2ZAmDMIyjykODhDuWwWWo4uIQj3pdst02LU3VEZAyourb8XKDTZCjQ6xPLA0HuEsuBj3gYh2mBZAIFzA54B5SEZBeKSH1S86nawbVvXl9YwmZAizZBoXJ7l5H5z0XVWPmGtmkvYurPtbyVDJoZAQxTnhVlGcSTaQkDzlxwHAKQcVgZDZD'
     }
 };
 
 const CONFIG = {
     VERIFY_TOKEN: process.env.VERIFY_TOKEN || 'goldenhost_webhook_2024',
-    META_API_URL: 'https://graph.facebook.com/v18.0',
+    META_API_URL: 'https://graph.facebook.com/v22.0',
     DEFAULT_ACCOUNT: 'golden_ticket' // Default account to use
 };
 
